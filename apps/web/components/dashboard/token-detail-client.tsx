@@ -55,7 +55,7 @@ export function TokenDetailClient({ address }: { address: string }) {
   const t = useTranslations('token_detail');
   const tSig = useTranslations('signals');
   const tf = useTranslations('factors');
-  const locale = useLocale() as 'en' | 'ru';
+  const locale = useLocale();
   const { data, isLoading } = useSWR<TokenDetail>(SWR_KEYS.token(address), fetcher, {
     refreshInterval: SWR_INTERVALS.token
   });
@@ -238,7 +238,7 @@ export function TokenDetailClient({ address }: { address: string }) {
                 return (
                   <li key={i} className="flex items-center gap-4 py-3 text-sm">
                     <Badge variant={variant}>{label}</Badge>
-                    <span className="text-text-muted">{fmtTimeAgo(e.time * 1000, Date.now(), locale)}</span>
+                    <span className="text-text-muted">{fmtTimeAgo(e.time * 1000, Date.now())}</span>
                     <span className="ml-auto flex items-center gap-2">
                       <span className="sr-only">{t('prev_score')}</span>
                       <ScorePill score={e.prev_score} />

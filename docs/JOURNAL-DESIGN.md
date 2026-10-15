@@ -2,6 +2,7 @@
 
 ## ТЕКУЩЕЕ СОСТОЯНИЕ
 - Сайт открыт для всех, без входа и без Telegram. Позиционирование честное: скоринг-формула, не «AI».
+- Язык: только английский (решение владельца 15.10). RU-локаль, переключатель и `messages/ru.json` удалены.
 - Страницы: лендинг (hero + живой топ-5), `/how-it-works` (методология), дашборд: обзор, сканер, сигналы,
   стратегия, избранное (localStorage). Settings удалена (308 → /dashboard).
 - Хостинг: Cloudflare Pages `fomometer-web`, домены `fomometer.xyz` и `www` привязаны 2026-10-14.
@@ -9,6 +10,19 @@
 - Открыто по сайту: логотипы с CDN DexScreener ставят сторонний cookie (Best Practices 77), прокси по решению владельца.
 
 ---
+
+## 2026-10-15 [BUILD] Сайт только на английском (владелец: «чтобы нигде не было русского языка», не задеплоено)
+- `i18n.ts`: одна локаль `en`, без cookie `LOCALE` и `Accept-Language`. next-intl оставлен как хранилище копирайта
+  (`messages/en.json`); импорт по шаблонному пути, чтобы тип сообщений с массивами (`t.raw`) не ломал `RequestConfig`.
+- Удалены `messages/ru.json`, `components/locale-toggle.tsx` (шапка и topbar), ключ `common.language`.
+  `fmtTimeAgo` без RU-ветки и параметра локали; неиспользуемые `useLocale` убраны в status-badge, signals, overview.
+  README: «next-intl (English…)». Копии удалённого в scratchpad `ru-removed/`.
+- Проверено (превью на prod D1) с `Accept-Language: ru` и cookie `LOCALE=ru`: 9 страниц + 404, все `lang="en"`,
+  кириллицы в HTML 0. В собранных бандлах кириллица только в полифиллах Next (core-js), не текст UI.
+  Исходники `apps/web` без node_modules/сборки: 0 файлов с кириллицей. Мобильный topbar без переключателя, LIVE,
+  таблица «Стратегии» на английском, без горизонтального скролла. typecheck 0, lint 0.
+- Ключ `strategy.horizon` (из прошлого DEBUG) теперь только EN: 15m / 1h / 4h.
+
 
 ## 2026-10-15 [BUILD] Прокси логотипов (решение владельца «делаем», не задеплоено)
 - `app/api/logo/[id]/route.ts`: принимает только id CMS-картинки DexScreener (`[A-Za-z0-9_-]{6,64}`) и размер 64/128/256

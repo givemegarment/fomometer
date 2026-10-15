@@ -45,7 +45,7 @@ const EVENT_TYPES = ['buy_trigger', 'sell_trigger', 'fomo_spike'] as const;
 
 export function StrategyClient() {
   const t = useTranslations('strategy');
-  const locale = useLocale() as 'en' | 'ru';
+  const locale = useLocale();
   const { data, error } = useSWR<StrategyResponse>(SWR_KEYS.strategy, fetcher, { refreshInterval: 60_000 });
   const s = data?.settings;
 
@@ -67,7 +67,7 @@ export function StrategyClient() {
             <CardTitle>{t('settings_title')}</CardTitle>
             {s?.at != null && (
               <span className="text-xs text-text-muted">
-                {t('settings_updated', { ago: fmtTimeAgo(s.at * 1000, Date.now(), locale) })}
+                {t('settings_updated', { ago: fmtTimeAgo(s.at * 1000, Date.now()) })}
               </span>
             )}
           </div>
@@ -158,7 +158,7 @@ function Setting({ label, value }: { label: string; value: string }) {
 
 function RecordCard({ record, loaded, failed }: { record: TrackRecord | null | undefined; loaded: boolean; failed: boolean }) {
   const t = useTranslations('strategy');
-  const locale = useLocale() as 'en' | 'ru';
+  const locale = useLocale();
   const flagged = record
     ? EVENT_TYPES.reduce((sum, k) => sum + record.events[k].flagged, 0) + record.baseline.flagged
     : 0;
@@ -170,7 +170,7 @@ function RecordCard({ record, loaded, failed }: { record: TrackRecord | null | u
           <CardTitle>{t('record_title', { days: record?.days ?? 7 })}</CardTitle>
           {record && (
             <span className="text-xs text-text-muted">
-              {t('record_updated', { ago: fmtTimeAgo(record.at * 1000, Date.now(), locale) })}
+              {t('record_updated', { ago: fmtTimeAgo(record.at * 1000, Date.now()) })}
             </span>
           )}
         </div>

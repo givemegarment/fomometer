@@ -1,7 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { fetcher } from '@/lib/fetcher';
 import { SWR_KEYS, SWR_INTERVALS } from '@/lib/swr-keys';
 import { fmtTimeAgo } from '@/lib/format';
@@ -14,7 +14,6 @@ type Status = { snapshot_at: number | null; scored_at: number | null };
 
 export function StatusBadge({ detailed = false, className }: { detailed?: boolean; className?: string }) {
   const t = useTranslations('status');
-  const locale = useLocale() as 'en' | 'ru';
   const { data } = useSWR<Status>(SWR_KEYS.status, fetcher, { refreshInterval: SWR_INTERVALS.status });
 
   const now = Date.now();
@@ -42,8 +41,8 @@ export function StatusBadge({ detailed = false, className }: { detailed?: boolea
       </span>
       {detailed && data && (
         <span className="hidden text-text-muted sm:inline">
-          {snap != null && t('prices', { ago: fmtTimeAgo(snap, now, locale) })}
-          {scored != null && ` · ${t('scores', { ago: fmtTimeAgo(scored, now, locale) })}`}
+          {snap != null && t('prices', { ago: fmtTimeAgo(snap, now) })}
+          {scored != null && ` · ${t('scores', { ago: fmtTimeAgo(scored, now) })}`}
         </span>
       )}
     </div>

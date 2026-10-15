@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { ArrowDown, ArrowUp, Flame } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,7 +31,6 @@ type Filter = (typeof FILTERS)[number];
 
 export function SignalsClient() {
   const t = useTranslations('signals');
-  const locale = useLocale() as 'en' | 'ru';
   const [filter, setFilter] = useState<Filter>('all');
   const { data, isLoading } = useSWR<{ events: SignalEvent[] }>(
     SWR_KEYS.signals(filter === 'all' ? undefined : filter),
@@ -107,7 +106,7 @@ export function SignalsClient() {
                     )}
                     <ScorePill score={ev.score} />
                     <span className="w-24 text-right text-xs text-text-muted">
-                      {fmtTimeAgo(ev.time * 1000, Date.now(), locale)}
+                      {fmtTimeAgo(ev.time * 1000, Date.now())}
                     </span>
                   </li>
                 );

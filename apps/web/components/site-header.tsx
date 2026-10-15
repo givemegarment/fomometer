@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { Wordmark } from '@/components/wordmark';
-import { LocaleToggle } from '@/components/locale-toggle';
 
 /** Header for public pages (landing, how it works, whitepaper, roadmap). */
 export async function SiteHeader() {
@@ -22,7 +21,6 @@ export async function SiteHeader() {
           <Link href="/dashboard" className="px-2 py-1 text-text-muted hover:text-text-primary">
             {t('dashboard')}
           </Link>
-          <LocaleToggle />
         </nav>
       </div>
     </header>

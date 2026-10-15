@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { Info } from 'lucide-react';
-import { LocaleToggle } from '@/components/locale-toggle';
 import { StatusBadge } from '@/components/status-badge';
 import { Wordmark } from '@/components/wordmark';
 
@@ -23,7 +22,6 @@ export async function TopBar() {
         >
           <Info className="h-4 w-4" aria-hidden />
         </Link>
-        <LocaleToggle />
       </div>
     </header>
   );

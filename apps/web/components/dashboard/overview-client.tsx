@@ -2,7 +2,7 @@
 
 import useSWR from 'swr';
 import Link from 'next/link';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardValue } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -36,7 +36,6 @@ type OverviewResponse = {
 
 export function OverviewClient() {
   const t = useTranslations('overview');
-  const locale = useLocale() as 'en' | 'ru';
   const { data, error, isLoading } = useSWR<OverviewResponse>(SWR_KEYS.overview, fetcher, {
     refreshInterval: SWR_INTERVALS.overview
   });
@@ -169,7 +168,7 @@ export function OverviewClient() {
                     </Link>
                     <ScorePill score={ev.score} />
                     <span className="w-24 text-right text-xs text-text-muted">
-                      {fmtTimeAgo(ev.time * 1000, Date.now(), locale)}
+                      {fmtTimeAgo(ev.time * 1000, Date.now())}
                     </span>
                   </li>
                 ))}

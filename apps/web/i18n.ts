@@ -1,26 +1,13 @@
 import { getRequestConfig } from 'next-intl/server';
-import { cookies, headers } from 'next/headers';
 
-export const locales = ['en', 'ru'] as const;
+/** The site is English only. next-intl stays as the home for all UI copy (messages/en.json). */
+export const locales = ['en'] as const;
 export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = 'en';
 
-function pickLocale(): Locale {
-  const cookieLocale = cookies().get('LOCALE')?.value;
-  if (cookieLocale && (locales as readonly string[]).includes(cookieLocale)) {
-    return cookieLocale as Locale;
-  }
-  const accept = headers().get('accept-language') ?? '';
-  const first = accept.split(',')[0]?.toLowerCase() ?? '';
-  if (first.startsWith('ru')) return 'ru';
-  return defaultLocale;
-}
-
-export default getRequestConfig(async () => {
-  const locale = pickLocale();
-  return {
-    locale,
-    messages: (await import(`./messages/${locale}.json`)).default,
-    timeZone: 'UTC'
-  };
-});
+export default getRequestConfig(async () => ({
+  locale: defaultLocale,
+  // Template path keeps the import untyped: messages include arrays read with t.raw().
+  messages: (await import(`./messages/${defaultLocale}.json`)).default,
+  timeZone: 'UTC'
+}));
