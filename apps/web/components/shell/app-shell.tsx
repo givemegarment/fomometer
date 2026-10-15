@@ -4,11 +4,9 @@ import { Wordmark } from '@/components/wordmark';
 import { StatusBadge } from '@/components/status-badge';
 import { PrimaryNav, SecondaryNav, MobileTabs } from '@/components/shell/nav-links';
 
-const REPO_URL = 'https://github.com/givemegarment/fomometer';
-
 /**
  * One frame for every page: a 48px top bar (product sections, reading links, status),
- * the page, and a status bar with data freshness, source and the disclaimer.
+ * the page, and a one-line disclaimer.
  */
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const t = await getTranslations('site');
@@ -33,19 +31,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       </main>
 
       <footer className="border-t border-border">
-        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-xs text-text-dim sm:px-6">
-          <StatusBadge detailed />
-          <span>
-            {t('data_source')}{' '}
-            <a href="https://dexscreener.com" target="_blank" rel="noopener noreferrer" className="text-text-muted underline decoration-text-dim/50 underline-offset-2 hover:text-text-primary">
-              DexScreener
-            </a>
-          </span>
-          <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className="text-text-muted underline decoration-text-dim/50 underline-offset-2 hover:text-text-primary">
-            {t('source_code')}
-          </a>
-          <span className="w-full sm:ml-auto sm:w-auto">{t('disclaimer_short')}</span>
-        </div>
+        <p className="mx-auto max-w-[1440px] px-4 py-3 text-xs text-text-dim sm:px-6">{t('disclaimer_short')}</p>
       </footer>
     </div>
   );

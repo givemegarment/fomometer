@@ -11,6 +11,13 @@
 
 ---
 
+## 2026-10-15 [DEBUG] Нижняя строка дашборда: убран текст по просьбе владельца (не задеплоено)
+- Владелец (скриншот): удалить «prices … · scores … · Market data: DexScreener · Source code». В `AppShell` футер теперь
+  только «Statistics about market data. Not financial advice.». Удалены ставшие ненужными: режим `detailed` у
+  `StatusBadge`, ключи `site.source_code`, `site.data_source`, `status.prices`, `status.scores`.
+- Превью: футер `/dashboard` = одна строка дисклеймера. typecheck 0, lint 0.
+
+
 ## 2026-10-15 Деплой `e4be59a0` (команда владельца «деплой»)
 - fomometer.xyz: `/`, `/dashboard`, сигналы, стратегия, избранное, документация, `/og.png` 200; `/dashboard/scanner` 308;
   404 на несуществующем. Hero «FOMO, measured.» с отсчётом на проде. Lighthouse mobile `/` 100/100/100/99.

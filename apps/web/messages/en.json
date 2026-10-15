@@ -13,15 +13,11 @@
   },
   "site": {
     "disclaimer": "Not financial advice. FOMOMETER publishes statistics about market data. It does not recommend buying or selling any token.",
-    "data_source": "Market data:",
     "whitepaper": "Whitepaper",
     "roadmap": "Roadmap",
-    "source_code": "Source code",
     "disclaimer_short": "Statistics about market data. Not financial advice."
   },
   "status": {
-    "prices": "prices {ago}",
-    "scores": "scores {ago}",
     "connecting": "Connecting"
   },
   "landing": {
