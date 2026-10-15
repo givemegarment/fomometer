@@ -29,6 +29,14 @@
   на живом RPC: прогон 1 `stored=1 seen=2`, прогон 2 `stored=0 seen=0`, в таблице 1 своп с верными полями.
   `/api/treasury` из `wrangler pages dev`: 9 балансов, SOL 0.00001. tsc и lint 0.
 - Гейты: применить миграцию к прод D1, задеплоить labeler, задеплоить сайт.
+- Деплой по команде владельца: миграция `2026-10-15-swaps.sql` применена, labeler `43e581a5`, сайт `89f59c6b`.
+  В проде RPC не работает: `/api/treasury` → `balances: null`; прогон labeler 16:15 UTC прошёл (baseline_cursor
+  обновлён), но `swap_cursor` не создан и свопов 0, то есть scanSwaps упал на первом RPC-запросе. Текст ошибки не
+  получен (wrangler tail отключился). С локальной машины PublicNode работал: блокирует сеть Cloudflare.
+- Фикс: секрет `HELIUS_API_KEY` (владелец дал ключ; проверен локально: getHealth, getMultipleAccounts,
+  getSignaturesForAddress, getTransaction 200). Labeler и `/api/treasury` берут Helius при наличии ключа, иначе
+  `SOLANA_RPC_URL`. Ошибки без URL (в нём ключ). `/api/treasury` отдаёт `rpc_error`. Labeler: `[observability]`.
+  Секреты загружены в labeler и Pages (production); в репозитории ключа нет (grep 0). tsc, lint 0, vitest 24/24.
 
 
 ## 2026-10-15 [BUILD] Оповещение об остановке движка (запушено с деплоем `c4b1d80f`)

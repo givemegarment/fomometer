@@ -111,10 +111,16 @@ type Env = {
   JUP_REFERRAL_FEE_BPS: string;
   /** The referral account's fee token accounts, comma-separated (public RPCs refuse getTokenAccountsByOwner). */
   JUP_FEE_ACCOUNTS: string;
+  /** Secret. Public RPCs refuse requests from Cloudflare; with a key the labeler uses Helius. */
+  HELIUS_API_KEY?: string;
 };
 
+const rpcUrl = (env: Env) =>
+  env.HELIUS_API_KEY ? `https://mainnet.helius-rpc.com/?api-key=${env.HELIUS_API_KEY}` : env.SOLANA_RPC_URL;
+
 async function rpc<T>(env: Env, method: string, params: unknown[]): Promise<T> {
-  const res = await fetch(env.SOLANA_RPC_URL, {
+  // Errors carry the method and status only, never the URL: it can contain the API key.
+  const res = await fetch(rpcUrl(env), {
     method: 'POST',
     // Public RPC endpoints answer 403 to requests without a user agent, which is what a Worker sends.
     headers: { 'content-type': 'application/json', 'user-agent': 'fomometer-labeler/1.0 (+https://fomometer.xyz)' },
@@ -136,7 +142,7 @@ export async function scanSwaps(env: Env): Promise<{ stored: number; seen: numbe
   const referral = env.JUP_REFERRAL_ACCOUNT;
   const feeBps = parseInt(env.JUP_REFERRAL_FEE_BPS, 10) || 100;
   const accounts = (env.JUP_FEE_ACCOUNTS ?? '').split(',').map((a) => a.trim()).filter(Boolean);
-  if (!referral || !env.SOLANA_RPC_URL || !accounts.length) return { stored: 0, seen: 0 };
+  if (!referral || !rpcUrl(env) || !accounts.length) return { stored: 0, seen: 0 };
 
   const curRow = await env.DB.prepare(`SELECT value FROM engine_state WHERE key = 'swap_cursor'`).first<{ value: string }>();
   const cursor: Record<string, string> = curRow ? JSON.parse(curRow.value) : {};

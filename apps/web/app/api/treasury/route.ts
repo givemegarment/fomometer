@@ -13,32 +13,38 @@ type Parsed = { mint: string; owner: string; tokenAmount: { uiAmount: number | n
  * unclaimed fees; claiming moves them out, the recorded totals keep counting.
  */
 export async function GET() {
-  const [balances, swaps] = await Promise.all([readBalances(), readSwaps()]);
+  const cf = await getCF();
+  const rpc = cf?.env.HELIUS_API_KEY ? `https://mainnet.helius-rpc.com/?api-key=${cf.env.HELIUS_API_KEY}` : SOLANA_RPC_URL;
+  const [{ balances, rpc_error }, swaps] = await Promise.all([readBalances(rpc), readSwaps()]);
   return NextResponse.json(
-    { referral_account: JUP_REFERRAL_ACCOUNT, balances, ...swaps },
+    { referral_account: JUP_REFERRAL_ACCOUNT, balances, rpc_error, ...swaps },
     { headers: { 'cache-control': 'public, max-age=120' } }
   );
 }
 
-async function readBalances(): Promise<Array<{ account: string; mint: string; amount: number }> | null> {
+type Balances = { balances: Array<{ account: string; mint: string; amount: number }> | null; rpc_error: string | null };
+
+/** `rpc_error` names the failure without the URL, which can contain the API key. */
+async function readBalances(rpc: string): Promise<Balances> {
   try {
-    const res = await fetch(SOLANA_RPC_URL, {
+    const res = await fetch(rpc, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'user-agent': 'fomometer-web/1.0 (+https://fomometer.xyz)' },
       body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getMultipleAccounts', params: [JUP_FEE_ACCOUNTS, { encoding: 'jsonParsed' }] })
     });
-    if (!res.ok) return null;
-    const body = (await res.json()) as { result?: { value: Array<{ data: { parsed?: { info?: Parsed } } } | null> } };
-    if (!body.result) return null;
-    return body.result.value.flatMap((v, i) => {
+    if (!res.ok) return { balances: null, rpc_error: `HTTP ${res.status}` };
+    const body = (await res.json()) as { result?: { value: Array<{ data: { parsed?: { info?: Parsed } } } | null> }; error?: { message?: string } };
+    if (!body.result) return { balances: null, rpc_error: body.error?.message?.slice(0, 120) ?? 'no result' };
+    const balances = body.result.value.flatMap((v, i) => {
       const info = v?.data.parsed?.info;
       const account = JUP_FEE_ACCOUNTS[i];
       // Only accounts the referral account still owns; anything else is not ours to show.
       if (!info || !account || info.owner !== JUP_REFERRAL_ACCOUNT) return [];
       return [{ account, mint: info.mint, amount: info.tokenAmount.uiAmount ?? 0 }];
     });
+    return { balances, rpc_error: null };
   } catch {
-    return null;
+    return { balances: null, rpc_error: 'request failed' };
   }
 }
 

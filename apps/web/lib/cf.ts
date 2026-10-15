@@ -7,6 +7,8 @@ import type { D1Database } from '@cloudflare/workers-types';
 
 export type CFEnv = {
   DB: D1Database;
+  /** Secret. Solana RPC for /api/treasury; public RPCs refuse Cloudflare's network. */
+  HELIUS_API_KEY?: string;
 };
 
 let _ctx: { env: CFEnv } | null = null;

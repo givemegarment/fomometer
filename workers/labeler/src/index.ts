@@ -27,6 +27,7 @@ export interface Env {
   JUP_REFERRAL_ACCOUNT: string;
   JUP_REFERRAL_FEE_BPS: string;
   JUP_FEE_ACCOUNTS: string;
+  HELIUS_API_KEY?: string;
 }
 
 const HORIZON_4H_SEC = 4 * 3600;

@@ -8,6 +8,10 @@ compatibility_flags = ["nodejs_compat"]
 [triggers]
 crons = ["*/15 * * * *"]
 
+# Keep run logs (console.log lines) in the dashboard, so failures are visible after the fact.
+[observability]
+enabled = true
+
 [[d1_databases]]
 binding = "DB"
 database_name = "fomometer"
@@ -17,7 +21,8 @@ database_id = "9ac47005-db06-43e5-8a79-87e8d0b0acf8"
 LABELER_LOOKBACK_HOURS = "12"
 LABELER_BATCH_SIZE = "500"
 # Swaps that paid the referral fee (src/swaps.ts). Public values; the referral account
-# and fee must match apps/web/lib/trade.ts.
+# and fee must match apps/web/lib/trade.ts. The RPC below is the fallback: Cloudflare's
+# network is refused by public RPCs, so production uses the HELIUS_API_KEY secret.
 SOLANA_RPC_URL = "https://solana-rpc.publicnode.com"
 JUP_REFERRAL_ACCOUNT = "Fyhr9NJU2JbwdTL4ZZRRaCpnJH1eLydDnBZsc9khJBTA"
 JUP_REFERRAL_FEE_BPS = "100"
