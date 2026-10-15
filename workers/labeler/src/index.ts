@@ -17,11 +17,16 @@
  */
 
 import { summarize, num, type GroupStats } from './summary';
+import { scanSwaps } from './swaps';
 
 export interface Env {
   DB: D1Database;
   LABELER_LOOKBACK_HOURS: string;
   LABELER_BATCH_SIZE: string;
+  SOLANA_RPC_URL: string;
+  JUP_REFERRAL_ACCOUNT: string;
+  JUP_REFERRAL_FEE_BPS: string;
+  JUP_FEE_ACCOUNTS: string;
 }
 
 const HORIZON_4H_SEC = 4 * 3600;
@@ -97,8 +102,17 @@ async function runOnce(env: Env): Promise<void> {
 
   const recordUpdated = await updateTrackRecord(env, now);
 
+  // Swaps come from a third-party RPC; a failure there must not stop the labeling above.
+  let swapLog = 'swaps=off';
+  try {
+    const s = await scanSwaps(env);
+    swapLog = `swaps stored=${s.stored} seen=${s.seen}`;
+  } catch (err) {
+    swapLog = `swaps error: ${(err as Error).message}`;
+  }
+
   console.log(
-    `labeler: scanned=${events.length} labeled=${labeled} skipped=${skipped} baseline slots=${baselineSlots} record=${recordUpdated ? 'updated' : 'kept'} in ${Date.now() - t0}ms`
+    `labeler: scanned=${events.length} labeled=${labeled} skipped=${skipped} baseline slots=${baselineSlots} record=${recordUpdated ? 'updated' : 'kept'} ${swapLog} in ${Date.now() - t0}ms`
   );
 }
 

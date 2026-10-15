@@ -21,5 +21,25 @@ export const BUY_FRESH_SEC = 3600;
 
 export const TRADING_ENABLED = JUP_REFERRAL_ACCOUNT.length > 0;
 
+/**
+ * Fee token accounts owned by the referral account, one per fee mint created on referral.jup.ag
+ * (SOL, USDC, USDT, cbBTC, jlUSDC, HYPE, SPCX, PYUSD, PUMP). Same list as JUP_FEE_ACCOUNTS in
+ * workers/labeler/wrangler.toml; add new ones to both.
+ */
+export const JUP_FEE_ACCOUNTS = [
+  '82oUvYq9ATTPZcpiM6Jxvxca8PNLvbpSGWBY8x4qTLNa',
+  'GwNxxquTFcDTm1EwgQH9eQL497hA6S47VXNedCVQqaq6',
+  'A56g7PCwveKgKNjniPkBjk8EnvSQEERdSXbYDwMRqURk',
+  '21ftLsGrHoRr14qGCmJwdmr58LzKgNCbzpfb7bTK59Mq',
+  'FVfQ2F3Zo9cYLW7QMpqhGTvm8nzaQfNy2eNsRzo1rHkU',
+  'HXCarrCHyF2qZAVW71nLDJiAjfgrSMa6duqD8swLAF5C',
+  'CS9nonbbyuhyGZEycFuSbV8C8WZ41eJ4g9VCLgUCh9xJ',
+  'GN8x3cyquGDWfxTrfDVFoAtkkRJsMA3QcfXYLtcCRard',
+  'HARHaw9wjgYdWmcjgtX5Y2EgzPFfx2wMLR6YKoMH1viM'
+] as const;
+
+/** A public RPC that serves Workers (api.mainnet-beta.solana.com blocks them). Needs a user agent. */
+export const SOLANA_RPC_URL = 'https://solana-rpc.publicnode.com';
+
 /** Fee as a percent for copy, e.g. 100 bps → "1". */
 export const FEE_PCT = String(JUP_REFERRAL_FEE_BPS / 100);

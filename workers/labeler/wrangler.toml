@@ -16,3 +16,11 @@ database_id = "9ac47005-db06-43e5-8a79-87e8d0b0acf8"
 [vars]
 LABELER_LOOKBACK_HOURS = "12"
 LABELER_BATCH_SIZE = "500"
+# Swaps that paid the referral fee (src/swaps.ts). Public values; the referral account
+# and fee must match apps/web/lib/trade.ts.
+SOLANA_RPC_URL = "https://solana-rpc.publicnode.com"
+JUP_REFERRAL_ACCOUNT = "Fyhr9NJU2JbwdTL4ZZRRaCpnJH1eLydDnBZsc9khJBTA"
+JUP_REFERRAL_FEE_BPS = "100"
+# Fee token accounts owned by the referral account (SOL, USDC, USDT, cbBTC, jlUSDC, HYPE,
+# SPCX, PYUSD, PUMP). Add one here when a new fee mint is created on referral.jup.ag.
+JUP_FEE_ACCOUNTS = "82oUvYq9ATTPZcpiM6Jxvxca8PNLvbpSGWBY8x4qTLNa,GwNxxquTFcDTm1EwgQH9eQL497hA6S47VXNedCVQqaq6,A56g7PCwveKgKNjniPkBjk8EnvSQEERdSXbYDwMRqURk,21ftLsGrHoRr14qGCmJwdmr58LzKgNCbzpfb7bTK59Mq,FVfQ2F3Zo9cYLW7QMpqhGTvm8nzaQfNy2eNsRzo1rHkU,HXCarrCHyF2qZAVW71nLDJiAjfgrSMa6duqD8swLAF5C,CS9nonbbyuhyGZEycFuSbV8C8WZ41eJ4g9VCLgUCh9xJ,GN8x3cyquGDWfxTrfDVFoAtkkRJsMA3QcfXYLtcCRard,HARHaw9wjgYdWmcjgtX5Y2EgzPFfx2wMLR6YKoMH1viM"
