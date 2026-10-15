@@ -1,16 +1,29 @@
 # Journal — BACKEND (workers, D1, Cloudflare)
 
 ## ТЕКУЩЕЕ СОСТОЯНИЕ
-- Engine `a3f43473` и labeler `e6dfc918` в проде с 2026-10-14. Запуски движка `ok` (после деплоя 84 из 84, CPU p50 23–35 ms,
-  p99 ≤ 58 ms; Workers Paid владелец не подключает). Скор пишется для всех токенов каждую минуту.
-- `fomometer-recheck` удалён (Cloudflare и репозиторий). Секреты Pages: только `PUBLIC_APP_URL`.
-- Репозиторий: публичный `github.com/givemegarment/fomometer`, ветка `main`. CI (typecheck + build) на push зелёный;
-  деплой-workflow только ручные.
-- Legacy удалено владельцем 2026-10-15: таблицы `users`, `sessions`, `watchlist` (drop-миграция, 3 запроса) и KV `SESSIONS`,
-  `CACHE`. Проверено: в D1 6 рабочих таблиц, `kv namespace list` пуст, `/api/status` свежий.
-  Открыто: Telegram-бот, удаляет владелец через @BotFather `/deletebot`.
+- Этап 2 в проде с 2026-10-15: engine `3793963c`, labeler `d66bfe3e`, миграция `2026-10-15-data-integrity.sql` применена
+  (441 исход помечен, `fomo_raw`, `factors_json`, `price_flag`, `baseline_outcomes`). Сайт `8c8d2421`.
+- Engine после деплоя: 0 ошибок, CPU p50 29.5 ms, p99 43.4 ms; labeler 29–31 ms. Сводка `track_record` пишется.
+- Legacy-таблицы и KV удалены владельцем. Репозиторий публичный `givemegarment/fomometer`, CI зелёный.
+- Открыто: Telegram-бот (владелец, @BotFather); прокси логотипов (решение владельца); замеры после деплоя:
+  доля BUY без цены 4 ч у новых событий (через ≥ 4 ч 10 мин), частота всплесков на новом пороге, D1 rows read за сутки.
 
 ---
+
+## 2026-10-15 [BUILD] Этап 2: деплой (команда владельца «деплой»)
+- Миграция `2026-10-15-data-integrity.sql` на prod: 6 запросов, 45,849 строк прочитано, 448 записано. Проверено: 441 исход
+  с `price_flag`, колонки `signals.fomo_raw`, `signal_outcomes.factors_json` и `price_flag`, таблица `baseline_outcomes` (7 колонок).
+- Engine `3793963c-b617-4b32-8f8f-0cc66316fa5a`, labeler `d66bfe3e-5f5b-41b9-abf5-d7745e9a59cb`.
+  Первые прогоны: universe 29, `fomo_raw` пишется, `last_scored` 29 записей, `tracked_after_list` 0 (список пополняется
+  с нуля), порог всплеска 2.5 (фолбэк до 30 строк). Labeler: `track_record` записан, база догоняет с −64 ч
+  (57 строк после первого запуска, 8 слотов за запуск). `factors_json` в исходах появится у событий после деплоя через 4 ч 10 мин.
+- Первая сводка (7 дней, старые данные без слежения): BUY 796 (флаг 2, без цены 4 ч 234), в сторону сигнала через 4 ч
+  33.9 %, медиана −7.22 %; всплеск 583 (флаг 4, без цены 214), 39.7 %, −2.24 %; база 57 срезов (пока мало).
+- GraphQL 35 мин: engine 43 прогона, 0 ошибок, CPU p50 29.5 / p99 43.4 ms; labeler 3 прогона, p99 31 ms.
+- Сайт: `1d52cb4a`, затем `8c8d2421` (отметки дорожной карты, дата 15 октября). /api/strategy, /api/scanner (29),
+  /api/overview, /api/status, /dashboard/strategy, /dashboard/scanner, /how-it-works: 200.
+- ROADMAP.md и страница /roadmap: 6 пунктов этапа 2 отмечены (плюс README_walk_forward в md); открыты бот и логотипы.
+
 
 ## 2026-10-15 [BUILD] Этап 2, проход A3: сводка статистики в labeler (не задеплоено)
 - Зачем: считать статистику и базу на каждый запрос страницы = ≈ 13 тыс. строк каждые 60 с на вкладку (тот же класс,

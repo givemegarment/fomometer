@@ -550,7 +550,7 @@
     "title": "Roadmap",
     "meta_description": "FOMOMETER roadmap: public launch, data integrity, signal research, Pro and API, community token.",
     "intro": "Phases run in order. A phase starts when the previous one has met its exit criteria, not on a date.",
-    "updated": "Updated 14 October 2026",
+    "updated": "Updated 15 October 2026",
     "status": {
       "done": "Done",
       "next": "Next",
@@ -597,27 +597,27 @@
         "goal": "A track record nobody can call flattering.",
         "items": [
           {
-            "done": false,
+            "done": true,
             "text": "Store all 12 factors with every event, so research can use months of history"
           },
           {
-            "done": false,
+            "done": true,
             "text": "Keep tracking a token for 4 hours after an event even if it leaves the list"
           },
           {
-            "done": false,
+            "done": true,
             "text": "Show events whose token disappeared as a separate outcome"
           },
           {
-            "done": false,
+            "done": true,
             "text": "Show the random-pick baseline next to the track record"
           },
           {
-            "done": false,
+            "done": true,
             "text": "Fix the scale of the volume-burst threshold"
           },
           {
-            "done": false,
+            "done": true,
             "text": "Flag outcomes with impossible prices"
           },
           {

@@ -1,6 +1,6 @@
 # Roadmap
 
-Updated 14 October 2026. Phases run in order; a phase starts when the previous one's exit criteria are met, not on a date. The previous roadmap (May 2026, Telegram-gated product) is in [archive/ROADMAP-2026-05.md](archive/ROADMAP-2026-05.md).
+Updated 15 October 2026. Phases run in order; a phase starts when the previous one's exit criteria are met, not on a date. The previous roadmap (May 2026, Telegram-gated product) is in [archive/ROADMAP-2026-05.md](archive/ROADMAP-2026-05.md).
 
 ## Phase 1. Public launch (done)
 
@@ -16,16 +16,16 @@ Updated 14 October 2026. Phases run in order; a phase starts when the previous o
 
 Goal: a track record nobody can call flattering.
 
-- [ ] Store the 12 factors with every event (`signal_events.metadata_json` or a new column), so training can use all history instead of the last 72 hours.
-- [ ] Keep tracking a token for 4 hours after an event even if it leaves the boosted lists, so its outcome is not lost.
-- [ ] Count an event whose token has no later price as a separate "lost" outcome and show the share on the Strategy page.
-- [ ] Show the baseline (all tracked tokens, same window) next to the track record.
-- [ ] Fix the volume-burst threshold scale (raw value compared with a percentile of normalized values).
-- [ ] Mark or exclude outcomes with impossible prices (moves of thousands of percent).
+- [x] Store the 12 factors with every event (`signal_events.metadata_json` or a new column), so training can use all history instead of the last 72 hours.
+- [x] Keep tracking a token for 4 hours after an event even if it leaves the boosted lists, so its outcome is not lost.
+- [x] Count an event whose token has no later price as a separate "lost" outcome and show the share on the Strategy page.
+- [x] Show the baseline (all tracked tokens, same window) next to the track record.
+- [x] Fix the volume-burst threshold scale (raw value compared with a percentile of normalized values).
+- [x] Mark or exclude outcomes with impossible prices (moves of thousands of percent).
 - [x] Delete legacy tables `users`, `sessions`, `watchlist` and unused KV namespaces `SESSIONS` and `CACHE` (15 October 2026).
 - [ ] Delete the old Telegram bot (owner, @BotFather).
 - [ ] Serve token logos through the site to drop DexScreener's third-party cookie.
-- [ ] Update `research/README_walk_forward.md` (mentions removed routes and old warm-up).
+- [x] Update `research/README_walk_forward.md` (mentions removed routes and old warm-up).
 
 Exit: Strategy page shows baseline, lost outcomes and a cleaned record; factors stored for every event for 30 days.
 
