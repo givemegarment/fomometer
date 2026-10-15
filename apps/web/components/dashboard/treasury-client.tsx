@@ -98,23 +98,25 @@ export function TreasuryClient() {
             </p>
           )}
 
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-            {/* Number at the top, note at the bottom: the card stretches to the split card's height without a hole. */}
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle>{t('balances_title')}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-1 flex-col justify-between gap-6">
+          {/* One full-width card: the pool balance on top, the split below in a row, so no column is left half empty. */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('split_title')}</CardTitle>
+              <p className="max-w-3xl text-sm leading-relaxed text-text-muted">{t('split_note')}</p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <p className="label">{t('balances_title')}</p>
                 {!data ? (
-                  <Skeleton className="h-16" />
+                  <Skeleton className="mt-2 h-9 w-48" />
                 ) : data.balances == null ? (
-                  <p className="text-sm text-danger">{t('balances_error')}</p>
+                  <p className="mt-1 text-sm text-danger">{t('balances_error')}</p>
                 ) : funded.length === 0 ? (
-                  <p className="text-sm text-text-muted">{t('balances_empty')}</p>
+                  <p className="mt-1 text-sm text-text-muted">{t('balances_empty')}</p>
                 ) : (
-                  <ul className="divide-y divide-border">
+                  <ul className="mt-1 flex flex-wrap gap-x-8 gap-y-2">
                     {funded.map((b) => (
-                      <li key={b.account} className="flex items-center justify-between gap-3 py-2.5">
+                      <li key={b.account} className="flex items-baseline gap-3">
                         <span className="num-display text-2xl font-semibold">
                           {fmtAmount(b.amount)} <span className="text-base text-text-muted">{sym(b.mint)}</span>
                         </span>
@@ -132,28 +134,21 @@ export function TreasuryClient() {
                   </ul>
                 )}
                 {data?.balances && (
-                  <p className="text-xs leading-relaxed text-text-dim">
+                  <p className="mt-2 text-xs leading-relaxed text-text-dim">
                     {t('balances_note', { empty: JUP_FEE_ACCOUNTS.length - funded.length })}
                   </p>
                 )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('split_title')}</CardTitle>
-                <p className="text-sm leading-relaxed text-text-muted">{t('split_note')}</p>
-              </CardHeader>
-              <CardContent className="space-y-3">
+              </div>
+              <div className="grid gap-5 sm:grid-cols-3">
                 <SplitRow label={t('split_buyback')} pct={POOL_SPLIT.buyback} note={t('split_burned')} />
                 <SplitRow label={t('split_rewards')} pct={POOL_SPLIT.rewards} note={t('split_paid')} />
                 <SplitRow label={t('split_ops')} pct={POOL_SPLIT.ops} />
-                <Link href="/whitepaper#token" className="inline-block pt-1 text-sm text-accent underline underline-offset-2">
-                  {t('split_link')}
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+              <Link href="/whitepaper#token" className="inline-block text-sm text-accent underline underline-offset-2">
+                {t('split_link')}
+              </Link>
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader>

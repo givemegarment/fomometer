@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { FileText } from 'lucide-react';
 import { Reveal } from '@/components/motion/reveal';
 import { buttonVariants } from '@/components/ui/button-variants';
-import { useTrackRecord, shareOf, type GroupStats } from '@/lib/live-data';
+import { useTrackRecord, shareOf, medianOf, fmtPct, type GroupStats } from '@/lib/live-data';
 
 /** White panel (the reference's tokenomics block) with the honest track record: ring + numbers. */
 export function RecordPanel() {
@@ -14,6 +14,17 @@ export function RecordPanel() {
   const r = data?.record ?? null;
   const days = r?.days ?? 7;
   const buyShare = shareOf(r?.events.buy_trigger.horizons['4h']);
+  const buyMedian = medianOf(r?.events.buy_trigger.horizons['4h']);
+  const anyMedian = medianOf(r?.baseline.horizons['4h']);
+  // One-line verdict on the median, so the ring's share cannot be read as an edge on its own.
+  // Within half a point of the comparison counts as even.
+  const verdict =
+    buyMedian == null || anyMedian == null
+      ? null
+      : t(buyMedian < anyMedian - 0.5 ? 'record_verdict_worse' : buyMedian > anyMedian + 0.5 ? 'record_verdict_better' : 'record_verdict_even', {
+          buy: fmtPct(buyMedian),
+          any: fmtPct(anyMedian)
+        });
 
   return (
     <section className="px-3 sm:px-8">
@@ -21,6 +32,7 @@ export function RecordPanel() {
         <Reveal className="text-center">
           <h2 className="text-display-lg">{t('record_title')}</h2>
           <p className="mx-auto mt-3 max-w-xl text-black/60">{t('record_sub', { days })}</p>
+          {verdict && <p className="mx-auto mt-4 max-w-xl text-[15px] font-semibold text-black/80">{verdict}</p>}
         </Reveal>
         <div className="mx-auto mt-14 grid max-w-[1000px] items-center gap-12 md:grid-cols-[minmax(0,320px)_1fr]">
           <Reveal className="mx-auto w-full max-w-[300px]">
@@ -54,7 +66,7 @@ export function RecordPanel() {
 function Group({ name, g, after, median, nLabel, dot }: { name: string; g: GroupStats | undefined; after: string; median: string; nLabel: (n: number) => string; dot: string }) {
   const h = g?.horizons['4h'];
   const share = shareOf(h);
-  const m = h && h.n >= 20 ? h.median_pct : null;
+  const m = medianOf(h);
   return (
     <div>
       <dt className="flex items-center gap-2 text-sm text-black/60">
@@ -63,7 +75,7 @@ function Group({ name, g, after, median, nLabel, dot }: { name: string; g: Group
       </dt>
       <dd className="num-display mt-1 text-2xl font-semibold tracking-[-0.02em]">{share == null ? '·' : `${Math.round(share * 100)}%`}</dd>
       <dd className="text-xs text-black/60">{after}</dd>
-      <dd className="num-display mt-2 text-sm font-semibold">{m == null ? '·' : `${m > 0 ? '+' : ''}${m.toFixed(1)}%`}</dd>
+      <dd className="num-display mt-2 text-sm font-semibold">{m == null ? '·' : fmtPct(m)}</dd>
       <dd className="text-xs text-black/60">{median}</dd>
       {h && <dd className="mt-1 text-xs text-black/50">{nLabel(h.n)}</dd>}
     </div>

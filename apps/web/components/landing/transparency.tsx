@@ -13,9 +13,6 @@ export async function LandingTransparency() {
         <img src="/stage.webp" alt="" width={1920} height={1080} loading="lazy" decoding="async" className="absolute inset-0 -z-10 h-full w-full object-cover" />
         <Reveal>
           <p className="text-sm font-semibold uppercase tracking-[0.06em]">{t('open_kicker')}</p>
-          <span className="ring-hair mt-4 inline-flex rounded-pill bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.04em]">
-            {t('open_tag')}
-          </span>
           <h2 className="mt-5 text-display-lg">{t('open_title')}</h2>
           <p className="mx-auto mt-4 max-w-xl text-lg text-white/85">{t('open_sub')}</p>
         </Reveal>

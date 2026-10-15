@@ -12,6 +12,23 @@
 
 ---
 
+## 2026-10-15 [DEBUG] Честная главная, порядок доски, Treasury без пустот (не задеплоено)
+- По аудиту сайта (владелец: «ДЕЛАЙЙ»). Главная:
+  - блок сравнения показывает медиану за 4 ч (BUY −5.9 % против −1.3 %), доля «выше» ушла в сноску;
+  - в «Track record» вывод одной строкой по медиане: хуже, наравне (±0.5 п.) или лучше случайного выбора;
+  - плитка «12 factors» → «7, factors in the score, of 12 measured»;
+  - подзаголовок без «on 12 market factors»;
+  - убраны плашка «#transparency» и «not marketing».
+- FAQ: «Revenue is published monthly» → «Every fee is listed on the Treasury page»; ответ «Is this financial advice?»
+  объясняет кнопку Buy. Whitepaper: ежемесячные отчёты начнутся после первого полного месяца.
+- `/api/scanner`: токены с ликвидностью ниже фильтра движка (`last_run.quality_filter.minLiquidityUsd`, иначе 25000)
+  идут после остальных, внутри по score. Это же меняет «Top by score» на главной.
+- Treasury: «Unclaimed fees» и «Where it goes» объединены в одну карточку на всю ширину, доли в ряд.
+- Новые хелперы `medianOf`, `fmtPct` (`lib/live-data.ts`).
+- Проверка: tsc, lint 0; превью на прод-данных: главная 1440 и 390 (прокрутки по ширине нет), Treasury 1440,
+  порядок `/api/scanner`: сначала 10 токенов с ликвидностью ≥ $25K по score, токены ниже фильтра в конце (INU, ликвидность $0).
+
+
 ## 2026-10-15 [BUILD] Страница Treasury (задеплоено dbdccce8, prod проверен: страница 200, /treasury 307, /api/treasury 9 балансов без rpc_error)
 - `/dashboard/treasury` (`components/dashboard/treasury-client.tsx`), пункт «Treasury» в навигации и подвале,
   редирект `/treasury` → `/dashboard/treasury` (временный), sitemap. Данные `/api/treasury`, обновление раз в минуту.

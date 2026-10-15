@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Reveal } from '@/components/motion/reveal';
 import { CountUp } from '@/components/motion/count-up';
-import { useLiveRows, useTrackRecord, shareOf } from '@/lib/live-data';
+import { useLiveRows, useTrackRecord, shareOf, medianOf, fmtPct } from '@/lib/live-data';
 import { cn } from '@/lib/cn';
 
 /** Bento of live facts, styled after the reference's stat cards. Every number comes from the API. */
@@ -14,8 +14,14 @@ export function LandingFacts() {
   const record = tr?.record ?? null;
   const days = record?.days ?? 7;
   const signals = record ? record.events.buy_trigger.n + record.events.sell_trigger.n + record.events.fomo_spike.n : null;
-  const buy = shareOf(record?.events.buy_trigger.horizons['4h']);
-  const any = shareOf(record?.baseline.horizons['4h']);
+  const buy4h = record?.events.buy_trigger.horizons['4h'];
+  const any4h = record?.baseline.horizons['4h'];
+  const buyShare = shareOf(buy4h);
+  const anyShare = shareOf(any4h);
+  const buyMedian = medianOf(buy4h);
+  const anyMedian = medianOf(any4h);
+  // Bars are scaled to the larger of the two moves, so their lengths compare.
+  const scale = Math.max(Math.abs(buyMedian ?? 0), Math.abs(anyMedian ?? 0)) || 1;
 
   return (
     <section id="facts" className="mx-auto max-w-[1100px] scroll-mt-10 px-5 py-24 sm:py-32">
@@ -28,14 +34,19 @@ export function LandingFacts() {
         <Stat delay={0} tone="slate" image="/fact-1.webp" value={live ? <CountUp value={live.rows.length} /> : null} label={t('fact_tracked')} />
         <Stat delay={80} tone="indigo" image="/fact-2.webp" value={signals != null ? <CountUp value={signals} /> : null} label={t('fact_signals', { days })} />
         <Stat delay={160} tone="gold" image="/fact-3.webp" value={<CountUp value={1440} />} label={t('fact_runs')} />
-        <Stat delay={240} tone="green" image="/fact-4.webp" value={<CountUp value={12} />} label={t('fact_factors')} />
+        <Stat delay={240} tone="green" image="/fact-4.webp" value={<CountUp value={7} />} label={t('fact_factors')} />
 
         <Reveal delay={120} className="col-span-2 rounded-xl bg-[linear-gradient(180deg,#FFFFFF,#E7ECF3)] p-6 text-bg-base sm:p-8 lg:col-span-4">
           <p className="text-display-md">{t('fact_compare_title')}</p>
           <div className="mt-6 space-y-4">
-            <CompareBar label={t('fact_compare_buy')} share={buy} color="bg-[#1E2A62]" />
-            <CompareBar label={t('fact_compare_any')} share={any} color="bg-[#8A99B4]" />
+            <CompareBar label={t('fact_compare_buy')} median={buyMedian} scale={scale} />
+            <CompareBar label={t('fact_compare_any')} median={anyMedian} scale={scale} />
           </div>
+          {buyShare != null && anyShare != null && (
+            <p className="mt-5 text-sm text-black/60">
+              {t('fact_compare_note', { buy: `${Math.round(buyShare * 100)}%`, any: `${Math.round(anyShare * 100)}%` })}
+            </p>
+          )}
         </Reveal>
       </div>
     </section>
@@ -64,18 +75,20 @@ function Stat({ value, label, tone, image, delay }: { value: React.ReactNode | n
   );
 }
 
-function CompareBar({ label, share, color }: { label: string; share: number | null; color: string }) {
-  const pct = share == null ? null : Math.round(share * 100);
+function CompareBar({ label, median, scale }: { label: string; median: number | null; scale: number }) {
+  const up = median != null && median >= 0;
   return (
     <div>
       <div className="flex items-baseline justify-between text-sm">
         <span className="text-black/70">{label}</span>
-        <span className="num-display text-xl font-semibold">{pct == null ? '·' : `${pct}%`}</span>
+        <span className={cn('num-display text-xl font-semibold', median != null && (up ? 'text-[#0A7A3B]' : 'text-[#B42318]'))}>
+          {median == null ? '·' : fmtPct(median)}
+        </span>
       </div>
       <div className="mt-2 h-3 overflow-hidden rounded-pill bg-black/[0.07]">
         <div
-          className={cn('h-full origin-left rounded-pill transition-transform duration-[2000ms] ease-out', color)}
-          style={{ transform: `scaleX(${pct == null ? 0 : pct / 100})` }}
+          className={cn('h-full origin-left rounded-pill transition-transform duration-[2000ms] ease-out', up ? 'bg-[#0A7A3B]' : 'bg-[#B42318]')}
+          style={{ transform: `scaleX(${median == null ? 0 : Math.abs(median) / scale})` }}
         />
       </div>
     </div>

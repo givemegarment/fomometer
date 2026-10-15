@@ -29,22 +29,22 @@
     "stale": "Stale",
     "chain": "Solana",
     "title": "FOMO, measured.",
-    "subtitle": "Every promoted Solana memecoin, scored every minute on 12 market factors. Open method, public track record, no sign-up.",
+    "subtitle": "Every promoted Solana memecoin, scored every minute from public market data. Open method, public track record, no sign-up.",
     "next_run": "Next scoring run in",
     "stale_note": "The engine has not reported for a few minutes. Scores on the board may be old.",
     "hero_card": "Watch scores land on the live board as each run finishes.",
     "scroll": "Scroll down",
     "marquee_label": "Tracked right now",
     "facts_title": "Built on public market data",
-    "facts_sub": "Numbers below are live from the engine, not marketing.",
+    "facts_sub": "Every number below comes from the engine and updates live.",
     "fact_tracked": "tokens tracked right now",
     "fact_signals": "signals checked in {days} days",
     "fact_runs": "scoring runs a day",
-    "fact_factors": "factors per token",
-    "fact_compare_title": "Price higher 4 hours later",
+    "fact_factors": "factors in the score, of 12 measured",
+    "fact_compare_title": "Median price change 4 hours later",
     "fact_compare_buy": "after a BUY signal",
     "fact_compare_any": "any tracked token",
-    "open_tag": "#transparency",
+    "fact_compare_note": "Price higher after 4 hours: {buy} after a BUY, {any} for any token. Before fees and slippage.",
     "open_kicker": "Why FOMOMETER",
     "open_title": "Every score, in the open",
     "open_sub": "The factors, the weights and every past signal are public. Nothing to sign up for.",
@@ -76,6 +76,9 @@
     ],
     "record_title": "Track record",
     "record_sub": "Share of signals where the price then moved the signal's way, against any tracked token over the same {days} days.",
+    "record_verdict_worse": "BUY so far: median {buy} after 4 hours, against {any} for any tracked token. Worse than picking at random.",
+    "record_verdict_even": "BUY so far: median {buy} after 4 hours, against {any} for any tracked token. No better than picking at random.",
+    "record_verdict_better": "BUY so far: median {buy} after 4 hours, against {any} for any tracked token, before fees and slippage.",
     "record_ring": "BUY, higher after 4h",
     "record_buy": "BUY signals",
     "record_burst": "Volume bursts",
@@ -93,7 +96,7 @@
       },
       {
         "q": "Is this financial advice?",
-        "a": "No. FOMOMETER publishes statistics about market data. It does not recommend buying or selling anything, and memecoins lose most of their value more often than not."
+        "a": "No. Scores and signals are statistics about market data, not recommendations. The Buy button only opens a Jupiter swap; whether to use it is your call, and memecoins lose most of their value more often than not."
       },
       {
         "q": "Where does the data come from?",
@@ -109,7 +112,7 @@
       },
       {
         "q": "How does FOMOMETER make money?",
-        "a": "A 1% fee on swaps started from the site through Jupiter. The swap runs in your own wallet; FOMOMETER never holds funds. Revenue is published monthly, source by source."
+        "a": "A 1% fee on swaps started from the site through Jupiter. The swap runs in your own wallet; FOMOMETER never holds funds. Every fee is listed on the Treasury page, read from the chain."
       },
       {
         "q": "Is there a token?",
@@ -536,7 +539,7 @@
           "adds": "daily dumps of factors and outcomes"
         }
       ],
-      "note": "Swap fees started on 15 October 2026. Every source of revenue is published monthly, each on its own line, with the on-chain accounts it arrives in."
+      "note": "Swap fees started on 15 October 2026 and appear on the Treasury page as they arrive, read from the chain. Monthly reports, each source on its own line with the accounts it arrives in, start after the first full month."
     },
     "token": {
       "title": "Token",

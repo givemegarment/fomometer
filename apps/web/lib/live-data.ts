@@ -42,3 +42,12 @@ export function shareOf(h: HorizonStats | undefined): number | null {
   if (!h || h.n < MIN_SAMPLE || h.favorable == null) return null;
   return h.favorable;
 }
+
+/** Median move in percent, or null below MIN_SAMPLE. */
+export function medianOf(h: HorizonStats | undefined): number | null {
+  if (!h || h.n < MIN_SAMPLE || h.median_pct == null) return null;
+  return h.median_pct;
+}
+
+/** Signed percent with one decimal: +2.1%, -5.9%. */
+export const fmtPct = (x: number) => `${x > 0 ? '+' : ''}${x.toFixed(1)}%`;

@@ -33,7 +33,12 @@ export async function GET(req: NextRequest) {
     JOIN signals s ON s.address = ls.address AND s.time = ls.t
     JOIN token_snapshots sn ON sn.address = tr.address AND sn.time = tr.st
     WHERE 1=1 ${extraFilter}
-    ORDER BY s.score DESC
+    -- Tokens under the engine's liquidity filter get no signals; they go below the rest.
+    ORDER BY COALESCE(sn.liquidity_usd, 0) < COALESCE(
+               (SELECT json_extract(value, '$.quality_filter.minLiquidityUsd') FROM engine_state WHERE key = 'last_run'),
+               25000
+             ),
+             s.score DESC
     LIMIT ${limit}
   `;
 
