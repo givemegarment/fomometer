@@ -3,11 +3,10 @@ main = "src/index.ts"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Cron — every 15 minutes. Each run labels events whose 4h-lookahead window
-# has just closed (and back-fills 15m / 1h windows that closed earlier).
+# Cron every minute: swaps every run; labeling (events whose 4h-lookahead window has just
+# closed, plus 15m / 1h back-fills) on minutes divisible by 15 (src/index.ts LABEL_EVERY_MIN).
 [triggers]
-# Labeling every 15 minutes; swaps every minute (src/index.ts SWAPS_CRON).
-crons = ["*/15 * * * *", "* * * * *"]
+crons = ["*/1 * * * *"]
 
 # Keep run logs (console.log lines) in the dashboard, so failures are visible after the fact.
 [observability]

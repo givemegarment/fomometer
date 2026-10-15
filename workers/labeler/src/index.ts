@@ -15,7 +15,8 @@
  * more than SUSPECT_RISE_PCT inside the window: on DexScreener that is almost
  * always a switch to a different pool, not a trade anyone could have made.
  *
- * A second cron, every minute, records swaps that paid the referral fee (./swaps.ts).
+ * The cron fires every minute: labeling runs every 15 minutes, and every minute it
+ * records swaps that paid the referral fee (./swaps.ts).
  */
 
 import { summarize, num, type GroupStats } from './summary';
@@ -48,14 +49,16 @@ const BASELINE_START_BACK_SEC = 68 * 3600;
 /** Track record summary for the Strategy page: window and refresh interval. */
 const RECORD_DAYS = 7;
 const RECORD_REFRESH_SEC = 60 * 60;
-/** Must match the second entry of `crons` in wrangler.toml. */
-const SWAPS_CRON = '* * * * *';
+/** Labeling runs on the minutes divisible by this; swaps run every minute. */
+const LABEL_EVERY_MIN = 15;
 
 export default {
-  // Two crons: swaps every minute (the Treasury page shows them), labeling every 15 minutes.
+  // One cron every minute (a second trigger added on 2026-10-15 did not fire): swaps every
+  // minute for the Treasury page, labeling every LABEL_EVERY_MIN minutes.
   async scheduled(e: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-    const job = e.cron === SWAPS_CRON ? runSwaps(env) : runOnce(env);
-    ctx.waitUntil(job.catch((err) => console.error('labeler error', err)));
+    const minute = new Date(e.scheduledTime).getUTCMinutes();
+    ctx.waitUntil(runSwaps(env).catch((err) => console.error('labeler error', err)));
+    if (minute % LABEL_EVERY_MIN === 0) ctx.waitUntil(runOnce(env).catch((err) => console.error('labeler error', err)));
   },
   async fetch(_req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     ctx.waitUntil(Promise.all([runOnce(env), runSwaps(env)]).catch((err) => console.error('labeler error', err)));

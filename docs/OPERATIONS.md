@@ -70,7 +70,7 @@ curl -s "https://ultra-api.jup.ag/order?inputMint=So1111111111111111111111111111
 
 `feeBps` must be 100. A small default value (for example 2) means the token account for that `feeMint` is missing: create it on the dashboard. An occasional `"Something unexpected occurred"` from Jupiter passes on retry.
 
-Swaps are recorded by the labeler's second cron every minute (log line `swaps stored=N seen=M` only when there were new signatures; `swaps error: …` means the RPC failed and the next minute retries). That is 9 `getSignaturesForAddress` calls a minute, about 390,000 Helius credits a month, plus one `getTransaction` per new swap. `SELECT * FROM swaps ORDER BY block_time DESC LIMIT 20` shows them. A new fee mint created on the dashboard must be added to `JUP_FEE_ACCOUNTS` in `workers/labeler/wrangler.toml` and `apps/web/lib/trade.ts`.
+Swaps are recorded by the labeler every minute (labeling itself runs every 15 minutes) (log line `swaps stored=N seen=M` only when there were new signatures; `swaps error: …` means the RPC failed and the next minute retries). That is 9 `getSignaturesForAddress` calls a minute, about 390,000 Helius credits a month, plus one `getTransaction` per new swap. `SELECT * FROM swaps ORDER BY block_time DESC LIMIT 20` shows them. A new fee mint created on the dashboard must be added to `JUP_FEE_ACCOUNTS` in `workers/labeler/wrangler.toml` and `apps/web/lib/trade.ts`.
 
 Balances on chain: `/api/treasury`, or `getMultipleAccounts` for the fee accounts on any RPC that serves it. Claiming is manual on the dashboard (**Claim**); it only lists verified tokens worth more than $1, smaller or unverified balances need Jupiter's referral SDK.
 
