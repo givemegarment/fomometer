@@ -22,7 +22,7 @@ Every minute:
 2. Computes 12 market factors per token from the last 90 minutes: volume burst, buy pressure, liquidity depth, reversal, RSI, volume trend, deviation from average and five context factors.
 3. Standardizes each factor against the other tokens in the same minute, so a value means "unusual compared with the rest of the list right now".
 4. Combines 7 of them into a 0 to 100 score: a weighted sum through a sigmoid. Weights and thresholds are fitted on past outcomes with walk-forward random search. The current weights are published on the Strategy page.
-5. Records BUY, SELL and volume-burst events when thresholds are crossed, with a quality filter (minimum history, $25k liquidity, sane buy/sell ratio, no tokens already up 50 to 100% in the hour).
+5. Records BUY, SELL and volume-burst events when thresholds are crossed, with a quality filter (token seen for 48 hours, minimum history, $25k liquidity, sane buy/sell ratio, no tokens already up 50 to 100% in the hour).
 6. Records the price 15 minutes, 1 hour and 4 hours after every event.
 
 No neural network or language model is involved. The full method is in [METHODOLOGY.md](METHODOLOGY.md) and on the site at `/how-it-works`; the system design is in [ARCHITECTURE.md](ARCHITECTURE.md).

@@ -45,7 +45,7 @@ Thresholds are either fitted together with the weights or derived from recent sc
 
 ## Quality filter
 
-A token can trigger signals only if it has at least 10 snapshots, at least $25,000 of liquidity, a buy/sell ratio between 0.8 and 3.0 over the last hour, and has not risen between 50% and 100% in the last hour. Tokens that fail are still scored and shown, they just cannot trigger signals.
+A token can trigger signals only if FOMOMETER first saw it at least 48 hours ago, it has at least 10 snapshots, at least $25,000 of liquidity, a buy/sell ratio between 0.8 and 3.0 over the last hour, and has not risen between 50% and 100% in the last hour. The 48-hour rule was fitted on May to August outcomes and checked on September and October: it roughly halved the median 4-hour loss after BUY, but BUY stayed negative after trading costs. Tokens that fail are still scored and shown, they just cannot trigger signals.
 
 ## Track record
 

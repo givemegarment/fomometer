@@ -49,7 +49,7 @@ engine (every minute) ──▶ token_snapshots, signals, signal_events (factors
 | `ENGINE_ADAPTIVE_THRESHOLDS=true` | Without trained thresholds: BUY at the 75th and SELL at the 25th percentile of scores over 6 h. Volume burst: 95th percentile of the raw burst factor (`signals.fomo_raw`) over 6 h, floor 1.5 |
 | `ENGINE_REGIME_AWARE=true` | Bull / bear / panic detection adjusts the weights |
 | `ENGINE_WARM_UP_MIN=10` | No events until a token has 10 snapshots in the 90-minute window |
-| Quality filter | Liquidity ≥ $25k, buy/sell ratio 0.8 to 3.0, no events after a 50–100 % hour. Events only; scores are still written |
+| Quality filter | Token first seen ≥ 48 h ago (`ENGINE_MIN_TOKEN_AGE_H`), liquidity ≥ $25k, buy/sell ratio 0.8 to 3.0, no events after a 50–100 % hour. Events only; scores are still written |
 
 Trained thresholds (`meta.thresholds`) take priority over the adaptive BUY/SELL percentiles.
 

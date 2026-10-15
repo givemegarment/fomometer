@@ -167,7 +167,7 @@
     },
     "gates": {
       "title": "Quality filter",
-      "body": "A token can trigger signals only if it has at least 10 snapshots, at least $25,000 of liquidity, a buy/sell ratio between 0.8 and 3.0 over the last hour, and has not risen between 50% and 100% in the last hour. Tokens that fail are still scored and shown, they just cannot trigger signals."
+      "body": "A token can trigger signals only if FOMOMETER first saw it at least 48 hours ago, it has at least 10 snapshots, at least $25,000 of liquidity, a buy/sell ratio between 0.8 and 3.0 over the last hour, and has not risen between 50% and 100% in the last hour. The 48-hour rule was fitted on May to August outcomes and checked on September and October: it roughly halved the median 4-hour loss after BUY, but BUY stayed negative after trading costs. Tokens that fail are still scored and shown, they just cannot trigger signals."
     },
     "record": {
       "title": "Track record",
@@ -885,7 +885,7 @@
   "treasury": {
     "meta_description": "Every fee FOMOMETER earns, read from the Solana chain: swaps, volume, unclaimed balances and how the pool will be split.",
     "title": "Treasury",
-    "subtitle": "Every fee FOMOMETER earns, read from the chain. Swaps are recorded every 15 minutes.",
+    "subtitle": "Every fee FOMOMETER earns, read from the chain. Swaps are recorded within about two minutes.",
     "referral_link": "Referral account on Solscan",
     "stat_fees": "Fees earned",
     "stat_fees_note": "all time, in SOL",
