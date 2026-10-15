@@ -14,6 +14,8 @@ import { fmtPct, fmtUSD, pctTone, fmtTimeAgo, shortenAddress } from '@/lib/forma
 import { cn } from '@/lib/cn';
 import { useWatchlist } from '@/lib/watchlist';
 import { FACTORS } from '@/lib/factors';
+import { FEE_PCT, TRADING_ENABLED } from '@/lib/trade';
+import { BuyButton } from '@/components/trade/buy-button';
 
 /** Factor bars are capped here: values are z-scores, beyond ±3 is "far from the rest". */
 const FACTOR_CAP = 3;
@@ -48,6 +50,7 @@ const EVENT_COLOR: Record<EventType, string> = {
 export function TokenDetailClient({ address }: { address: string }) {
   const t = useTranslations('token_detail');
   const tSig = useTranslations('signals');
+  const tTrade = useTranslations('trade');
   const { data, isLoading } = useSWR<TokenDetail>(SWR_KEYS.token(address), fetcher, { refreshInterval: SWR_INTERVALS.token });
   const { data: strategy } = useSWR<{ settings: { buy_th: number | null; min_liquidity_usd: number | null } | null }>(SWR_KEYS.strategy, fetcher, {
     refreshInterval: 300_000
@@ -80,6 +83,18 @@ export function TokenDetailClient({ address }: { address: string }) {
                 <CopyAddress address={address} />
               </div>
             </div>
+            {/* Wait for the liquidity filter: no Buy on tokens the engine itself considers too thin. */}
+            {TRADING_ENABLED && data?.token != null && minLiq != null && !belowFilter && (
+              <div className="mt-4">
+                <BuyButton address={address} label={t('buy', { symbol: data.token.symbol || shortenAddress(address) })} />
+                <p className="mt-2 text-xs leading-relaxed text-text-dim">
+                  {tTrade('note', { fee: FEE_PCT })}{' '}
+                  <Link href="/dashboard/strategy" className="text-text-muted underline decoration-border-strong underline-offset-4 hover:text-text-primary">
+                    {tTrade('track_record')}
+                  </Link>
+                </p>
+              </div>
+            )}
             <button
               type="button"
               onClick={() => watchlist.toggle(address)}

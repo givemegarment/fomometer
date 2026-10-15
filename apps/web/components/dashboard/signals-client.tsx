@@ -10,6 +10,11 @@ import { fetcher } from '@/lib/fetcher';
 import { SWR_KEYS, SWR_INTERVALS } from '@/lib/swr-keys';
 import { fmtTimeAgo, shortenAddress } from '@/lib/format';
 import { cn } from '@/lib/cn';
+import { TRADING_ENABLED } from '@/lib/trade';
+import { BuyButton } from '@/components/trade/buy-button';
+
+/** Older BUY signals get no Buy button: acting on a stale signal is not what the signal said. */
+const BUY_FRESH_SEC = 3600;
 
 type EventType = 'buy_trigger' | 'sell_trigger' | 'fomo_spike';
 type SignalEvent = {
@@ -56,13 +61,18 @@ export function SignalsClient() {
               <th scope="col" className="label px-3 py-2.5 text-left">{t('col_token')}</th>
               <th scope="col" className="label px-3 py-2.5 text-right">{t('col_score')}</th>
               <th scope="col" className="label px-4 py-2.5 text-right sm:px-5">{t('col_when')}</th>
+              {TRADING_ENABLED && (
+                <th scope="col" className="px-4 py-2.5 sm:px-5">
+                  <span className="sr-only">{t('col_buy')}</span>
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {isLoading && !data
               ? Array.from({ length: 10 }).map((_, i) => (
                   <tr key={i}>
-                    <td colSpan={4} className="px-5 py-2.5">
+                    <td colSpan={TRADING_ENABLED ? 5 : 4} className="px-5 py-2.5">
                       <div className="skeleton h-6 rounded" />
                     </td>
                   </tr>
@@ -95,6 +105,13 @@ export function SignalsClient() {
                         <span className="font-semibold">{Math.round(ev.score * 100)}</span>
                       </td>
                       <td className="whitespace-nowrap px-4 py-2.5 text-right text-text-muted sm:px-5">{fmtTimeAgo(ev.time * 1000, Date.now())}</td>
+                      {TRADING_ENABLED && (
+                        <td className="px-4 py-2 text-right sm:px-5">
+                          {ev.event_type === 'buy_trigger' && Date.now() / 1000 - ev.time < BUY_FRESH_SEC && (
+                            <BuyButton address={ev.address} label={t('buy')} size="sm" quiet />
+                          )}
+                        </td>
+                      )}
                     </tr>
                   );
                 })}

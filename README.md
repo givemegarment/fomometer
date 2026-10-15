@@ -2,7 +2,7 @@
 
 Scores Solana memecoins every minute from public market data. Live at [fomometer.xyz](https://fomometer.xyz).
 
-FOMOMETER tracks the Solana tokens on DexScreener's boosted lists, computes 12 market factors for each one, combines 7 of them into a 0 to 100 score and records BUY, SELL and volume-burst signals when thresholds are crossed. It also publishes how past signals played out. There are no accounts, no wallets and no trading.
+FOMOMETER tracks the Solana tokens on DexScreener's boosted lists, computes 12 market factors for each one, combines 7 of them into a 0 to 100 score and records BUY, SELL and volume-burst signals when thresholds are crossed. It also publishes how past signals played out. There are no accounts and FOMOMETER never holds funds. A Buy button (switched on by `apps/web/lib/trade.ts`) opens Jupiter's swap in the visitor's own wallet with a FOMOMETER referral fee.
 
 The full method, including its limitations, is in [docs/METHODOLOGY.md](docs/METHODOLOGY.md) and on the site at `/how-it-works`.
 

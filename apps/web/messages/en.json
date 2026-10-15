@@ -27,7 +27,7 @@
     "stale": "Stale",
     "chain": "Solana",
     "title": "FOMO, measured.",
-    "subtitle": "Every promoted Solana memecoin, scored every minute on 12 market factors. Open method, public track record, no wallet.",
+    "subtitle": "Every promoted Solana memecoin, scored every minute on 12 market factors. Open method, public track record, no sign-up.",
     "next_run": "Next scoring run in",
     "stale_note": "The engine has not reported for a few minutes. Scores on the board may be old.",
     "hero_card": "Watch scores land on the live board as each run finishes.",
@@ -45,7 +45,7 @@
     "open_tag": "#transparency",
     "open_kicker": "Why FOMOMETER",
     "open_title": "Every score, in the open",
-    "open_sub": "The factors, the weights and every past signal are public. Nothing to connect, nothing to buy.",
+    "open_sub": "The factors, the weights and every past signal are public. Nothing to sign up for.",
     "board_title": "Top by score right now",
     "board_empty": "No tracked tokens at the moment.",
     "board_error": "Live data is unavailable right now.",
@@ -103,7 +103,7 @@
       },
       {
         "q": "Do I need a wallet or an account?",
-        "a": "No. Everything is open. The watchlist is stored in your browser."
+        "a": "No account. Everything is open and the watchlist is stored in your browser."
       },
       {
         "q": "Is there a token?",
@@ -260,7 +260,8 @@
     "col_when": "When",
     "col_score": "Score",
     "meta_title": "{symbol} score",
-    "below_filter": "Liquidity is under {liq}, the engine's quality filter: this token gets a score but no signals."
+    "below_filter": "Liquidity is under {liq}, the engine's quality filter: this token gets a score but no signals.",
+    "buy": "Buy {symbol}"
   },
   "signals": {
     "title": "Signals",
@@ -278,7 +279,17 @@
     "col_signal": "Signal",
     "col_token": "Token",
     "col_score": "Score",
-    "col_when": "When"
+    "col_when": "When",
+    "col_buy": "Buy",
+    "buy": "Buy"
+  },
+  "trade": {
+    "opening": "Opening",
+    "load_error": "Could not open the swap. Try again.",
+    "note": "Swaps run in your own wallet through Jupiter and include a {fee}% FOMOMETER fee. Not financial advice.",
+    "faq_q": "Can I buy here?",
+    "faq_a": "Yes, from a token page or a BUY signal. The swap opens in Jupiter and runs in your own wallet; FOMOMETER never holds funds. Each swap includes a {fee}% FOMOMETER fee. Signals are not advice: check the track record first.",
+    "track_record": "Track record"
   },
   "strategy": {
     "title": "Strategy",

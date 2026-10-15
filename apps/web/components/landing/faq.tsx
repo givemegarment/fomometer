@@ -1,11 +1,16 @@
 import { getTranslations } from 'next-intl/server';
 import { ChevronDown } from 'lucide-react';
 import { Reveal } from '@/components/motion/reveal';
+import { FEE_PCT, TRADING_ENABLED } from '@/lib/trade';
 
 /** Accordion on native details/summary: works without JavaScript and with the keyboard. */
 export async function LandingFaq() {
   const t = await getTranslations('landing');
-  const items = t.raw('faq') as Array<{ q: string; a: string }>;
+  const tTrade = await getTranslations('trade');
+  // A copy: t.raw hands back the loaded messages, which must not be mutated.
+  const items = [...(t.raw('faq') as Array<{ q: string; a: string }>)];
+  // Only claim buying works when it is switched on.
+  if (TRADING_ENABLED) items.push({ q: tTrade('faq_q'), a: tTrade('faq_a', { fee: FEE_PCT }) });
   return (
     <section className="mx-auto max-w-[720px] px-5 py-24 sm:py-32">
       <Reveal className="text-center">

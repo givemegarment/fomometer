@@ -4,6 +4,19 @@
 
 :root {
   color-scheme: dark;
+  /* Jupiter swap window (components/trade/buy-button.tsx), RGB triplets. */
+  --jupiter-plugin-primary: 0, 178, 75;
+  --jupiter-plugin-background: 20, 20, 21;
+  --jupiter-plugin-primaryText: 255, 255, 255;
+  --jupiter-plugin-warning: 251, 191, 36;
+  --jupiter-plugin-interactive: 35, 35, 38;
+  --jupiter-plugin-module: 27, 27, 29;
+}
+
+/* The plugin's overlay is z-10 inside this host; lift the host over the sticky header (z-30). */
+#jupiter-plugin-instance {
+  position: relative;
+  z-index: 60;
 }
 
 html, body {

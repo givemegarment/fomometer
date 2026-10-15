@@ -11,6 +11,25 @@
 
 ---
 
+## 2026-10-15 [BUILD] Кнопка Buy через Jupiter с реферальной комиссией (выключена, не задеплоено)
+- Решение владельца: вариант «свой обмен через Jupiter с нашей комиссией» («нормальная тема», «делаем»).
+- `lib/trade.ts`: `JUP_REFERRAL_ACCOUNT` (пусто = все кнопки скрыты), `JUP_REFERRAL_FEE_BPS = 100`, SOL mint.
+- `components/trade/buy-button.tsx`: по клику грузит `https://plugin.jup.ag/plugin-v1.js`, открывает modal
+  SOL → токен с `referralAccount`/`referralFee`. Кошелёк и подпись у посетителя, средства мы не держим.
+- Страница токена: зелёная «Buy SYMBOL» + строка про комиссию и ссылка на Track record; не показывается,
+  пока не загружен фильтр ликвидности, и для токенов ниже него.
+- Signals: тихая (secondary) «Buy» только у BUY не старше 1 ч: было бы 83 зелёные кнопки на 100 строк, стало 9.
+- Копирайт: «no wallet» и «Nothing to connect, nothing to buy» заменены; пункт FAQ «Can I buy here?»
+  появляется только при включённой торговле; README обновлён.
+- `globals.css`: цвета плагина под тему; `#jupiter-plugin-instance` z-60, иначе шапка (z-30) лежала поверх
+  затемнения плагина (z-10).
+- Проверено локально с фиктивным счётом (системный адрес, в коммит не попал): кнопка, modal 1352 и 390 px.
+  Запрос плагина: `ultra-api.jup.ag/order?...&referralFee=100` (единица: bps). С неинициализированным счётом
+  Jupiter отвечает 400: «referralAccount is initialized under REFER4Zg… for project DkiqsTrw…», то есть счёт
+  нужен под проект Ultra, и при неверном счёте котировка не приходит вообще.
+- tsc 0, lint 0, vitest 20/20.
+- [DEBUG] в `.env` остались `NEXT_PUBLIC_TELEGRAM_*` (не используются).
+
 ## 2026-10-15 [DEBUG] Правки владельца по скриншотам (задеплоено `1bb1002c`)
 - Убраны стрелки у всех кнопок «Open the board» / «Open the full board» (hero, шапка лендинга, live-board, пустое избранное).
 - Убрана подпись «Last N days. No edge yet…» в карточке сравнения на лендинге.
