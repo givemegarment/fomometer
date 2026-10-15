@@ -57,7 +57,7 @@ export function WatchlistClient() {
           }
         />
       ) : (
-        <div className="ring-hair overflow-x-auto rounded-xl bg-bg-card">
+        <div className="ring-hair relative overflow-x-auto rounded-xl bg-bg-card">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">

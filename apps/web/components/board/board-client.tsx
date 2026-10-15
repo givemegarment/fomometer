@@ -110,15 +110,15 @@ export function BoardClient() {
         )}
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
+      <div className="relative overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm">
           <thead className="bg-bg-card">
             <tr className="border-b border-border">
-              <th scope="col" className="label w-10 px-3 py-2 text-left">#</th>
-              <th scope="col" className="label px-3 py-2 text-left">{t('col_token')}</th>
-              <th scope="col" className="label px-3 py-2 text-right">{t('col_score')}</th>
+              <th scope="col" className="label w-8 px-2 py-2 text-left sm:w-10 sm:px-3">#</th>
+              <th scope="col" className="label px-2 py-2 text-left sm:px-3">{t('col_token')}</th>
+              <th scope="col" className="label px-2 py-2 text-right sm:px-3">{t('col_score')}</th>
               <th scope="col" className="label hidden px-3 py-2 text-right md:table-cell">{t('col_price')}</th>
-              <th scope="col" className="label px-3 py-2 text-right">{t('col_24h')}</th>
+              <th scope="col" className="label px-2 py-2 text-right sm:px-3">{t('col_24h')}</th>
               <th scope="col" className="label hidden px-3 py-2 text-right lg:table-cell">{t('col_liq')}</th>
               <th scope="col" className="label hidden px-3 py-2 text-right xl:table-cell">{t('col_fdv')}</th>
               <th scope="col" className="label hidden px-3 py-2 text-right md:table-cell" title={t('col_burst_hint')}>
@@ -145,8 +145,8 @@ export function BoardClient() {
                   const watched = watchlist.has(row.address);
                   return (
                     <tr key={row.address} className={cn('transition-colors hover:bg-bg-card', lowLiq && 'text-text-muted')}>
-                      <td className="num px-3 py-2 text-xs text-text-dim">{i + 1}</td>
-                      <td className="max-w-[16rem] px-3 py-2">
+                      <td className="num px-2 py-2 text-xs text-text-dim sm:px-3">{i + 1}</td>
+                      <td className="max-w-[9rem] px-2 py-2 sm:max-w-[16rem] sm:px-3">
                         <Link href={`/dashboard/token/${row.address}`} className="group flex items-center gap-2.5">
                           <TokenAvatar src={row.image_url} symbol={row.symbol} className={cn(lowLiq && 'opacity-60')} />
                           <span className="min-w-0">
@@ -159,15 +159,15 @@ export function BoardClient() {
                           </span>
                         </Link>
                       </td>
-                      <td className="px-3 py-2">
-                        <ScoreCell score={row.score} buyTh={buyTh} />
+                      <td className="px-2 py-2 sm:px-3">
+                        <ScoreCell score={row.score} buyTh={buyTh} muted={lowLiq} />
                       </td>
                       <td className="num hidden px-3 py-2 text-right md:table-cell">
                         <Price value={row.price_usd} />
                       </td>
                       <td
                         className={cn(
-                          'num px-3 py-2 text-right',
+                          'num px-2 py-2 text-right sm:px-3',
                           tone === 'up' ? 'text-success' : tone === 'down' ? 'text-danger' : 'text-text-muted'
                         )}
                       >
@@ -239,11 +239,14 @@ function Fact({ label, value, note, href }: { label: string; value: string | nul
   );
 }
 
-/** Score 0 to 100 with a short bar; the bar turns amber at the BUY threshold. */
-function ScoreCell({ score, buyTh }: { score: number | null; buyTh: number | null }) {
+/**
+ * Score 0 to 100 with a short bar; it turns green at the BUY threshold, except below the
+ * liquidity filter, where the engine fires no signals and a green score would say otherwise.
+ */
+function ScoreCell({ score, buyTh, muted }: { score: number | null; buyTh: number | null; muted: boolean }) {
   if (score == null) return <span className="num block text-right text-text-dim">·</span>;
   const pct = Math.max(0, Math.min(100, score * 100));
-  const hot = buyTh != null && score >= buyTh;
+  const hot = !muted && buyTh != null && score >= buyTh;
   return (
     <span className="flex items-center justify-end gap-2">
       <span aria-hidden className="hidden h-1 w-12 overflow-hidden rounded-sm bg-bg-chip sm:block">

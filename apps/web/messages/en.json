@@ -12,6 +12,7 @@
   },
   "site": {
     "disclaimer": "Not financial advice. FOMOMETER publishes statistics about market data. It does not recommend buying or selling any token.",
+    "disclaimer_trade": "Buy buttons open a Jupiter swap that runs in your own wallet and includes a {fee}% FOMOMETER fee.",
     "whitepaper": "Whitepaper",
     "roadmap": "Roadmap",
     "disclaimer_short": "Statistics about market data. Not financial advice."
@@ -615,7 +616,7 @@
     "updated": "Updated 15 October 2026",
     "status": {
       "done": "Done",
-      "next": "Next",
+      "next": "In progress",
       "planned": "Planned"
     },
     "goal": "Goal",
@@ -796,9 +797,9 @@
     "filter_all": "All",
     "filter_score": "Score 70+",
     "filter_liq": "Liquidity $50k+",
-    "filter_burst": "Burst 2σ+",
+    "filter_burst": "Pace spike",
     "low_liq_note": "Dimmed: liquidity under {liq}, too thin for signals.",
-    "low_liq_tag": "Below liquidity filter",
+    "low_liq_tag": "Low liquidity",
     "col_token": "Token",
     "col_score": "Score",
     "col_price": "Price",

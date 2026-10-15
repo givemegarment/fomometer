@@ -171,7 +171,7 @@ function RecordCard({ record, loaded, failed }: { record: TrackRecord | null | u
         ) : !record ? (
           <p className="px-4 pb-6 text-sm text-text-muted sm:px-6">{t('record_empty')}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-xs text-text-muted">

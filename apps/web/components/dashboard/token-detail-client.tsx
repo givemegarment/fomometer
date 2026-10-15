@@ -62,6 +62,8 @@ export function TokenDetailClient({ address }: { address: string }) {
   const score = data?.history?.[data.history.length - 1]?.score ?? null;
   const minLiq = strategy?.settings?.min_liquidity_usd ?? null;
   const belowFilter = minLiq != null && data?.token != null && (data.token.liquidity_usd ?? 0) < minLiq;
+  // Below the liquidity filter the engine fires no signals, so the score is never shown as a BUY-level green.
+  const hot = score != null && score >= buyTh && !belowFilter;
   const typeLabel = (e: EventType) => (e === 'buy_trigger' ? tSig('type_buy') : e === 'sell_trigger' ? tSig('type_sell') : tSig('type_fomo'));
 
   return (
@@ -111,12 +113,12 @@ export function TokenDetailClient({ address }: { address: string }) {
 
           <section className="ring-hair rounded-xl bg-bg-card p-5" aria-labelledby="score-title">
             <p id="score-title" className="label">{t('score_title')}</p>
-            <p className={cn('num-display mt-1 text-6xl font-semibold tracking-[-0.03em]', score != null && score >= buyTh ? 'text-accent' : 'text-text-primary')}>
+            <p className={cn('num-display mt-1 text-6xl font-semibold tracking-[-0.03em]', hot ? 'text-accent' : 'text-text-primary')}>
               {score == null ? '·' : Math.round(score * 100)}
             </p>
             <div className="relative mt-4 h-2 rounded-pill bg-white/[0.08]">
               <div
-                className={cn('h-full rounded-pill transition-[width] duration-700 ease-snap', score != null && score >= buyTh ? 'bg-accent' : 'bg-white/50')}
+                className={cn('h-full rounded-pill transition-[width] duration-700 ease-snap', hot ? 'bg-accent' : 'bg-white/50')}
                 style={{ width: `${Math.max(0, Math.min(100, (score ?? 0) * 100))}%` }}
               />
               <span aria-hidden className="absolute -top-1 h-4 w-0.5 rounded bg-white" style={{ left: `${buyTh * 100}%` }} />

@@ -53,16 +53,16 @@ export function SignalsClient() {
 
       <FilterChips items={FILTERS.map((f) => ({ id: f, label: t(`filter_${f}`) }))} value={filter} onChange={setFilter} label={t('filter_label')} />
 
-      <div className="ring-hair overflow-x-auto rounded-xl bg-bg-card">
+      <div className="ring-hair relative overflow-x-auto rounded-xl bg-bg-card">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
-              <th scope="col" className="label px-4 py-2.5 text-left sm:px-5">{t('col_signal')}</th>
-              <th scope="col" className="label px-3 py-2.5 text-left">{t('col_token')}</th>
-              <th scope="col" className="label px-3 py-2.5 text-right">{t('col_score')}</th>
-              <th scope="col" className="label px-4 py-2.5 text-right sm:px-5">{t('col_when')}</th>
+              <th scope="col" className="label px-3 py-2.5 text-left sm:px-5">{t('col_signal')}</th>
+              <th scope="col" className="label px-2 py-2.5 text-left sm:px-3">{t('col_token')}</th>
+              <th scope="col" className="label px-2 py-2.5 text-right sm:px-3">{t('col_score')}</th>
+              <th scope="col" className="label hidden px-4 py-2.5 text-right sm:table-cell sm:px-5">{t('col_when')}</th>
               {TRADING_ENABLED && (
-                <th scope="col" className="px-4 py-2.5 sm:px-5">
+                <th scope="col" className="px-2 py-2.5 sm:px-5">
                   <span className="sr-only">{t('col_buy')}</span>
                 </th>
               )}
@@ -81,32 +81,34 @@ export function SignalsClient() {
                   const burst = ev.event_type === 'fomo_spike';
                   return (
                     <tr key={ev.id} className="transition-colors hover:bg-white/[0.03]">
-                      <td className="whitespace-nowrap px-4 py-2.5 sm:px-5">
+                      <td className="px-3 py-2.5 sm:whitespace-nowrap sm:px-5">
                         <span className="inline-flex items-center gap-2 font-medium">
                           <span aria-hidden className={cn('h-2 w-2 rounded-full', DOT[ev.event_type])} />
                           {label(ev.event_type)}
                         </span>
+                        {/* Phones: the When column is hidden, so the time sits under the signal. */}
+                        <span className="block pl-4 text-xs text-text-dim sm:hidden">{fmtTimeAgo(ev.time * 1000, Date.now())}</span>
                       </td>
-                      <td className="max-w-[14rem] px-3 py-2.5">
+                      <td className="max-w-[8rem] px-2 py-2.5 sm:max-w-[14rem] sm:px-3">
                         <Link href={`/dashboard/token/${ev.address}`} className="group flex items-center gap-2.5">
                           <TokenAvatar src={ev.image_url} symbol={ev.symbol} />
                           <span className="truncate font-medium group-hover:text-accent">{ev.symbol || shortenAddress(ev.address)}</span>
                         </Link>
                       </td>
-                      <td className="num-display whitespace-nowrap px-3 py-2.5 text-right">
+                      <td className="num-display whitespace-nowrap px-2 py-2.5 text-right sm:px-3">
                         {/* A volume burst is not a score crossing: only the score at that moment. */}
                         {!burst && (
-                          <>
+                          <span className="hidden sm:inline">
                             <span className="text-text-dim">{ev.prev_score == null ? '·' : Math.round(ev.prev_score * 100)}</span>
                             <span className="sr-only"> {t('prev_score')} </span>
                             <span aria-hidden className="mx-1.5 text-text-dim">→</span>
-                          </>
+                          </span>
                         )}
                         <span className="font-semibold">{Math.round(ev.score * 100)}</span>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-2.5 text-right text-text-muted sm:px-5">{fmtTimeAgo(ev.time * 1000, Date.now())}</td>
+                      <td className="hidden whitespace-nowrap px-4 py-2.5 text-right text-text-muted sm:table-cell sm:px-5">{fmtTimeAgo(ev.time * 1000, Date.now())}</td>
                       {TRADING_ENABLED && (
-                        <td className="px-4 py-2 text-right sm:px-5">
+                        <td className="px-2 py-2 text-right sm:px-5">
                           {ev.event_type === 'buy_trigger' && Date.now() / 1000 - ev.time < BUY_FRESH_SEC && (
                             <BuyButton address={ev.address} label={t('buy')} size="sm" quiet />
                           )}

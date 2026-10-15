@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { Wordmark } from '@/components/wordmark';
+import { FEE_PCT, TRADING_ENABLED } from '@/lib/trade';
 
 const REPO_URL = 'https://github.com/givemegarment/fomometer';
 
@@ -16,7 +17,10 @@ export async function SiteFooter() {
       <div className="mx-auto grid max-w-[1440px] gap-10 px-5 py-14 sm:px-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div className="space-y-4">
           <Wordmark />
-          <p className="max-w-sm text-sm leading-relaxed text-text-muted">{tSite('disclaimer')}</p>
+          <p className="max-w-sm text-sm leading-relaxed text-text-muted">
+            {tSite('disclaimer')}
+            {TRADING_ENABLED && <> {tSite('disclaimer_trade', { fee: FEE_PCT })}</>}
+          </p>
         </div>
         <nav aria-label={t('footer_product')}>
           <p className="mb-4 text-sm font-semibold">{t('footer_product')}</p>

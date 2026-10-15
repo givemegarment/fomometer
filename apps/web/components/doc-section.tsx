@@ -28,7 +28,7 @@ export function DocSection({
 /** Rounded, horizontally scrollable table wrapper. */
 export function DocTable({ children }: { children: React.ReactNode }) {
   return (
-    <div className="ring-hair overflow-x-auto rounded-xl bg-bg-card">
+    <div className="ring-hair relative overflow-x-auto rounded-xl bg-bg-card">
       <table className="w-full text-left text-sm">{children}</table>
     </div>
   );
