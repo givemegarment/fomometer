@@ -266,7 +266,9 @@
     "col_score": "Score",
     "meta_title": "{symbol} score",
     "below_filter": "Liquidity is under {liq}, the engine's quality filter: this token gets a score but no signals.",
-    "buy": "Buy {symbol}"
+    "buy": "Buy {symbol}",
+    "score_untracked": "Left the tracked list {ago}. This is its last score.",
+    "score_none": "Not scored in the last 6 hours."
   },
   "signals": {
     "title": "Signals",
@@ -292,6 +294,7 @@
     "opening": "Opening",
     "preset": "{sol} SOL",
     "sell": "Sell",
+    "buy_off": "Buy is off: liquidity is under {liq}, too thin to trade safely. Sell still works if you hold this token.",
     "load_error": "Could not open the swap. Try again.",
     "note": "Swaps run in your own wallet through Jupiter and include a {fee}% FOMOMETER fee. Not financial advice.",
     "faq_q": "Can I buy here?",

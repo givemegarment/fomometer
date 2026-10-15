@@ -12,6 +12,16 @@
 
 ---
 
+## 2026-10-15 [DEBUG] Страница токена: одинокий Sell без объяснения и «·» вместо score (не задеплоено)
+- Владелец (скрин Sonny): «почему одна кнопка sell». Причина: Buy скрыт ниже фильтра ликвидности, а объяснение было
+  только внизу в карточке Score. Фикс: на месте Buy строка «Buy is off: liquidity is under $25K… Sell still works».
+- «·» в Score: последняя строка истории бывает без score (движок пишет цену до балла в ту же минуту; и 4 ч после
+  выхода из списка пишет цену без балла). Фикс: берётся последний известный score; если новейшая цена позже него
+  больше чем на 10 мин, под числом «Left the tracked list {ago}. This is its last score.», без зелёного; если score
+  нет совсем, «Not scored in the last 6 hours». Закрыта [DEBUG]-задача из прохода B.
+- Проверено в превью: Sonny (low-liq) → пояснение, Sell, Watch, score 53; CBUCKS (разрыв 107 мин) → 57 серый и
+  «Left the tracked list 1 hr ago». tsc 0, lint 0.
+
 ## 2026-10-15 [BUILD] Проход B: Sell, быстрые суммы, Buy на доске (не задеплоено)
 - `components/trade/buy-button.tsx` → `trade-button.tsx` (`TradeButton`): `side` buy/sell, `amountSol`, size sm/md/lg.
   `initialAmount` у Jupiter Plugin в наименьших единицах: проверено в превью, '0.1' дал 0, '100000000' дал 0.1 SOL.

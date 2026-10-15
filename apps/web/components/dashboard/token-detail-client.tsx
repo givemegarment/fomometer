@@ -17,6 +17,9 @@ import { FACTORS } from '@/lib/factors';
 import { BUY_PRESETS_SOL, FEE_PCT, TRADING_ENABLED } from '@/lib/trade';
 import { TradeButton } from '@/components/trade/trade-button';
 
+/** Newest price this much later than the last score: the token has left the tracked list. */
+const UNTRACKED_AFTER_SEC = 10 * 60;
+
 /** Factor bars are capped here: values are z-scores, beyond ±3 is "far from the rest". */
 const FACTOR_CAP = 3;
 /** Engine default BUY level; replaced by the live threshold once /api/strategy answers. */
@@ -59,11 +62,17 @@ export function TokenDetailClient({ address }: { address: string }) {
   const watched = watchlist.has(address);
 
   const buyTh = strategy?.settings?.buy_th ?? DEFAULT_BUY_TH;
-  const score = data?.history?.[data.history.length - 1]?.score ?? null;
+  // The engine keeps pricing a token for 4 hours after it leaves the list, without scoring it, so
+  // the newest row can have no score. Show the last score there was and say when it is from.
+  const history = data?.history ?? [];
+  const lastScored = [...history].reverse().find((h) => h.score != null);
+  const score = lastScored?.score ?? null;
+  const newest = history[history.length - 1]?.time;
+  const untrackedSince = lastScored && newest != null && newest - lastScored.time > UNTRACKED_AFTER_SEC ? lastScored.time : null;
   const minLiq = strategy?.settings?.min_liquidity_usd ?? null;
   const belowFilter = minLiq != null && data?.token != null && (data.token.liquidity_usd ?? 0) < minLiq;
   // Below the liquidity filter the engine fires no signals, so the score is never shown as a BUY-level green.
-  const hot = score != null && score >= buyTh && !belowFilter;
+  const hot = score != null && score >= buyTh && !belowFilter && untrackedSince == null;
   const canTrade = TRADING_ENABLED && data?.token != null && minLiq != null;
   const typeLabel = (e: EventType) => (e === 'buy_trigger' ? tSig('type_buy') : e === 'sell_trigger' ? tSig('type_sell') : tSig('type_fomo'));
 
@@ -92,7 +101,11 @@ export function TokenDetailClient({ address }: { address: string }) {
             */}
             {canTrade && (
               <div className="mt-4">
-                {!belowFilter && (
+                {belowFilter ? (
+                  <p className="mb-2 rounded-md bg-white/[0.04] px-3 py-2 text-sm text-text-muted">
+                    {tTrade('buy_off', { liq: fmtUSD(minLiq, { compact: true }) })}
+                  </p>
+                ) : (
                   <>
                     <TradeButton address={address} label={t('buy', { symbol: data.token.symbol || shortenAddress(address) })} />
                     <div className="mt-2 flex gap-2">
@@ -139,6 +152,11 @@ export function TokenDetailClient({ address }: { address: string }) {
               />
               <span aria-hidden className="absolute -top-1 h-4 w-0.5 rounded bg-white" style={{ left: `${buyTh * 100}%` }} />
             </div>
+            {untrackedSince != null ? (
+              <p className="mt-2 text-xs text-warning">{t('score_untracked', { ago: fmtTimeAgo(untrackedSince * 1000, Date.now()) })}</p>
+            ) : (
+              history.length > 0 && score == null && <p className="mt-2 text-xs text-text-dim">{t('score_none')}</p>
+            )}
             <p className="mt-2 text-xs text-text-dim">{t('buy_level', { th: Math.round(buyTh * 100) })}</p>
             <p className="mt-3 text-sm leading-relaxed text-text-muted">{t('score_note')}</p>
             {belowFilter && (
