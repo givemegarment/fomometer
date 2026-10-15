@@ -79,7 +79,7 @@ All routes are `GET`, edge runtime, read-only, no authentication. Prices in USD,
 |---|---|---|
 | `/api/status` | | `snapshot_at`, `scored_at`: newest price and score times. LIVE on the site when prices are under 3 minutes old. |
 | `/api/scanner` | `filter=score\|liq\|fomo`, `limit` 10..50 | `rows`: tracked tokens (scored within 10 minutes of the newest score; price from the latest snapshot) with price, liquidity, score, factors, logo, `scored_at` |
-| `/api/overview` | | `buy_signals_1h`, `avg_score`, `leaders`, `last_buys` |
+| `/api/overview` | | `buy_signals_1h` (BUY events in the last hour, for the board) |
 | `/api/logo/<id>` | `s=64\|128\|256` | token logo from DexScreener's CDN as webp, without its cookie, cached for a week |
 | `/api/signals` | `type=buy\|sell\|fomo`, `limit` 20..200 | `events` with token symbol and logo |
 | `/api/tokens/{address}` | | `token`, `history` (6 h of price and score), latest factors, recent events |
