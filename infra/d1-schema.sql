@@ -70,7 +70,10 @@ CREATE TABLE IF NOT EXISTS signal_events (
   event_type     TEXT NOT NULL,    -- 'buy_trigger' | 'sell_trigger' | 'fomo_spike'
   score          REAL NOT NULL,
   prev_score     REAL,
-  metadata_json  TEXT              -- {regime, threshold, factors: {scored, raw}}
+  metadata_json  TEXT,             -- {regime, threshold, factors: {scored, raw}}
+  chain_sig      TEXT,             -- Solana memo transaction (labeler, record.ts)
+  chain_at       INTEGER,          -- when it was sent
+  chain_ok       INTEGER           -- NULL pending, 1 landed, 0 did not land
 );
 
 CREATE INDEX IF NOT EXISTS idx_events_time     ON signal_events(time DESC);
@@ -97,7 +100,8 @@ CREATE TABLE IF NOT EXISTS signal_outcomes (
   min_pnl_pct_4h  REAL,                       -- worst PnL within the 4h window
   labeled_at      INTEGER NOT NULL DEFAULT (unixepoch()),
   price_flag      TEXT,                       -- 'rise_over_1000pct': suspect pool switch
-  factors_json    TEXT                        -- {scored, raw} copied from the event
+  factors_json    TEXT,                       -- {scored, raw} copied from the event
+  chain_sig       TEXT                        -- the event's landed memo transaction, if any
 );
 
 CREATE INDEX IF NOT EXISTS idx_outcomes_event_time ON signal_outcomes(event_time DESC);

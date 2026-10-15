@@ -115,7 +115,7 @@ type Env = {
   HELIUS_API_KEY?: string;
 };
 
-const rpcUrl = (env: Env) =>
+export const rpcUrl = (env: Pick<Env, 'HELIUS_API_KEY' | 'SOLANA_RPC_URL'>) =>
   env.HELIUS_API_KEY ? `https://mainnet.helius-rpc.com/?api-key=${env.HELIUS_API_KEY}` : env.SOLANA_RPC_URL;
 
 async function rpc<T>(env: Env, method: string, params: unknown[]): Promise<T> {

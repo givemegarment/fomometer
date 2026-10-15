@@ -20,7 +20,8 @@
  */
 
 import { summarize, num, type GroupStats } from './summary';
-import { scanSwaps } from './swaps';
+import { rpcUrl, scanSwaps } from './swaps';
+import { recordSignals } from './record';
 
 export interface Env {
   DB: D1Database;
@@ -31,6 +32,10 @@ export interface Env {
   JUP_REFERRAL_FEE_BPS: string;
   JUP_FEE_ACCOUNTS: string;
   HELIUS_API_KEY?: string;
+  /** 'true' to write signals to Solana (./record.ts). */
+  CHAIN_RECORD_ENABLED?: string;
+  /** Secret: the record wallet's keypair. */
+  CHAIN_RECORD_KEY?: string;
 }
 
 const HORIZON_4H_SEC = 4 * 3600;
@@ -58,10 +63,11 @@ export default {
   async scheduled(e: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
     const minute = new Date(e.scheduledTime).getUTCMinutes();
     ctx.waitUntil(runSwaps(env).catch((err) => console.error('labeler error', err)));
+    ctx.waitUntil(runRecord(env).catch((err) => console.error('labeler error', err)));
     if (minute % LABEL_EVERY_MIN === 0) ctx.waitUntil(runOnce(env).catch((err) => console.error('labeler error', err)));
   },
   async fetch(_req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    ctx.waitUntil(Promise.all([runOnce(env), runSwaps(env)]).catch((err) => console.error('labeler error', err)));
+    ctx.waitUntil(Promise.all([runOnce(env), runSwaps(env), runRecord(env)]).catch((err) => console.error('labeler error', err)));
     return new Response('labeler: cycle started\n');
   }
 } satisfies ExportedHandler<Env>;
@@ -158,9 +164,10 @@ async function labelOne(env: Env, e: EventRow, now: number): Promise<boolean> {
         price_15m, price_1h, price_4h,
         pnl_pct_15m, pnl_pct_1h, pnl_pct_4h,
         max_pnl_pct_4h, min_pnl_pct_4h, labeled_at,
-        price_flag, factors_json)
+        price_flag, factors_json, chain_sig)
      VALUES (?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?,
-             ?, (SELECT json_extract(metadata_json, '$.factors') FROM signal_events WHERE id = ?))`
+             ?, (SELECT json_extract(metadata_json, '$.factors') FROM signal_events WHERE id = ?),
+             (SELECT CASE WHEN chain_ok = 1 THEN chain_sig END FROM signal_events WHERE id = ?))`
   )
     .bind(
       e.id,
@@ -178,6 +185,7 @@ async function labelOne(env: Env, e: EventRow, now: number): Promise<boolean> {
       minPnl,
       now,
       priceFlag,
+      e.id,
       e.id
     )
     .run();
@@ -326,5 +334,17 @@ async function runSwaps(env: Env): Promise<void> {
   } catch (err) {
     // Third-party RPC; the next minute retries from the same cursor.
     console.error(`swaps error: ${(err as Error).message}`);
+  }
+}
+
+/** Signals written to Solana (./record.ts). Logs only when something happened. */
+async function runRecord(env: Env): Promise<void> {
+  try {
+    const r = await recordSignals(env, rpcUrl(env));
+    if (r.posted || r.landed || r.lost || r.error) {
+      console.log(`chain posted=${r.posted} landed=${r.landed} lost=${r.lost}${r.error ? ` error: ${r.error}` : ''}`);
+    }
+  } catch (err) {
+    console.error(`chain error: ${(err as Error).message}`);
   }
 }

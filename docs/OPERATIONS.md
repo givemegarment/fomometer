@@ -76,6 +76,16 @@ Balances on chain: `/api/treasury`, or `getMultipleAccounts` for the fee account
 
 Phantom shows "This domain is new" for fomometer.xyz until its review clears, usually within days. If it is still there after a week, use Phantom's domain review form linked from [their docs](https://docs.phantom.com/developer-powertools/domain-and-transaction-warnings).
 
+## On-chain signal record
+
+The labeler writes each fresh signal to Solana as a memo from a dedicated record wallet (Architecture, Labeler).
+
+- Cost: one transaction per labeler run with signals, 5,000 lamports per signature, up to 8 signals per transaction. About 60 signals a day is under 0.01 SOL a month. The wallet holds only this float; it is not the referral account and holds no fees.
+- Start: create the keypair (`solana-keygen new -o record.json`, or the script in the journal), `wrangler secret put CHAIN_RECORD_KEY -c workers/labeler/wrangler.toml < record.json`, fund the address, set `CHAIN_RECORD_ENABLED = "true"` in `workers/labeler/wrangler.toml`, deploy the labeler. Keep `record.json` offline as the backup.
+- Stop: `CHAIN_RECORD_ENABLED = "false"` and deploy.
+- Check: log lines `chain posted=N landed=M lost=K`; `SELECT chain_ok, COUNT(*) FROM signal_events WHERE time > unixepoch() - 86400 GROUP BY 1` (NULL is pending or not posted); the record wallet's transactions on Solscan.
+- Top up when the balance falls under 0.01 SOL. Without funds every send fails preflight and nothing is written, which the log shows as `error`.
+
 ## Limits to keep in mind
 
 - Workers free plan: 50 ms CPU per run, 100k requests a day. The engine uses 1,440 runs a day.
@@ -86,5 +96,5 @@ Phantom shows "This domain is new" for fomometer.xyz until its review clears, us
 
 - Cloudflare account: zone `fomometer.xyz` (nameservers at Namecheap point to Cloudflare), Pages project `fomometer-web`, Workers `fomometer-engine` and `fomometer-labeler`, D1 `fomometer`.
 - Jupiter referral account and its fee accounts, owned by the owner's Solana wallet. The site holds no key for them.
-- Secrets: `CLOUDFLARE_API_TOKEN` (local `.env` and GitHub), `STRATEGY_FORMULA_JSON` (engine). Nothing else.
+- Secrets: `CLOUDFLARE_API_TOKEN` (local `.env` and GitHub), `STRATEGY_FORMULA_JSON` (engine), `HELIUS_API_KEY` (labeler, Pages production), `CHAIN_RECORD_KEY` (labeler, record wallet keypair). Nothing else.
 - Never paste secrets into issues, chats or commits. Rotate the API token if it leaks.

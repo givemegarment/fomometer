@@ -72,6 +72,8 @@ The same run fills `baseline_outcomes`: every token scored in the first engine r
 
 The labeler's cron fires every minute; every minute it records swaps (`workers/labeler/src/swaps.ts`). It walks the signatures of the referral fee accounts (`JUP_FEE_ACCOUNTS`, cursor per account in `engine_state.swap_cursor`), fetches each new transaction once and keeps it when it raised the balance of an account owned by the referral account: wallet (first signer), side and token (the signer's largest non-SOL balance change), fee received and swap size (fee divided by the fee rate). A buy is linked to the token's latest BUY event within the hour before it. At most 15 transactions per run. The RPC is Helius when the `HELIUS_API_KEY` secret is set, otherwise `solana-rpc.publicnode.com`: `api.mainnet-beta.solana.com` and PublicNode refuse requests from Cloudflare, and PublicNode refuses `getTokenAccountsByOwner`, which is why the fee accounts are listed instead of discovered. An RPC failure is logged and the next minute retries; labeling runs separately.
 
+Every minute it also writes fresh signals to Solana (`workers/labeler/src/record.ts`, `chain.ts`) when `CHAIN_RECORD_ENABLED` is `"true"` and the secret `CHAIN_RECORD_KEY` holds the record wallet's keypair. Each event becomes one Memo instruction, `FMTR1 <BUY|SELL|BURST> <mint> s=<score> t=<unix time> id=<event id>`, up to 8 per transaction, signed by the record wallet (a legacy transaction built by hand and signed with WebCrypto Ed25519; byte-identical to `@solana/web3.js`, see `chain.test.ts`). Only events at most 10 minutes old are posted, so every memo lands before the first price check at 15 minutes; a missed event stays off chain, and the sequential ids show the gap. The next run checks `getSignatureStatuses`: landed sets `chain_ok = 1`; failed or unseen after 5 minutes is posted again while the event is fresh, otherwise `chain_ok = 0`. The labeling run copies a landed signature into `signal_outcomes.chain_sig`, which is kept forever.
+
 ## Data model
 
 Schema: `infra/d1-schema.sql`. Times are Unix seconds.
@@ -81,8 +83,8 @@ Schema: `infra/d1-schema.sql`. Times are Unix seconds.
 | `tokens` | 11,653 | forever | symbol, name, logo, pair |
 | `token_snapshots` | ~133k | 72 h | one row per token per minute |
 | `signals` | ~15k | 72 h | score, all 12 normalized factors (`factors_json`) and the raw burst factor (`fomo_raw`) per token per minute |
-| `signal_events` | ~4.4k | 72 h + 14 d | BUY, SELL, volume burst, with factors in `metadata_json` |
-| `signal_outcomes` | 45,759 | forever | price after 15m / 1h / 4h per event, factors (since 2026-10-15), `price_flag` |
+| `signal_events` | ~4.4k | 72 h + 14 d | BUY, SELL, volume burst, with factors in `metadata_json`; `chain_sig`, `chain_at`, `chain_ok` for the on-chain record |
+| `signal_outcomes` | 45,759 | forever | price after 15m / 1h / 4h per event, factors (since 2026-10-15), `price_flag`, `chain_sig` (landed memo) |
 | `baseline_outcomes` | | forever | every scored token every 30 min, price after 1h / 4h (since 2026-10-15) |
 | `swaps` | | forever | swaps that paid the referral fee: signature, time, wallet, side, token, fee, size, linked BUY event (since 2026-10-15) |
 | `engine_state` | 7 | | `last_run`, `fomo_th_raw`, `last_scored`, `baseline_cursor`, `track_record` (7-day summary for the Strategy page, refreshed hourly by the labeler), `swap_cursor` |

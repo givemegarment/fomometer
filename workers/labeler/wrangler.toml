@@ -20,6 +20,9 @@ database_id = "9ac47005-db06-43e5-8a79-87e8d0b0acf8"
 [vars]
 LABELER_LOOKBACK_HOURS = "12"
 LABELER_BATCH_SIZE = "500"
+# Signals written to Solana as memos (src/record.ts). "true" only after the record wallet is
+# funded and the owner starts it; the keypair is the secret CHAIN_RECORD_KEY.
+CHAIN_RECORD_ENABLED = "false"
 # Swaps that paid the referral fee (src/swaps.ts). Public values; the referral account
 # and fee must match apps/web/lib/trade.ts. The RPC below is the fallback: Cloudflare's
 # network is refused by public RPCs, so production uses the HELIUS_API_KEY secret.
