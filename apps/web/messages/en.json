@@ -155,7 +155,7 @@
       "body": "Signals are events recorded when a token's score or volume crosses a threshold. They describe what happened in the data; they are not instructions to trade.",
       "buy": {
         "name": "BUY",
-        "rule": "The score rises from below the BUY threshold to at or above it."
+        "rule": "The score rises from below the BUY threshold to at or above it. At most one per token every 4 hours, the window each BUY is measured over."
       },
       "sell": {
         "name": "SELL",

@@ -71,6 +71,10 @@ const FOMO_FACTOR_INDEX = 3;         // index of `fomo` in FactorVector
 const FOMO_FALLBACK_THRESHOLD = 2.5; // used only when adaptive percentile is unavailable
 const FOMO_PERCENTILE = 0.95;        // FOMO spike fires above 95th percentile of recent fomo factor
 const FOMO_TH_REFRESH_SEC = 30 * 60; // adaptive FOMO threshold is recomputed at most every 30 min
+const FOMO_COOLDOWN_SEC = 30 * 60;   // at most one volume burst per token in this window
+// At most one BUY per token per 4 h, the horizon each BUY is priced at. Scores flap around the
+// threshold: one token had 20 BUYs in 21 h, two of them identical 4 minutes apart.
+const BUY_COOLDOWN_SEC = 4 * 3600;
 // Keep snapshotting a token this long after it was last scored: the 4 h horizon plus the
 // labeler tolerance. Covers every event and every baseline sample alike.
 const POST_SCORE_TRACK_SEC = 4 * 3600 + 10 * 60;
@@ -248,8 +252,8 @@ async function runOnce(env: Env): Promise<void> {
   // pumps before they emit events. Signals still persist for observability.
   const qf = readQualityFilter(env);
 
-  // 5–6. Persist signals and emit transition events. Reads first (previous scores, FOMO
-  // throttle), then every write in a single batch.
+  // 5–6. Persist signals and emit transition events. Reads first (previous scores, burst and
+  // BUY cooldowns), then every write in a single batch.
   const firstSeen = await loadFirstSeen(env, scored.filter((c) => c.warm).map((c) => c.addr));
   const eligible = scored.filter(
     (c) => c.warm && passesQualityFilter(snapByAddr.get(c.addr), firstSeen.get(c.addr), now, qf)
@@ -257,7 +261,7 @@ async function runOnce(env: Env): Promise<void> {
   const filteredOut = scored.filter((c) => c.warm).length - eligible.length;
   const eligibleAddrs = eligible.map((c) => c.addr);
   const prevScores = await loadPrevScores(env, eligibleAddrs, now);
-  const fomoThrottled = await loadFomoThrottled(env, now);
+  const { fomoThrottled, buyCooldown } = await loadRecentEvents(env, now);
 
   let buyTriggers = 0;
   let sellTriggers = 0;
@@ -269,7 +273,7 @@ async function runOnce(env: Env): Promise<void> {
     const prevScore = prevScores.get(addr) ?? null;
     const ev = { regime, scored: c.factorsScored, raw: c.factorsRaw };
 
-    if (prevScore != null && prevScore < buyTh && score >= buyTh) {
+    if (prevScore != null && prevScore < buyTh && score >= buyTh && !buyCooldown.has(addr)) {
       buyTriggers++;
       flags.set(addr, { buy: true, sell: false });
       eventStmts.push(eventStmt(env, addr, now, 'buy_trigger', score, prevScore, { ...ev, threshold: buyTh }));
@@ -567,15 +571,22 @@ async function loadPrevScores(env: Env, addresses: string[], nowSec: number): Pr
 }
 
 /**
- * Addresses that already had a FOMO spike in the last 30 minutes.
- * Reads every event of the window by time and filters the type here: with the type in
- * SQL the planner walked a whole index (≈ 1,900 rows a minute instead of ≈ 13).
+ * Addresses in cooldown: a volume burst in the last FOMO_COOLDOWN_SEC, a BUY in the last
+ * BUY_COOLDOWN_SEC. Reads every event of the window by time and filters the type here: with
+ * the type in SQL the planner walked a whole index (≈ 1,900 rows a minute; by time ≈ 30 for 4 h).
  */
-async function loadFomoThrottled(env: Env, nowSec: number): Promise<Set<string>> {
-  const r = await env.DB.prepare(`SELECT address, event_type FROM signal_events WHERE time >= ?`)
-    .bind(nowSec - 30 * 60)
-    .all<{ address: string; event_type: string }>();
-  return new Set((r.results ?? []).filter((x) => x.event_type === 'fomo_spike').map((x) => x.address));
+async function loadRecentEvents(
+  env: Env,
+  nowSec: number
+): Promise<{ fomoThrottled: Set<string>; buyCooldown: Set<string> }> {
+  const r = await env.DB.prepare(`SELECT address, event_type, time FROM signal_events WHERE time >= ?`)
+    .bind(nowSec - Math.max(FOMO_COOLDOWN_SEC, BUY_COOLDOWN_SEC))
+    .all<{ address: string; event_type: string; time: number }>();
+  const rows = r.results ?? [];
+  return {
+    fomoThrottled: new Set(rows.filter((x) => x.event_type === 'fomo_spike' && x.time >= nowSec - FOMO_COOLDOWN_SEC).map((x) => x.address)),
+    buyCooldown: new Set(rows.filter((x) => x.event_type === 'buy_trigger' && x.time >= nowSec - BUY_COOLDOWN_SEC).map((x) => x.address))
+  };
 }
 
 /**

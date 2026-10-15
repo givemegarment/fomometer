@@ -37,7 +37,7 @@ The engine also labels the market as neutral, bull, bear or panic from the sprea
 
 Signals are events recorded when a token's score or volume crosses a threshold. They describe what happened in the data; they are not instructions to trade.
 
-- **BUY**: The score rises from below the BUY threshold to at or above it.
+- **BUY**: The score rises from below the BUY threshold to at or above it. At most one per token every 4 hours, the window each BUY is measured over.
 - **SELL**: The score falls from at or above the BUY threshold to at or below the SELL threshold in one step. This is rare by design.
 - **Volume burst**: The raw volume-burst factor exceeds its threshold: the 95th percentile of the last 6 hours, and never below 1.5. At most one per token every 30 minutes.
 
