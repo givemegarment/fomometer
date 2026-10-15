@@ -38,6 +38,22 @@ export const JUP_FEE_ACCOUNTS = [
   'HARHaw9wjgYdWmcjgtX5Y2EgzPFfx2wMLR6YKoMH1viM'
 ] as const;
 
+/** Display symbols of the fee mints above. */
+export const FEE_MINT_SYMBOLS: Record<string, string> = {
+  So11111111111111111111111111111111111111112: 'SOL',
+  EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v: 'USDC',
+  Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB: 'USDT',
+  cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij: 'cbBTC',
+  '9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D': 'jlUSDC',
+  '98sMhvDwXj1RQi5c5Mndm3vPe9cBqPrbLaufMXFNMh5g': 'HYPE',
+  SPCXxcqXj6e5dJDVNovHN8744zkbhM2bYudU45BimGb: 'SPCX',
+  '2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo': 'PYUSD',
+  pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn: 'PUMP'
+};
+
+/** The token split from the whitepaper, shown on the treasury page (percent of the pool). */
+export const POOL_SPLIT = { buyback: 50, rewards: 30, ops: 20 } as const;
+
 /** A public RPC that serves Workers (api.mainnet-beta.solana.com blocks them). Needs a user agent. */
 export const SOLANA_RPC_URL = 'https://solana-rpc.publicnode.com';
 

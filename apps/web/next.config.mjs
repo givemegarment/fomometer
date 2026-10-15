@@ -11,7 +11,9 @@ const nextConfig = {
     return [
       { source: '/dashboard/settings', destination: '/dashboard', permanent: true },
       // The scanner and the overview became one board at /dashboard.
-      { source: '/dashboard/scanner', destination: '/dashboard', permanent: true }
+      { source: '/dashboard/scanner', destination: '/dashboard', permanent: true },
+      // Short public address used in the docs.
+      { source: '/treasury', destination: '/dashboard/treasury', permanent: false }
     ];
   },
   experimental: {

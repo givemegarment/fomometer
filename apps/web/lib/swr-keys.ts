@@ -5,6 +5,7 @@ export const SWR_KEYS = {
   signals: (type?: string) => `/api/signals${type ? `?type=${type}` : ''}`,
   strategy: '/api/strategy',
   status: '/api/status',
+  treasury: '/api/treasury',
   watchlist: (addresses: string[]) =>
     addresses.length ? `/api/watchlist?addresses=${addresses.join(',')}` : null
 } as const;

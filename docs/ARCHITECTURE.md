@@ -101,7 +101,7 @@ All routes are `GET`, edge runtime, read-only, no authentication. Prices in USD,
 | `/api/tokens/{address}` | | `token`, `history` (6 h of price and score), latest factors, recent events |
 | `/api/strategy` | | `settings` from `last_run` (thresholds, regime, weights) and `record` from `track_record`: last 7 days per event type and for the all-tokens baseline, per horizon n, share favorable, median change, plus flagged and no-price-at-4h counts |
 | `/api/watchlist` | `addresses` (comma-separated) | `rows` for the given addresses |
-| `/api/treasury` | | `balances` of the referral fee accounts read from the chain (unclaimed fees), `totals` and `totals_7d` of recorded swaps per fee mint (count, buys, sells, linked to a signal, fees, volume), `recent` 20 swaps without wallets, `updated_at` of the last chain read |
+| `/api/treasury` (page `/dashboard/treasury`, short address `/treasury`) | | `balances` of the referral fee accounts read from the chain (unclaimed fees), `totals` and `totals_7d` of recorded swaps per fee mint (count, buys, sells, linked to a signal, fees, volume), `recent` 20 swaps without wallets, `updated_at` of the last chain read |
 
 The API is public but not versioned or rate-limited; treat it as the site's internal API.
 

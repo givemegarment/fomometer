@@ -8,7 +8,8 @@
     "whitepaper": "Whitepaper",
     "roadmap": "Roadmap",
     "label": "Sections",
-    "docs_label": "Documentation"
+    "docs_label": "Documentation",
+    "treasury": "Treasury"
   },
   "site": {
     "disclaimer": "Not financial advice. FOMOMETER publishes statistics about market data. It does not recommend buying or selling any token.",
@@ -728,7 +729,7 @@
         "exit": "Baseline and lost outcomes on the Strategy page, 30 days of stored factors."
       },
       {
-        "status": "next",
+        "status": "done",
         "name": "Swaps and treasury",
         "goal": "Revenue that anyone can check on chain.",
         "items": [
@@ -741,11 +742,11 @@
             "text": "First fee received on chain, 15 October 2026"
           },
           {
-            "done": false,
+            "done": true,
             "text": "Record every swap together with the signal it followed"
           },
           {
-            "done": false,
+            "done": true,
             "text": "Public treasury page with live on-chain balances"
           },
           {
@@ -880,5 +881,49 @@
     "watch_remove": "Remove from watchlist",
     "empty": "No tracked tokens right now. Data refreshes every minute.",
     "footnote": "Prices and 24h change from DexScreener. Score 0 to 100, recomputed every minute."
+  },
+  "treasury": {
+    "meta_description": "Every fee FOMOMETER earns, read from the Solana chain: swaps, volume, unclaimed balances and how the pool will be split.",
+    "title": "Treasury",
+    "subtitle": "Every fee FOMOMETER earns, read from the chain. Swaps are recorded every 15 minutes.",
+    "referral_link": "Referral account on Solscan",
+    "stat_fees": "Fees earned",
+    "stat_fees_note": "all time, in SOL",
+    "stat_swaps": "Swaps",
+    "stat_swaps_note": "{buys, plural, one {# buy} other {# buys}}, {sells, plural, one {# sell} other {# sells}}",
+    "stat_volume": "Volume",
+    "stat_volume_note": "all time, in SOL",
+    "stat_signal": "Buys after a signal",
+    "stat_signal_note": "bought within an hour of a BUY",
+    "other_mints": "Also earned: {list}.",
+    "balances_title": "Unclaimed fees",
+    "balances_note": "Live balances of the fee accounts. Fees are claimed by hand on Jupiter's referral dashboard; {empty} other fee accounts are empty.",
+    "balances_empty": "No unclaimed fees right now.",
+    "balances_error": "Could not read the chain just now.",
+    "split_title": "Where it goes",
+    "split_note": "Not active yet: $FMTR has not launched, so fees stay in the referral account. From launch the pool is split like this, every transaction published here.",
+    "split_buyback": "Buyback and burn, hourly",
+    "split_rewards": "Holder rewards in SOL, weekly",
+    "split_ops": "Operations and research",
+    "split_link": "Rules in the whitepaper",
+    "recent_title": "Recent swaps",
+    "recent_empty": "No swaps through the site yet.",
+    "col_when": "When",
+    "col_side": "Side",
+    "col_token": "Token",
+    "col_size": "Size",
+    "col_fee": "Fee",
+    "col_signal": "Signal",
+    "col_tx": "Transaction",
+    "side_buy": "Buy",
+    "side_sell": "Sell",
+    "signal_yes": "BUY",
+    "signal_no": "·",
+    "tx_link": "View",
+    "updated": "Chain read {ago}.",
+    "load_error": "Could not load the treasury.",
+    "split_burned": "Nothing burned yet.",
+    "split_paid": "Nothing paid yet.",
+    "stat_signal_value": "{n} of {total}"
   }
 }

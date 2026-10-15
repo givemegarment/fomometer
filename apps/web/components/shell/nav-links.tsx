@@ -10,7 +10,8 @@ const PRIMARY = [
   { href: '/dashboard', key: 'board', match: (p: string) => p === '/dashboard' || p.startsWith('/dashboard/token') },
   { href: '/dashboard/signals', key: 'signals', match: (p: string) => p.startsWith('/dashboard/signals') },
   { href: '/dashboard/strategy', key: 'strategy', match: (p: string) => p.startsWith('/dashboard/strategy') },
-  { href: '/dashboard/watchlist', key: 'watchlist', match: (p: string) => p.startsWith('/dashboard/watchlist') }
+  { href: '/dashboard/watchlist', key: 'watchlist', match: (p: string) => p.startsWith('/dashboard/watchlist') },
+  { href: '/dashboard/treasury', key: 'treasury', match: (p: string) => p.startsWith('/dashboard/treasury') }
 ] as const;
 
 /** Reading material, quieter than the product sections. */

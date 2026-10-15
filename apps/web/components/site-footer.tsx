@@ -29,6 +29,7 @@ export async function SiteFooter() {
             <li><Link className={link} href="/dashboard/signals">{tNav('signals')}</Link></li>
             <li><Link className={link} href="/dashboard/strategy">{tNav('strategy')}</Link></li>
             <li><Link className={link} href="/dashboard/watchlist">{tNav('watchlist')}</Link></li>
+            <li><Link className={link} href="/dashboard/treasury">{tNav('treasury')}</Link></li>
           </ul>
         </nav>
         <nav aria-label={t('footer_learn')}>

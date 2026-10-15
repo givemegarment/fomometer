@@ -12,6 +12,19 @@
 
 ---
 
+## 2026-10-15 [BUILD] Страница Treasury (не задеплоено)
+- `/dashboard/treasury` (`components/dashboard/treasury-client.tsx`), пункт «Treasury» в навигации и подвале,
+  редирект `/treasury` → `/dashboard/treasury` (временный), sitemap. Данные `/api/treasury`, обновление раз в минуту.
+- Состав: 4 плитки (Fees earned SOL, Swaps с buys/sells, Volume SOL, Buys after a signal «n of m»); прочие fee mint
+  строкой ниже; карточка Unclaimed fees (живые балансы, ссылки Solscan, «N other fee accounts are empty»); Where it goes
+  50/30/20 с честным «Not active yet: $FMTR has not launched», «Nothing burned/paid yet»; Recent swaps со ссылками на
+  транзакции; «Chain read {ago}». Все строки в `messages/en.json` (ревью нашло «of», «0 burned» в коде: перенесено).
+- Правки по виду: «1 buys» → ICU plural; пустая половина карточки балансов → сетка 2fr/3fr, число сверху, пояснение
+  снизу; телефон: таблица 405/358 → 358/358 (поля 8 px, у «View» только значок), страница 390.
+- Roadmap: фаза 03 «Swaps and treasury» закрыта 5/5 (сайт и ROADMAP.md), ARCHITECTURE: адрес страницы.
+- Проверено в превью на прод-данных: 0.00001 SOL, 1 swap «1 buy, 0 sells», 0.001 SOL, «1 of 1», DIKSHIT Buy BUY.
+  tsc 0, lint 0.
+
 ## 2026-10-15 [DEBUG] Страница токена: одинокий Sell без объяснения и «·» вместо score (не задеплоено)
 - Владелец (скрин Sonny): «почему одна кнопка sell». Причина: Buy скрыт ниже фильтра ликвидности, а объяснение было
   только внизу в карточке Score. Фикс: на месте Buy строка «Buy is off: liquidity is under $25K… Sell still works».

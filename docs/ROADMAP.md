@@ -29,14 +29,14 @@ Goal: a track record nobody can call flattering.
 
 Exit: Strategy page shows baseline, lost outcomes and a cleaned record; factors stored for every event for 30 days.
 
-## Phase 3. Swaps and treasury (in progress)
+## Phase 3. Swaps and treasury (done)
 
 Goal: revenue that anyone can check on chain.
 
 - [x] Buy button on token pages, the board and fresh BUY signals: Jupiter Plugin swap in the visitor's wallet, 1% referral fee (`apps/web/lib/trade.ts`).
 - [x] Referral account `Fyhr9NJU2JbwdTL4ZZRRaCpnJH1eLydDnBZsc9khJBTA` (Jupiter Ultra) with SOL, USDC and USDT fee accounts; first fee received on chain, 15 October 2026.
-- [ ] Record every swap with the signal it followed (`onSuccess` → API → D1, verified against the transaction on chain).
-- [ ] `/treasury` page with live on-chain balances of the fee accounts.
+- [x] Record every swap with the signal it followed: the labeler reads the fee accounts' transactions from the chain (`workers/labeler/src/swaps.ts`, table `swaps`).
+- [x] `/treasury` (`/dashboard/treasury`): fees, swaps, volume, buys after a signal, unclaimed balances, pool split, recent swaps with transactions.
 - [x] Sell button and quick amounts (0.1, 0.5, 1 SOL).
 
 Exit: treasury page live and every swap recorded with its signal.
