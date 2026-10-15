@@ -1,0 +1,25 @@
+name: Health
+
+# Fails when the engine stops writing scores. GitHub emails failed scheduled runs to the
+# repository owner, which makes this the alert. Read-only: one public GET, no secrets.
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  scores-fresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Scores updated in the last 10 minutes
+        run: |
+          body=$(curl -fsS --max-time 20 https://fomometer.xyz/api/status)
+          echo "status: $body"
+          scored=$(echo "$body" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("scored_at") or 0)')
+          age=$(( $(date +%s) - scored ))
+          echo "scores are ${age}s old"
+          if [ "$age" -gt 600 ]; then
+            echo "::error::Engine has not written scores for ${age}s (limit 600s). See docs/OPERATIONS.md, Health checks."
+            exit 1
+          fi

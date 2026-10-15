@@ -22,6 +22,8 @@ Before a deploy: `pnpm typecheck`, `pnpm test` (vitest: scoring math, track reco
 
 ## Health checks
 
+Automatic: `.github/workflows/health.yml` checks `/api/status` every 15 minutes and fails when scores are more than 10 minutes old. GitHub emails failed scheduled runs to the repository owner.
+
 | Check | How | Healthy |
 |---|---|---|
 | Data freshness | `curl https://fomometer.xyz/api/status` | `snapshot_at` and `scored_at` within 2 minutes of now and equal to each other |
