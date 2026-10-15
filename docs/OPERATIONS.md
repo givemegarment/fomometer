@@ -86,6 +86,16 @@ The labeler writes each fresh signal to Solana as a memo from a dedicated record
 - Check: log lines `chain posted=N landed=M lost=K`; `SELECT chain_ok, COUNT(*) FROM signal_events WHERE time > unixepoch() - 86400 GROUP BY 1` (NULL is pending or not posted); the record wallet's transactions on Solscan.
 - Top up when the balance falls under 0.01 SOL. Without funds every send fails preflight and nothing is written, which the log shows as `error`.
 
+## X account
+
+The labeler posts to X (Architecture, Labeler). `X_POST_MODE` in `workers/labeler/wrangler.toml`:
+
+- `off`: nothing.
+- `dry`: builds each post and logs it (`x dry <kind> <ref>: <text>`), with the card URL in `x_posts`; no X calls. Use it to check posts before going live.
+- `live`: posts. Needs the four secrets: `wrangler secret put X_API_KEY -c workers/labeler/wrangler.toml`, then `X_API_SECRET`, `X_ACCESS_TOKEN`, `X_ACCESS_SECRET` (an app with read and write permission on developer.x.com, keys of the posting account).
+- Check: `SELECT kind, ref, status, tweet_id, error FROM x_posts WHERE mode = 'live' ORDER BY id DESC LIMIT 20`. `failed` rows were given up after 3 attempts.
+- The profile carries X's "Automated" label, as X's rules require for bots.
+
 ## Limits to keep in mind
 
 - Workers free plan: 50 ms CPU per run, 100k requests a day. The engine uses 1,440 runs a day.
@@ -96,5 +106,5 @@ The labeler writes each fresh signal to Solana as a memo from a dedicated record
 
 - Cloudflare account: zone `fomometer.xyz` (nameservers at Namecheap point to Cloudflare), Pages project `fomometer-web`, Workers `fomometer-engine` and `fomometer-labeler`, D1 `fomometer`.
 - Jupiter referral account and its fee accounts, owned by the owner's Solana wallet. The site holds no key for them.
-- Secrets: `CLOUDFLARE_API_TOKEN` (local `.env` and GitHub), `STRATEGY_FORMULA_JSON` (engine), `HELIUS_API_KEY` (labeler, Pages production), `CHAIN_RECORD_KEY` (labeler, record wallet keypair). Nothing else.
+- Secrets: `CLOUDFLARE_API_TOKEN` (local `.env` and GitHub), `STRATEGY_FORMULA_JSON` (engine), `HELIUS_API_KEY` (labeler, Pages production), `CHAIN_RECORD_KEY` (labeler, record wallet keypair), `X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, `X_ACCESS_SECRET` (labeler, X account). Nothing else.
 - Never paste secrets into issues, chats or commits. Rotate the API token if it leaks.

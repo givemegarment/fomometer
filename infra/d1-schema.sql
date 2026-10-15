@@ -155,3 +155,21 @@ CREATE TABLE IF NOT EXISTS engine_state (
 -- DELETE FROM token_snapshots WHERE time < unixepoch() - 72*3600;
 -- DELETE FROM signals WHERE time < unixepoch() - 72*3600;
 -- DELETE FROM signal_events WHERE time < unixepoch() - 14*86400;
+
+-- Posts to X ------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS x_posts (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  kind       TEXT NOT NULL,
+  ref        TEXT NOT NULL,
+  mode       TEXT NOT NULL,
+  status     TEXT NOT NULL,
+  text       TEXT NOT NULL,
+  card       TEXT NOT NULL,
+  reply_to   TEXT,
+  tweet_id   TEXT,
+  attempts   INTEGER NOT NULL DEFAULT 0,
+  error      TEXT,
+  posted_at  INTEGER,
+  UNIQUE (kind, ref, mode)
+);
+CREATE INDEX IF NOT EXISTS idx_x_posts_time ON x_posts(mode, posted_at);

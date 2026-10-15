@@ -23,6 +23,11 @@ LABELER_BATCH_SIZE = "500"
 # Signals written to Solana as memos (src/record.ts). "true" only after the record wallet is
 # funded and the owner starts it; the keypair is the secret CHAIN_RECORD_KEY.
 CHAIN_RECORD_ENABLED = "true"
+# X account (src/social.ts): "off", "dry" (build and log posts, no X calls) or "live". Keys are the secrets
+# X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_SECRET. Monthly cap: new signals stop first.
+X_POST_MODE = "off"
+X_MONTHLY_CAP = "450"
+SITE_URL = "https://fomometer.xyz"
 # Swaps that paid the referral fee (src/swaps.ts). Public values; the referral account
 # and fee must match apps/web/lib/trade.ts. The RPC below is the fallback: Cloudflare's
 # network is refused by public RPCs, so production uses the HELIUS_API_KEY secret.

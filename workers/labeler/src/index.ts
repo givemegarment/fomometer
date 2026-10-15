@@ -22,6 +22,7 @@
 import { summarize, num, type GroupStats } from './summary';
 import { rpcUrl, scanSwaps } from './swaps';
 import { recordSignals } from './record';
+import { runSocial } from './social';
 
 export interface Env {
   DB: D1Database;
@@ -36,6 +37,14 @@ export interface Env {
   CHAIN_RECORD_ENABLED?: string;
   /** Secret: the record wallet's keypair. */
   CHAIN_RECORD_KEY?: string;
+  /** X account (./social.ts): 'off', 'dry' or 'live'; four secrets for the account's keys. */
+  X_POST_MODE?: string;
+  X_MONTHLY_CAP?: string;
+  SITE_URL?: string;
+  X_API_KEY?: string;
+  X_API_SECRET?: string;
+  X_ACCESS_TOKEN?: string;
+  X_ACCESS_SECRET?: string;
 }
 
 const HORIZON_4H_SEC = 4 * 3600;
@@ -64,6 +73,7 @@ export default {
     const minute = new Date(e.scheduledTime).getUTCMinutes();
     ctx.waitUntil(runSwaps(env).catch((err) => console.error('labeler error', err)));
     ctx.waitUntil(runRecord(env).catch((err) => console.error('labeler error', err)));
+    ctx.waitUntil(runX(env).catch((err) => console.error('labeler error', err)));
     if (minute % LABEL_EVERY_MIN === 0) ctx.waitUntil(runOnce(env).catch((err) => console.error('labeler error', err)));
   },
   async fetch(_req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -346,5 +356,15 @@ async function runRecord(env: Env): Promise<void> {
     }
   } catch (err) {
     console.error(`chain error: ${(err as Error).message}`);
+  }
+}
+
+/** Posts to X (./social.ts). Logs only when something happened. */
+async function runX(env: Env): Promise<void> {
+  try {
+    const line = await runSocial(env);
+    if (line) console.log(line);
+  } catch (err) {
+    console.error(`x error: ${(err as Error).message}`);
   }
 }

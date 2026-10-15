@@ -74,6 +74,8 @@ The labeler's cron fires every minute; every minute it records swaps (`workers/l
 
 Every minute it also writes fresh signals to Solana (`workers/labeler/src/record.ts`, `chain.ts`) when `CHAIN_RECORD_ENABLED` is `"true"` and the secret `CHAIN_RECORD_KEY` holds the record wallet's keypair. Each event becomes one Memo instruction, `FMTR1 <BUY|SELL|BURST> <mint> s=<score> t=<unix time> id=<event id>`, up to 8 per transaction, signed by the record wallet (a legacy transaction built by hand and signed with WebCrypto Ed25519; byte-identical to `@solana/web3.js`, see `chain.test.ts`). Only events at most 10 minutes old are posted, so every memo lands before the first price check at 15 minutes; a missed event stays off chain, and the sequential ids show the gap. The next run checks `getSignatureStatuses`: landed sets `chain_ok = 1`; failed or unseen after 5 minutes is posted again while the event is fresh, otherwise `chain_ok = 0`. The labeling run copies a landed signature into `signal_outcomes.chain_sig`, which is kept forever.
 
+Every minute it can also post to X (`workers/labeler/src/social.ts`, `x.ts`), controlled by `X_POST_MODE` (`off`, `dry`, `live`). One post per run at most, at least 10 minutes apart, by priority: the daily summary after 09:00 UTC (and the weekly one on Mondays), then the 4-hour result owed for every signal already posted (a reply, win or loss, or "no price"), then the newest BUY that landed on Solana and is under 30 minutes old. Each post carries a card from the site (`/api/card/signal|outcome|summary`). Requests are signed with OAuth 1.0a (HMAC-SHA1 in WebCrypto, checked against X's published example); images go through the v2 media upload. `x_posts` keeps one row per kind, reference and mode; a failed post is retried up to 3 times and then marked `failed`. `X_MONTHLY_CAP` stops new signals first, so every posted signal still gets its result.
+
 ## Data model
 
 Schema: `infra/d1-schema.sql`. Times are Unix seconds.
@@ -86,6 +88,7 @@ Schema: `infra/d1-schema.sql`. Times are Unix seconds.
 | `signal_events` | ~4.4k | 72 h + 14 d | BUY, SELL, volume burst, with factors in `metadata_json`; `chain_sig`, `chain_at`, `chain_ok` for the on-chain record |
 | `signal_outcomes` | 45,759 | forever | price after 15m / 1h / 4h per event, factors (since 2026-10-15), `price_flag`, `chain_sig` (landed memo) |
 | `baseline_outcomes` | | forever | every scored token every 30 min, price after 1h / 4h (since 2026-10-15) |
+| `x_posts` | | forever | posts to X: kind, reference (event id or date), mode, status, text, card, post id, attempts, error |
 | `swaps` | | forever | swaps that paid the referral fee: signature, time, wallet, side, token, fee, size, linked BUY event (since 2026-10-15) |
 | `engine_state` | 7 | | `last_run`, `fomo_th_raw`, `last_scored`, `baseline_cursor`, `track_record` (7-day summary for the Strategy page, refreshed hourly by the labeler), `swap_cursor` |
 
