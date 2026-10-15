@@ -10,6 +10,16 @@
 
 ---
 
+## 2026-10-16 [DEBUG] STALE на сайте: DexScreener пустой из Cloudflare (не задеплоено)
+- Симптом (скрин владельца 00:28 MSK): «Stale». `last_run` 21:23:16, через 6 мин; tail: запуски идут, через раз
+  `engine: empty universe, skipping`. За 24 ч без снапшотов 4–27 минут в каждом часе. С локальной машины boosts 200,
+  30 элементов (24–25 Solana): отказ только для Cloudflare; код ответа не виден (`getJson` глотал ошибку).
+- Причина вероятно лимит DexScreener на boosts (~60/мин) при общих исходящих IP Cloudflare; подтвердит лог после деплоя.
+- Фикс: `DexScreenerClient.errors` (путь и HTTP-код); движок повторяет через 1.5 с, затем берёт последний удачный список
+  (`engine_state.last_universe`, ≤ 10 мин), `last_run.universe_source`. Убран запасной поиск `search?q=solana`: он
+  подмешивал в выборку не промо-токены. Доки: ARCHITECTURE, OPERATIONS. tsc (все пакеты), vitest 43/43.
+
+
 ## 2026-10-16 [BUILD] Публикация в X (этап 2 из 4, в проде в сухом режиме)
 - `workers/labeler/src/x.ts`: OAuth 1.0a (HMAC-SHA1 WebCrypto), v2 media upload, `/2/tweets` с ответом. Подпись совпала с
   примером из документации X (`hCtSmYh+iHYCEqBWrE7C7hYmtUk=`). Ошибки без заголовков.

@@ -51,12 +51,20 @@ export type DsBoostItem = {
 export class DexScreenerClient {
   constructor(private base: string = DEFAULT_BASE) {}
 
+  /** Failed requests of this client, for the caller's log ("/token-boosts/top/v1 HTTP 429"). */
+  errors: string[] = [];
+
   private async getJson<T>(url: string): Promise<T | null> {
+    const path = new URL(url).pathname;
     try {
       const res = await fetch(url, { headers: { accept: 'application/json' } });
-      if (!res.ok) return null;
+      if (!res.ok) {
+        this.errors.push(`${path} HTTP ${res.status}`);
+        return null;
+      }
       return (await res.json()) as T;
-    } catch {
+    } catch (err) {
+      this.errors.push(`${path} ${(err as Error).message}`);
       return null;
     }
   }
@@ -66,6 +74,8 @@ export class DexScreenerClient {
    * `/metas/trending/v1` returns category metadata, not token lists, so we use the
    * boosts endpoints instead — these track most-promoted tokens across the platform
    * and are a reasonable proxy for "trending" without an explicit trending API.
+   * Empty when both fail: the caller decides what to do (no fallback to a keyword search,
+   * which would mix tokens that are not promoted into the universe).
    */
   async getTrendingSolana(): Promise<DsTrendingItem[]> {
     const [top, latest] = await Promise.all([
@@ -87,25 +97,6 @@ export class DexScreenerClient {
     consume(top);
     consume(latest);
 
-    if (out.length > 0) return out;
-
-    // Last-resort fallback: search by query and take Solana pairs.
-    const search = await this.getJson<{ pairs?: DsPair[] }>(
-      `${this.base}/latest/dex/search?q=solana`
-    );
-    if (search?.pairs) {
-      for (const p of search.pairs) {
-        if (p.chainId !== 'solana' || !p.baseToken?.address) continue;
-        if (seen.has(p.baseToken.address)) continue;
-        seen.add(p.baseToken.address);
-        out.push({
-          chainId: 'solana',
-          tokenAddress: p.baseToken.address,
-          symbol: p.baseToken.symbol,
-          name: p.baseToken.name
-        });
-      }
-    }
     return out;
   }
 

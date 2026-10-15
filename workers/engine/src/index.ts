@@ -79,6 +79,11 @@ const BUY_COOLDOWN_SEC = 4 * 3600;
 // labeler tolerance. Covers every event and every baseline sample alike.
 const POST_SCORE_TRACK_SEC = 4 * 3600 + 10 * 60;
 const POST_SCORE_TRACK_MAX = 60;     // bound on extra tokens per run
+// DexScreener's boost lists fail for some minutes from Cloudflare (shared egress, rate limits):
+// 4 to 27 minutes an hour on 15 Oct. Retry once, then use the last good list up to this old;
+// boosts change over hours, and prices still come live from the pairs endpoint.
+const UNIVERSE_RETRY_MS = 1500;
+const UNIVERSE_CACHE_MAX_AGE_SEC = 10 * 60;
 
 // Quality prefilter defaults — empirically validated against 609 labeled events.
 // Population stats: liq<$25k → 37% hit, liq≥$25k → 53-58% hit; b/s≥3.0 → 37% hit/-13.7% avg;
@@ -112,11 +117,33 @@ async function runOnce(env: Env): Promise<void> {
   const ds = new DexScreenerClient(env.DEXSCREENER_BASE_URL);
 
   // 1. Universe = boosted top-N (the site's watchlist lives in the browser, not in D1).
-  const trending = await ds.getTrendingSolana();
-  const universe = Array.from(new Set(trending.slice(0, topN).map((t) => t.tokenAddress)));
-  if (universe.length === 0) {
-    console.log('engine: empty universe, skipping');
-    return;
+  let trending = await ds.getTrendingSolana();
+  if (trending.length === 0) {
+    await new Promise((r) => setTimeout(r, UNIVERSE_RETRY_MS));
+    trending = await ds.getTrendingSolana();
+  }
+  let universe = Array.from(new Set(trending.slice(0, topN).map((t) => t.tokenAddress)));
+  let universeSource: 'live' | 'cache' = 'live';
+  if (universe.length > 0) {
+    await env.DB.prepare(
+      `INSERT INTO engine_state (key, value, updated_at) VALUES ('last_universe', ?, ?)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
+    )
+      .bind(JSON.stringify(universe), now)
+      .run();
+  } else {
+    const cached = await env.DB.prepare(`SELECT value, updated_at FROM engine_state WHERE key = 'last_universe'`).first<{
+      value: string;
+      updated_at: number;
+    }>();
+    const errors = ds.errors.join(', ') || 'empty lists';
+    if (!cached || now - cached.updated_at > UNIVERSE_CACHE_MAX_AGE_SEC) {
+      console.log(`engine: no universe (${errors}), skipping`);
+      return;
+    }
+    universe = JSON.parse(cached.value) as string[];
+    universeSource = 'cache';
+    console.log(`engine: boosts unavailable (${errors}), using the list from ${now - cached.updated_at}s ago`);
   }
   const universeSet = new Set(universe);
   // Tokens scored within the last 4 h 10 m but no longer boosted: price only, no score.
@@ -329,6 +356,7 @@ async function runOnce(env: Env): Promise<void> {
       JSON.stringify({
         at: now,
         universe: universe.length,
+        universe_source: universeSource,
         snapshots: snapByAddr.size,
         tracked_after_list: trackOnly.length,
         buy_triggers: buyTriggers,
