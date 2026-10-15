@@ -6,12 +6,12 @@
 - Страницы: лендинг (hero + живой топ-5), `/how-it-works` (методология), дашборд: обзор, сканер, сигналы,
   стратегия, избранное (localStorage). Settings удалена (308 → /dashboard).
 - Хостинг: Cloudflare Pages `fomometer-web`, домены `fomometer.xyz` и `www` привязаны 2026-10-14.
-- Прод: деплой `1bb1002c` (2026-10-15, редизайн по эталону 1wintoken.com, 3D-рендеры Higgsfield, правки владельца по скриншотам).
+- Прод: деплой `a4aeaec2` (2026-10-15): редизайн, 3D-рендеры, кнопка Buy через Jupiter (реферальная комиссия 1%).
 - Логотипы через `/api/logo`, сторонних cookie нет.
 
 ---
 
-## 2026-10-15 [BUILD] Кнопка Buy через Jupiter с реферальной комиссией (выключена, не задеплоено)
+## 2026-10-15 [BUILD] Кнопка Buy через Jupiter с реферальной комиссией (задеплоено `a4aeaec2`)
 - Решение владельца: вариант «свой обмен через Jupiter с нашей комиссией» («нормальная тема», «делаем»).
 - `lib/trade.ts`: `JUP_REFERRAL_ACCOUNT` (пусто = все кнопки скрыты), `JUP_REFERRAL_FEE_BPS = 100`, SOL mint.
 - `components/trade/buy-button.tsx`: по клику грузит `https://plugin.jup.ag/plugin-v1.js`, открывает modal
@@ -32,6 +32,9 @@
 - Владелец создал реферальный счёт `Fyhr9NJU2JbwdTL4ZZRRaCpnJH1eLydDnBZsc9khJBTA` (проект Ultra) и токен-счета SOL, USDC, USDT.
   Котировки без подписи: SOL → 6 токенов из свежих BUY, SOL → USDC и USDC → CBUCKS дают `feeBps 100`;
   `feeMint` SOL, у USDC → CBUCKS USDC. Единичные «Something unexpected occurred» у Jupiter при повторе проходят.
+- Прод: 11 кнопок Buy в Signals (свежие BUY, старейшая 43 мин); на странице DIKSHIT modal открылся, запрос
+  плагина `ultra-api.jup.ag/order ... referralAccount=Fyhr9N...&referralFee=100` → 200, `feeBps 100`, `feeMint` SOL.
+  Первая реальная покупка за владельцем; приход комиссии на счёт ещё не проверен.
 
 ## 2026-10-15 [DEBUG] Правки владельца по скриншотам (задеплоено `1bb1002c`)
 - Убраны стрелки у всех кнопок «Open the board» / «Open the full board» (hero, шапка лендинга, live-board, пустое избранное).
