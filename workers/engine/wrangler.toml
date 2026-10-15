@@ -31,3 +31,5 @@ ENGINE_BS_RATIO_MIN = "0.8"
 ENGINE_BS_RATIO_MAX = "3.0"
 ENGINE_PUMP_BLOCK_LO = "50"
 ENGINE_PUMP_BLOCK_HI = "100"
+# No events for tokens first seen under 48 h ago (fitted 2026-10-15, see research journal).
+ENGINE_MIN_TOKEN_AGE_H = "48"

@@ -60,6 +60,8 @@ export interface Env {
   /** Quality prefilter — block emission when price_change_h1 in (LO, HI] (exhausted pump). */
   ENGINE_PUMP_BLOCK_LO?: string;
   ENGINE_PUMP_BLOCK_HI?: string;
+  /** Quality prefilter — minimum hours since the engine first saw the token. */
+  ENGINE_MIN_TOKEN_AGE_H?: string;
 }
 
 const ROLLING_WINDOW_MIN = 90;       // factors look back ≤ 90 minutes (was 60)
@@ -82,6 +84,10 @@ const DEFAULT_BS_RATIO_MIN = 0.8;
 const DEFAULT_BS_RATIO_MAX = 3.0;
 const DEFAULT_PUMP_BLOCK_LO = 50;
 const DEFAULT_PUMP_BLOCK_HI = 100;
+// Fitted 2026-10-15 on outcomes May–Aug (age grid 0–168 h, best trimmed mean of the 4 h return),
+// checked on Sep–Oct: BUY 4 h median −6.8 % → −3.5 % after a 3 % round-trip cost, win 29 % → 36 %.
+// Fewer losses, not an edge: still negative after costs. Age = time since tokens.first_seen.
+const DEFAULT_MIN_TOKEN_AGE_H = 48;
 
 export default {
   async scheduled(_event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
@@ -244,7 +250,10 @@ async function runOnce(env: Env): Promise<void> {
 
   // 5–6. Persist signals and emit transition events. Reads first (previous scores, FOMO
   // throttle), then every write in a single batch.
-  const eligible = scored.filter((c) => c.warm && passesQualityFilter(snapByAddr.get(c.addr), qf));
+  const firstSeen = await loadFirstSeen(env, scored.filter((c) => c.warm).map((c) => c.addr));
+  const eligible = scored.filter(
+    (c) => c.warm && passesQualityFilter(snapByAddr.get(c.addr), firstSeen.get(c.addr), now, qf)
+  );
   const filteredOut = scored.filter((c) => c.warm).length - eligible.length;
   const eligibleAddrs = eligible.map((c) => c.addr);
   const prevScores = await loadPrevScores(env, eligibleAddrs, now);
@@ -352,6 +361,7 @@ type QualityFilter = {
   bsRatioMax: number;
   pumpBlockLo: number;
   pumpBlockHi: number;
+  minTokenAgeH: number;
 };
 
 function readQualityFilter(env: Env): QualityFilter {
@@ -364,12 +374,20 @@ function readQualityFilter(env: Env): QualityFilter {
     bsRatioMin: num(env.ENGINE_BS_RATIO_MIN, DEFAULT_BS_RATIO_MIN),
     bsRatioMax: num(env.ENGINE_BS_RATIO_MAX, DEFAULT_BS_RATIO_MAX),
     pumpBlockLo: num(env.ENGINE_PUMP_BLOCK_LO, DEFAULT_PUMP_BLOCK_LO),
-    pumpBlockHi: num(env.ENGINE_PUMP_BLOCK_HI, DEFAULT_PUMP_BLOCK_HI)
+    pumpBlockHi: num(env.ENGINE_PUMP_BLOCK_HI, DEFAULT_PUMP_BLOCK_HI),
+    minTokenAgeH: num(env.ENGINE_MIN_TOKEN_AGE_H, DEFAULT_MIN_TOKEN_AGE_H)
   };
 }
 
-function passesQualityFilter(snap: Snapshot | undefined, qf: QualityFilter): boolean {
+function passesQualityFilter(
+  snap: Snapshot | undefined,
+  firstSeen: number | undefined,
+  nowSec: number,
+  qf: QualityFilter
+): boolean {
   if (!snap) return false;
+  // Young tokens: BUY on tokens seen for under an hour lost a median 43 % in 4 h.
+  if (qf.minTokenAgeH > 0 && (firstSeen == null || nowSec - firstSeen < qf.minTokenAgeH * 3600)) return false;
   if (!Number.isFinite(snap.liquidity_usd) || snap.liquidity_usd < qf.minLiquidityUsd) return false;
   // buys/sells ratio band — only check when we have a sells reading; sells=0 is treated as
   // missing data, not infinite ratio, because brand-new pools often haven't logged a sell yet.
@@ -517,6 +535,19 @@ async function loadRollingWindows(
     if (list) list.push(row);
     else out.set(row.address, [row]);
   }
+  return out;
+}
+
+/** When the engine first saw each token (tokens.first_seen, never overwritten). */
+async function loadFirstSeen(env: Env, addresses: string[]): Promise<Map<string, number>> {
+  const out = new Map<string, number>();
+  if (!addresses.length) return out;
+  const r = await env.DB.prepare(
+    `SELECT t.address, t.first_seen FROM json_each(?) a JOIN tokens t ON t.address = a.value`
+  )
+    .bind(JSON.stringify(addresses))
+    .all<{ address: string; first_seen: number }>();
+  for (const row of r.results ?? []) out.set(row.address, row.first_seen);
   return out;
 }
 
