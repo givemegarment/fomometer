@@ -48,6 +48,8 @@ export type DsBoostItem = {
   links?: { url: string }[];
 };
 
+const USER_AGENT = 'fomometer-engine/1.0 (+https://fomometer.xyz)';
+
 export class DexScreenerClient {
   constructor(private base: string = DEFAULT_BASE) {}
 
@@ -57,7 +59,8 @@ export class DexScreenerClient {
   private async getJson<T>(url: string): Promise<T | null> {
     const path = new URL(url).pathname;
     try {
-      const res = await fetch(url, { headers: { accept: 'application/json' } });
+      // A Worker sends no user agent by default; sites behind Cloudflare throttle such clients harder.
+      const res = await fetch(url, { headers: { accept: 'application/json', 'user-agent': USER_AGENT } });
       if (!res.ok) {
         this.errors.push(`${path} HTTP ${res.status}`);
         return null;

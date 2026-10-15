@@ -173,7 +173,7 @@ async function runOnce(env: Env): Promise<void> {
   }
 
   if (snapByAddr.size === 0) {
-    console.log('engine: no pairs returned');
+    console.log(`engine: no pairs returned (${ds.errors.join(', ') || 'empty'})`);
     return;
   }
 
