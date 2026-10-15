@@ -10,7 +10,7 @@
 
 ---
 
-## 2026-10-15 [BUILD] Проход C: запись свопов из блокчейна и /api/treasury (не задеплоено, миграция не применена)
+## 2026-10-15 [BUILD] Проход C: запись свопов из блокчейна и /api/treasury (в проде, работает)
 - Решение: не POST из браузера (вкладку закрывают, любой может прислать что угодно), а labeler читает подписи
   счетов комиссии раз в 15 мин. Свопом считается транзакция, поднявшая баланс счёта, чей owner = реферальный счёт.
 - Разведка на реальной транзакции `2SxoQQ…`: счёт `82oUvY…` (owner `Fyhr9N…`) 0 → 10000 lamports, ровно 1% от 0.001 SOL;
@@ -37,6 +37,10 @@
   getSignaturesForAddress, getTransaction 200). Labeler и `/api/treasury` берут Helius при наличии ключа, иначе
   `SOLANA_RPC_URL`. Ошибки без URL (в нём ключ). `/api/treasury` отдаёт `rpc_error`. Labeler: `[observability]`.
   Секреты загружены в labeler и Pages (production); в репозитории ключа нет (grep 0). tsc, lint 0, vitest 24/24.
+- Деплой по команде: labeler `795e6ea1`, сайт `170edb66` (потом `ae0ea990` с правками страницы токена).
+  Прод: `/api/treasury` `rpc_error: null`, 9 балансов, SOL 0.00001. Прогон labeler 16:45 UTC: `swap_cursor` создан,
+  в `swaps` 1 строка: `2SxoQQ…` buy DIKSHIT 14:47:20, fee 0.00001 SOL, size 0.001 SOL, `signal_event_id` 47054
+  (BUY 14:38:39, за 9 мин). `/api/treasury` totals: 1 своп, 1 buy, 1 по сигналу.
 
 
 ## 2026-10-15 [BUILD] Оповещение об остановке движка (запушено с деплоем `c4b1d80f`)
