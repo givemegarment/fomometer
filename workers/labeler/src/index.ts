@@ -27,6 +27,14 @@ const HORIZON_4H_SEC = 4 * 3600;
 const HORIZON_TOLERANCE_SEC = 10 * 60;
 /** Best price in the 4 h window above entry by more than this (percent) marks the outcome as suspect. */
 const SUSPECT_RISE_PCT = 1000;
+/** Baseline: one sample of every scored token per slot. */
+const BASELINE_SLOT_SEC = 30 * 60;
+/** The slot's sample is the first engine run within this long after the slot starts (runs can skip minutes). */
+const BASELINE_RUN_WINDOW_SEC = 5 * 60;
+/** Slots processed per run, so a backlog (first run, outage) catches up gradually. */
+const BASELINE_MAX_SLOTS = 8;
+/** First run starts this far back; snapshots are kept 72 h. */
+const BASELINE_START_BACK_SEC = 68 * 3600;
 
 export default {
   async scheduled(_e: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
@@ -71,9 +79,11 @@ async function runOnce(env: Env): Promise<void> {
     .bind(cutoffNewest, cutoffOldest, batchSize)
     .all<EventRow>();
 
+  const baselineSlots = await fillBaseline(env, now);
+
   const events = rows.results ?? [];
   if (events.length === 0) {
-    console.log('labeler: nothing to label');
+    console.log(`labeler: nothing to label, baseline slots=${baselineSlots}`);
     return;
   }
 
@@ -86,7 +96,7 @@ async function runOnce(env: Env): Promise<void> {
   }
 
   console.log(
-    `labeler: scanned=${events.length} labeled=${labeled} skipped=${skipped} in ${Date.now() - t0}ms`
+    `labeler: scanned=${events.length} labeled=${labeled} skipped=${skipped} baseline slots=${baselineSlots} in ${Date.now() - t0}ms`
   );
 }
 
@@ -171,4 +181,50 @@ async function firstPriceAtOrAfter(
     .bind(address, t, t + HORIZON_TOLERANCE_SEC)
     .first<{ price_usd: number }>();
   return r && Number.isFinite(r.price_usd) ? r.price_usd : null;
+}
+
+/**
+ * Baseline for the track record: every token the engine scored in its first run of
+ * each 30-minute slot, priced at 1 h and 4 h with the same tolerance as events, plus the
+ * best price in the 4 h window (same suspect-price rule). Slots are processed once
+ * their horizon plus tolerance has passed; the cursor lives in engine_state.
+ * All work is one INSERT ... SELECT per slot, so the worker parses nothing.
+ */
+async function fillBaseline(env: Env, now: number): Promise<number> {
+  // The sample can come from a run up to BASELINE_RUN_WINDOW_SEC into the slot, and its
+  // 4 h price up to HORIZON_TOLERANCE_SEC after that: wait for both.
+  const ready = now - HORIZON_4H_SEC - HORIZON_TOLERANCE_SEC - BASELINE_RUN_WINDOW_SEC;
+  const cur = await env.DB.prepare(`SELECT value FROM engine_state WHERE key = 'baseline_cursor'`).first<{
+    value: string;
+  }>();
+  const parsed = cur ? parseInt(cur.value, 10) : NaN;
+  let slot = Number.isFinite(parsed)
+    ? parsed + BASELINE_SLOT_SEC
+    : Math.ceil((now - BASELINE_START_BACK_SEC) / BASELINE_SLOT_SEC) * BASELINE_SLOT_SEC;
+
+  let done = 0;
+  for (; slot <= ready && done < BASELINE_MAX_SLOTS; slot += BASELINE_SLOT_SEC, done++) {
+    await env.DB.batch([
+      env.DB.prepare(
+        `INSERT OR IGNORE INTO baseline_outcomes
+           (address, sample_time, entry_price, price_1h, price_4h, max_price_4h)
+         SELECT s.address, s.time, e.price_usd,
+           (SELECT x.price_usd FROM token_snapshots x WHERE x.address = s.address
+              AND x.time >= s.time + 3600 AND x.time <= s.time + 3600 + ?3 ORDER BY x.time LIMIT 1),
+           (SELECT x.price_usd FROM token_snapshots x WHERE x.address = s.address
+              AND x.time >= s.time + ?2 AND x.time <= s.time + ?2 + ?3 ORDER BY x.time LIMIT 1),
+           (SELECT MAX(x.price_usd) FROM token_snapshots x WHERE x.address = s.address
+              AND x.time > s.time AND x.time <= s.time + ?2)
+         FROM signals s
+         JOIN token_snapshots e ON e.address = s.address AND e.time = s.time
+         WHERE s.time = (SELECT MIN(time) FROM signals WHERE time >= ?1 AND time < ?1 + ?4)
+           AND e.price_usd > 0`
+      ).bind(slot, HORIZON_4H_SEC, HORIZON_TOLERANCE_SEC, BASELINE_RUN_WINDOW_SEC),
+      env.DB.prepare(
+        `INSERT INTO engine_state (key, value, updated_at) VALUES ('baseline_cursor', ?, ?)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
+      ).bind(String(slot), now)
+    ]);
+  }
+  return done;
 }

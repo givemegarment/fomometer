@@ -2,8 +2,8 @@
  * FOMOMETER — Engine cron worker
  * Runs every minute. Steps:
  *  1. Determine target token universe = Top-N DexScreener boosted Solana tokens.
- *     Tokens with an event in the last 4 h 10 m are snapshotted too (not scored), so the
- *     labeler can price their outcome after they leave the boosted lists.
+ *     Tokens scored in the last 4 h 10 m but no longer boosted are snapshotted too (not
+ *     scored), so the labeler can price events and baseline samples after they leave.
  *  2. Snapshot via DexScreener (batches of 30).
  *  3. Persist tokens + token_snapshots.
  *  4. Compute the 12-factor vector per token on a rolling window (one D1 query for all tokens).
@@ -69,9 +69,10 @@ const FOMO_FACTOR_INDEX = 3;         // index of `fomo` in FactorVector
 const FOMO_FALLBACK_THRESHOLD = 2.5; // used only when adaptive percentile is unavailable
 const FOMO_PERCENTILE = 0.95;        // FOMO spike fires above 95th percentile of recent fomo factor
 const FOMO_TH_REFRESH_SEC = 30 * 60; // adaptive FOMO threshold is recomputed at most every 30 min
-// Keep snapshotting a token this long after its last event: the 4 h horizon plus the labeler tolerance.
-const POST_EVENT_TRACK_SEC = 4 * 3600 + 10 * 60;
-const POST_EVENT_TRACK_MAX = 60;     // bound on extra tokens per run
+// Keep snapshotting a token this long after it was last scored: the 4 h horizon plus the
+// labeler tolerance. Covers every event and every baseline sample alike.
+const POST_SCORE_TRACK_SEC = 4 * 3600 + 10 * 60;
+const POST_SCORE_TRACK_MAX = 60;     // bound on extra tokens per run
 
 // Quality prefilter defaults — empirically validated against 609 labeled events.
 // Population stats: liq<$25k → 37% hit, liq≥$25k → 53-58% hit; b/s≥3.0 → 37% hit/-13.7% avg;
@@ -108,8 +109,13 @@ async function runOnce(env: Env): Promise<void> {
     return;
   }
   const universeSet = new Set(universe);
-  // Tokens still inside an event's 4 h horizon but no longer boosted: price only, no score.
-  const trackOnly = await loadPostEventAddresses(env, now, universeSet);
+  // Tokens scored within the last 4 h 10 m but no longer boosted: price only, no score.
+  const lastScored = await loadLastScored(env, now);
+  const trackOnly = [...lastScored.entries()]
+    .filter(([a]) => !universeSet.has(a))
+    .sort((x, y) => y[1] - x[1])
+    .slice(0, POST_SCORE_TRACK_MAX)
+    .map(([a]) => a);
 
   // 2. Snapshot in batches of 30.
   const pairs = await Promise.all(
@@ -290,7 +296,12 @@ async function runOnce(env: Env): Promise<void> {
       c.factorsRaw[FOMO_FACTOR_INDEX] ?? null
     );
   });
-  await env.DB.batch([...signalStmts, ...eventStmts]);
+  for (const c of scored) lastScored.set(c.addr, now);
+  const lastScoredStmt = env.DB.prepare(
+    `INSERT INTO engine_state (key, value, updated_at) VALUES ('last_scored', ?, ?)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
+  ).bind(JSON.stringify(Object.fromEntries(lastScored)), now);
+  await env.DB.batch([...signalStmts, ...eventStmts, lastScoredStmt]);
 
   // 7. Prune old data.
   await pruneOldData(env, parseInt(env.ENGINE_HISTORY_RETENTION_HOURS, 10) || 72);
@@ -306,7 +317,7 @@ async function runOnce(env: Env): Promise<void> {
         at: now,
         universe: universe.length,
         snapshots: snapByAddr.size,
-        tracked_after_event: trackOnly.length,
+        tracked_after_list: trackOnly.length,
         buy_triggers: buyTriggers,
         sell_triggers: sellTriggers,
         fomo_spikes: fomoSpikes,
@@ -466,17 +477,23 @@ async function persistTokensAndSnapshots(
   if (stmts.length) await env.DB.batch(stmts);
 }
 
-/** Addresses with an event inside the post-event tracking window that are not in this run's universe. */
-async function loadPostEventAddresses(env: Env, nowSec: number, universe: Set<string>): Promise<string[]> {
-  const r = await env.DB.prepare(
-    `SELECT address FROM signal_events WHERE time >= ? GROUP BY address ORDER BY MAX(time) DESC`
-  )
-    .bind(nowSec - POST_EVENT_TRACK_SEC)
-    .all<{ address: string }>();
-  return (r.results ?? [])
-    .map((x) => x.address)
-    .filter((a) => !universe.has(a))
-    .slice(0, POST_EVENT_TRACK_MAX);
+/**
+ * Address → time it was last scored, for tokens scored within POST_SCORE_TRACK_SEC.
+ * Kept in engine_state ('last_scored', a small JSON object) so the engine does not scan
+ * signals every minute. Older entries are dropped here and on the next write.
+ */
+async function loadLastScored(env: Env, nowSec: number): Promise<Map<string, number>> {
+  const out = new Map<string, number>();
+  const row = await env.DB.prepare(`SELECT value FROM engine_state WHERE key = 'last_scored'`).first<{ value: string }>();
+  if (!row?.value) return out;
+  try {
+    for (const [a, t] of Object.entries(JSON.parse(row.value) as Record<string, unknown>)) {
+      if (typeof t === 'number' && nowSec - t <= POST_SCORE_TRACK_SEC) out.set(a, t);
+    }
+  } catch {
+    /* malformed: start empty */
+  }
+  return out;
 }
 
 /** Rolling windows for many tokens in one query, grouped by address in time order. */

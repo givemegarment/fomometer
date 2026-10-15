@@ -42,7 +42,7 @@ The site never writes to the database. The watchlist lives in the visitor's brow
 
 One run per minute, inside the Workers free-plan CPU limit (50 ms). Measured after the October 2026 rewrite: 15 to 57 ms CPU, 1.4 to 3.7 s wall time, mostly waiting on DexScreener and D1.
 
-1. **Universe.** Token-boost lists (top and latest), Solana only, up to `ENGINE_TOP_N` (50). An empty response skips the minute. Tokens with an event in the last 4 h 10 m that are no longer boosted are added for snapshots only (up to 60, `last_run.tracked_after_event`): they get a price but no score, so their outcome is not lost.
+1. **Universe.** Token-boost lists (top and latest), Solana only, up to `ENGINE_TOP_N` (50). An empty response skips the minute. Tokens scored in the last 4 h 10 m that are no longer boosted are added for snapshots only (up to 60, `last_run.tracked_after_list`; the list is `engine_state.last_scored`): they get a price but no score, so neither event outcomes nor baseline samples lose their price when a token leaves.
 2. **Snapshots.** Pair data for each token: price, liquidity, FDV, volumes (5m, 1h, 6h, 24h), price changes, buy and sell counts. Written to `token_snapshots`. Token metadata goes to `tokens`; an empty logo from DexScreener does not overwrite a stored one.
 3. **Factors.** One query loads the last 90 minutes of snapshots for every token (`json_each`). `packages/shared/src/engine/factors.ts` computes 12 factors.
 4. **Normalization.** Each factor is z-scored across the tokens of this minute and capped at ±5 (`ENGINE_CROSS_SECTIONAL_NORM`).
@@ -55,6 +55,8 @@ One run per minute, inside the Workers free-plan CPU limit (50 ms). Measured aft
 
 Every 15 minutes it takes events without an outcome whose 4-hour horizon has passed (events 4 h 10 m to 16 hours old, so every snapshot inside the 10-minute tolerance already exists; `LABELER_LOOKBACK_HOURS` = 12), finds the first snapshot at or after 15 minutes, 1 hour and 4 hours (accepted only within 10 minutes of the horizon), and writes `signal_outcomes` with the price changes, the best and worst move inside 4 hours, the event's factor vectors (`factors_json`) and `price_flag`. `price_flag = 'rise_over_1000pct'` marks a best price more than 11× entry inside the window, which on DexScreener is almost always a switch to a different pool (441 of 45,759 outcomes on 2026-10-15). Outcomes are never pruned; they are the long-term record (from 2026-05-06).
 
+The same run fills `baseline_outcomes`: every token scored in the first engine run of each 30-minute slot, priced at 1 h and 4 h with the same tolerance, plus the best price in 4 h. This is the "pick at random from the same list" comparison for the track record. Up to 8 slots per run; the cursor is `engine_state.baseline_cursor`.
+
 ## Data model
 
 Schema: `infra/d1-schema.sql`. Times are Unix seconds.
@@ -66,7 +68,8 @@ Schema: `infra/d1-schema.sql`. Times are Unix seconds.
 | `signals` | ~15k | 72 h | score, all 12 normalized factors (`factors_json`) and the raw burst factor (`fomo_raw`) per token per minute |
 | `signal_events` | ~4.4k | 72 h + 14 d | BUY, SELL, volume burst, with factors in `metadata_json` |
 | `signal_outcomes` | 45,759 | forever | price after 15m / 1h / 4h per event, factors (since 2026-10-15), `price_flag` |
-| `engine_state` | 2 | | `last_run`, `fomo_th_raw` |
+| `baseline_outcomes` | | forever | every scored token every 30 min, price after 1h / 4h (since 2026-10-15) |
+| `engine_state` | 5 | | `last_run`, `fomo_th_raw`, `last_scored`, `baseline_cursor` |
 
 ## JSON API
 
@@ -98,6 +101,7 @@ The API is public but not versioned or rate-limited; treat it as the site's inte
 ## Known limitations of the design
 
 - Outcomes before 2026-10-15 have no stored factors; for them the trainer can only use the last 72 hours of `signals`.
+- Baseline samples start on 2026-10-15 (the first run reaches back 68 hours); comparisons over longer windows only cover that span.
 - Before 2026-10-15 tokens that left the boosted lists stopped getting snapshots: about 40 % of those outcomes have no 4-hour price. Losers are more likely to leave, which biases that part of the record upward.
 - `price_flag` is a single rule (best price above 11× entry). A pool switch that lowers the price, or one smaller than 11×, is not caught.
 - One data source (DexScreener). An outage or an empty list skips minutes.

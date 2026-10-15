@@ -14,3 +14,17 @@ ALTER TABLE signal_outcomes ADD COLUMN factors_json TEXT;
 -- on DexScreener this is a switch to a different pool, not a tradable move.
 ALTER TABLE signal_outcomes ADD COLUMN price_flag TEXT;
 UPDATE signal_outcomes SET price_flag = 'rise_over_1000pct' WHERE max_pnl_pct_4h > 1000;
+
+-- Baseline: every scored token sampled every 30 minutes, priced like an event
+-- (filled by the labeler). The "pick at random from the same list" comparison
+-- for the track record; kept forever like signal_outcomes.
+CREATE TABLE IF NOT EXISTS baseline_outcomes (
+  address       TEXT NOT NULL,
+  sample_time   INTEGER NOT NULL,
+  entry_price   REAL NOT NULL,
+  price_1h      REAL,
+  price_4h      REAL,
+  max_price_4h  REAL,
+  PRIMARY KEY (address, sample_time)
+);
+CREATE INDEX IF NOT EXISTS idx_baseline_time ON baseline_outcomes(sample_time);

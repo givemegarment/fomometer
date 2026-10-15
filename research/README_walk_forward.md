@@ -34,8 +34,12 @@ engine (every minute) ──▶ token_snapshots, signals, signal_events (factors
 ## What the training data contains
 
 - **Factors.** Since 2026-10-15 every event stores `{"scored": {...}, "raw": {...}}`: the vector the score used (after cross-sectional normalization) and the raw one. The labeler copies it to `signal_outcomes.factors_json`, which is never pruned. Older outcomes only have factors through the `signals` table, which keeps 72 hours. The trainer queries take `factors_json.scored` first and fall back to `signals`.
-- **Lost outcomes.** `price_4h IS NULL` means no snapshot within 10 minutes after the 4 h horizon. Since 2026-10-15 the engine keeps snapshotting a token for 4 h 10 m after its last event even when it leaves the boosted lists, so this should be rare for new events. Older history loses about 40 % of 4 h prices this way.
+- **Lost outcomes.** `price_4h IS NULL` means no snapshot within 10 minutes after the 4 h horizon. Since 2026-10-15 the engine keeps snapshotting a token for 4 h 10 m after it was last scored, even when it leaves the boosted lists, so this should be rare for new events and baseline samples. Older history loses about 40 % of 4 h prices this way.
 - **Suspect prices.** `price_flag = 'rise_over_1000pct'` when the best price inside the 4 h window is more than 11× entry. On DexScreener this is almost always a switch to a different pool. The trainer queries exclude these rows; older rows were flagged by the same rule when the column was added.
+
+## Baseline
+
+`baseline_outcomes` holds every scored token once per 30 minutes, priced exactly like an event (since 2026-10-15). A new strategy has to beat it over the same window.
 
 ## Engine settings that matter for training
 

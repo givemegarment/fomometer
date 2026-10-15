@@ -104,6 +104,20 @@ CREATE INDEX IF NOT EXISTS idx_outcomes_event_time ON signal_outcomes(event_time
 CREATE INDEX IF NOT EXISTS idx_outcomes_event_type ON signal_outcomes(event_type);
 CREATE INDEX IF NOT EXISTS idx_outcomes_address    ON signal_outcomes(address, event_time DESC);
 
+-- Baseline (every scored token every 30 min, priced like an event) -----------
+-- Filled by the labeler; the comparison for the track record. Kept forever.
+CREATE TABLE IF NOT EXISTS baseline_outcomes (
+  address       TEXT NOT NULL,
+  sample_time   INTEGER NOT NULL,
+  entry_price   REAL NOT NULL,
+  price_1h      REAL,
+  price_4h      REAL,
+  max_price_4h  REAL,
+  PRIMARY KEY (address, sample_time)
+);
+
+CREATE INDEX IF NOT EXISTS idx_baseline_time ON baseline_outcomes(sample_time);
+
 -- Engine cursor / state (key-value) -------------------------------------------
 CREATE TABLE IF NOT EXISTS engine_state (
   key        TEXT PRIMARY KEY,
