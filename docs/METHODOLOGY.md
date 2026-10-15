@@ -53,7 +53,7 @@ A token can trigger signals only if it has at least 10 snapshots, at least $25,0
 
 ## Limitations
 
-The track record has no fees and no slippage, and entry is the snapshot price. Tokens that disappear from the list, often after a collapse, have no later price and drop out of the statistics, which makes results look better than they are. Samples are small and markets change, so past results say little about future ones. Scoring runs can fail or lag; the LIVE / STALE badge shows how fresh the data is. Nothing on this site is financial advice.
+The track record has no fees and no slippage, and entry is the snapshot price. Since 15 October 2026 the engine keeps pricing a token for 4 hours after it leaves the list; before that, tokens that disappeared (often after a collapse) had no later price and dropped out, which flatters older results. The Strategy page shows how many outcomes still have no price, leaves out prices that jump more than 11 times (a switch to another pool), and compares every signal with all tracked tokens priced the same way. Samples are small and markets change, so past results say little about future ones. Scoring runs can fail or lag; the LIVE / STALE badge shows how fresh the data is. Nothing on this site is financial advice.
 
 ## Source code
 

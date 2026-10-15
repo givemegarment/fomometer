@@ -29,15 +29,19 @@ type Settings = {
 };
 
 type Horizon = { n: number; favorable: number | null; median_pct: number | null };
-type RecordRow = {
-  event_type: 'buy_trigger' | 'sell_trigger' | 'fomo_spike';
-  n: number;
-  horizons: Record<(typeof HORIZONS)[number], Horizon>;
+/** One row of the track record, as summarized hourly by the labeler. */
+type Group = { n: number; flagged: number; lost_4h: number; horizons: Record<(typeof HORIZONS)[number], Horizon> };
+type TrackRecord = {
+  at: number;
+  days: number;
+  events: Record<'buy_trigger' | 'sell_trigger' | 'fomo_spike', Group>;
+  baseline: Group & { first_sample: number | null };
 };
 
-type StrategyResponse = { settings: Settings | null; days: number; record: RecordRow[] };
+type StrategyResponse = { settings: Settings | null; record: TrackRecord | null };
 
 const TYPE_KEY = { buy_trigger: 'buy', sell_trigger: 'sell', fomo_spike: 'fomo' } as const;
+const EVENT_TYPES = ['buy_trigger', 'sell_trigger', 'fomo_spike'] as const;
 
 export function StrategyClient() {
   const t = useTranslations('strategy');
@@ -93,85 +97,7 @@ export function StrategyClient() {
 
       <WeightsCard settings={s} loaded={!!data} failed={!!error} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('record_title', { days: data?.days ?? 7 })}</CardTitle>
-          <p className="mt-1 text-sm text-text-muted">{t('record_subtitle')}</p>
-        </CardHeader>
-        <CardContent className="p-0">
-          {!data ? (
-            <div className="p-6">
-              <Skeleton className="h-32" />
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-xs text-text-muted">
-                    <th scope="col" className="px-4 py-3 text-left font-medium sm:px-6">{t('col_type')}</th>
-                    <th scope="col" className="px-4 py-3 text-right font-medium">{t('col_n')}</th>
-                    {HORIZONS.map((h) => (
-                      <th key={h} scope="col" className="px-4 py-3 text-right font-medium">
-                        {t('col_favorable', { h })}
-                      </th>
-                    ))}
-                    <th scope="col" className="px-4 py-3 text-right font-medium sm:pr-6">{t('col_median_1h')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {data.record.map((row) => {
-                    const key = TYPE_KEY[row.event_type];
-                    const m = row.horizons['1h'].median_pct;
-                    return (
-                      <tr key={row.event_type}>
-                        <th scope="row" className="px-4 py-3 text-left font-medium sm:px-6">
-                          {t(`types.${key}`)}
-                          <span className="block text-xs font-normal text-text-muted">{t(`favorable.${key}`)}</span>
-                        </th>
-                        <td className="num-display px-4 py-3 text-right text-text-muted">{row.n}</td>
-                        {HORIZONS.map((h) => {
-                          const v = row.horizons[h];
-                          return (
-                            <td key={h} className="num-display px-4 py-3 text-right">
-                              {v.n < MIN_SAMPLE || v.favorable == null ? (
-                                <span className="text-text-muted">{t('not_enough')}</span>
-                              ) : (
-                                <>
-                                  {(v.favorable * 100).toFixed(0)}%
-                                  <span className="block text-xs text-text-muted">n={v.n}</span>
-                                </>
-                              )}
-                            </td>
-                          );
-                        })}
-                        <td
-                          className={cn(
-                            'num-display px-4 py-3 text-right sm:pr-6',
-                            row.horizons['1h'].n < MIN_SAMPLE || m == null
-                              ? 'text-text-muted'
-                              : m > 0
-                                ? 'text-success'
-                                : m < 0
-                                  ? 'text-danger'
-                                  : 'text-text-muted'
-                          )}
-                        >
-                          {row.horizons['1h'].n < MIN_SAMPLE || m == null
-                            ? t('not_enough')
-                            : `${m > 0 ? '+' : ''}${m.toFixed(2)}%`}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-          <p className="border-t border-border px-4 py-4 text-xs leading-relaxed text-text-muted sm:px-6">
-            {t('caveats')}
-          </p>
-        </CardContent>
-      </Card>
+      <RecordCard record={data?.record} loaded={!!data} failed={!!error} />
     </div>
   );
 }
@@ -227,5 +153,154 @@ function Setting({ label, value }: { label: string; value: string }) {
       <dt className="text-xs text-text-muted">{label}</dt>
       <dd className="num-display mt-1 text-lg font-semibold">{value}</dd>
     </div>
+  );
+}
+
+function RecordCard({ record, loaded, failed }: { record: TrackRecord | null | undefined; loaded: boolean; failed: boolean }) {
+  const t = useTranslations('strategy');
+  const locale = useLocale() as 'en' | 'ru';
+  const flagged = record
+    ? EVENT_TYPES.reduce((sum, k) => sum + record.events[k].flagged, 0) + record.baseline.flagged
+    : 0;
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <CardTitle>{t('record_title', { days: record?.days ?? 7 })}</CardTitle>
+          {record && (
+            <span className="text-xs text-text-muted">
+              {t('record_updated', { ago: fmtTimeAgo(record.at * 1000, Date.now(), locale) })}
+            </span>
+          )}
+        </div>
+        <p className="mt-1 text-sm text-text-muted">{t('record_subtitle')}</p>
+      </CardHeader>
+      <CardContent className="p-0">
+        {failed ? (
+          <p className="px-4 pb-6 text-sm text-danger sm:px-6">{t('load_error')}</p>
+        ) : !loaded ? (
+          <div className="p-6">
+            <Skeleton className="h-32" />
+          </div>
+        ) : !record ? (
+          <p className="px-4 pb-6 text-sm text-text-muted sm:px-6">{t('record_empty')}</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-xs text-text-muted">
+                  <th scope="col" className="px-4 py-3 text-left font-medium sm:px-6">{t('col_type')}</th>
+                  <th scope="col" className="px-4 py-3 text-right font-medium">{t('col_n')}</th>
+                  {HORIZONS.map((h) => (
+                    <th key={h} scope="col" className="px-4 py-3 text-right font-medium">
+                      {t('col_favorable', { h })}
+                    </th>
+                  ))}
+                  {(['1h', '4h'] as const).map((h) => (
+                    <th key={h} scope="col" className="px-4 py-3 text-right font-medium">
+                      {t('col_median', { h })}
+                    </th>
+                  ))}
+                  <th scope="col" className="px-4 py-3 text-right font-medium sm:pr-6">{t('col_lost')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {EVENT_TYPES.map((type) => {
+                  const key = TYPE_KEY[type];
+                  return (
+                    <RecordRow
+                      key={type}
+                      label={t(`types.${key}`)}
+                      hint={t(`favorable.${key}`)}
+                      group={record.events[type]}
+                    />
+                  );
+                })}
+                <RecordRow
+                  label={t('baseline_label')}
+                  hint={t('favorable.baseline')}
+                  group={record.baseline}
+                  baseline
+                />
+              </tbody>
+            </table>
+          </div>
+        )}
+        <div className="space-y-2 border-t border-border px-4 py-4 text-xs leading-relaxed text-text-muted sm:px-6">
+          {record?.baseline.first_sample != null && (
+            <p>
+              {t('baseline_note', {
+                date: new Date(record.baseline.first_sample * 1000).toLocaleDateString(locale, {
+                  day: 'numeric',
+                  month: 'long',
+                  timeZone: 'UTC'
+                })
+              })}
+            </p>
+          )}
+          {flagged > 0 && <p>{t('flagged_note', { n: flagged })}</p>}
+          <p>{t('caveats')}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function RecordRow({ label, hint, group, baseline }: { label: string; hint: string; group: Group; baseline?: boolean }) {
+  const t = useTranslations('strategy');
+  const fmt = new Intl.NumberFormat(useLocale()).format;
+  const priced = group.n - group.flagged;
+  return (
+    <tr className={baseline ? 'border-t-2 border-border bg-bg-chip/40' : undefined}>
+      <th scope="row" className="px-4 py-3 text-left font-medium sm:px-6">
+        {label}
+        <span className="block text-xs font-normal text-text-muted">{hint}</span>
+      </th>
+      <td className="num-display px-4 py-3 text-right text-text-muted">{fmt(group.n)}</td>
+      {HORIZONS.map((h) => {
+        const v = group.horizons[h];
+        return (
+          <td key={h} className="num-display px-4 py-3 text-right">
+            {v.n < MIN_SAMPLE || v.favorable == null ? (
+              <span className="text-text-muted">{t('not_enough')}</span>
+            ) : (
+              <>
+                {(v.favorable * 100).toFixed(0)}%
+                <span className="block text-xs text-text-muted">n={fmt(v.n)}</span>
+              </>
+            )}
+          </td>
+        );
+      })}
+      {(['1h', '4h'] as const).map((h) => {
+        const v = group.horizons[h];
+        const m = v.median_pct;
+        const enough = v.n >= MIN_SAMPLE && m != null;
+        return (
+          <td
+            key={h}
+            className={cn(
+              'num-display px-4 py-3 text-right',
+              !enough ? 'text-text-muted' : m > 0 ? 'text-success' : m < 0 ? 'text-danger' : 'text-text-muted'
+            )}
+          >
+            {!enough ? t('not_enough') : `${m > 0 ? '+' : ''}${m.toFixed(2)}%`}
+          </td>
+        );
+      })}
+      <td className="num-display px-4 py-3 text-right text-text-muted sm:pr-6">
+        {priced < MIN_SAMPLE ? (
+          t('not_enough')
+        ) : (
+          <>
+            {((group.lost_4h / priced) * 100).toFixed(0)}%
+            <span className="block text-xs">
+              {fmt(group.lost_4h)}/{fmt(priced)}
+            </span>
+          </>
+        )}
+      </td>
+    </tr>
   );
 }

@@ -35,6 +35,9 @@ const BASELINE_RUN_WINDOW_SEC = 5 * 60;
 const BASELINE_MAX_SLOTS = 8;
 /** First run starts this far back; snapshots are kept 72 h. */
 const BASELINE_START_BACK_SEC = 68 * 3600;
+/** Track record summary for the Strategy page: window and refresh interval. */
+const RECORD_DAYS = 7;
+const RECORD_REFRESH_SEC = 60 * 60;
 
 export default {
   async scheduled(_e: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
@@ -82,11 +85,6 @@ async function runOnce(env: Env): Promise<void> {
   const baselineSlots = await fillBaseline(env, now);
 
   const events = rows.results ?? [];
-  if (events.length === 0) {
-    console.log(`labeler: nothing to label, baseline slots=${baselineSlots}`);
-    return;
-  }
-
   let labeled = 0;
   let skipped = 0;
   for (const e of events) {
@@ -95,8 +93,10 @@ async function runOnce(env: Env): Promise<void> {
     else skipped++;
   }
 
+  const recordUpdated = await updateTrackRecord(env, now);
+
   console.log(
-    `labeler: scanned=${events.length} labeled=${labeled} skipped=${skipped} baseline slots=${baselineSlots} in ${Date.now() - t0}ms`
+    `labeler: scanned=${events.length} labeled=${labeled} skipped=${skipped} baseline slots=${baselineSlots} record=${recordUpdated ? 'updated' : 'kept'} in ${Date.now() - t0}ms`
   );
 }
 
@@ -185,7 +185,7 @@ async function firstPriceAtOrAfter(
 
 /**
  * Baseline for the track record: every token the engine scored in its first run of
- * each 30-minute slot, priced at 1 h and 4 h with the same tolerance as events, plus the
+ * each 30-minute slot, priced at 15 m, 1 h and 4 h with the same tolerance as events, plus the
  * best price in the 4 h window (same suspect-price rule). Slots are processed once
  * their horizon plus tolerance has passed; the cursor lives in engine_state.
  * All work is one INSERT ... SELECT per slot, so the worker parses nothing.
@@ -207,8 +207,10 @@ async function fillBaseline(env: Env, now: number): Promise<number> {
     await env.DB.batch([
       env.DB.prepare(
         `INSERT OR IGNORE INTO baseline_outcomes
-           (address, sample_time, entry_price, price_1h, price_4h, max_price_4h)
+           (address, sample_time, entry_price, price_15m, price_1h, price_4h, max_price_4h)
          SELECT s.address, s.time, e.price_usd,
+           (SELECT x.price_usd FROM token_snapshots x WHERE x.address = s.address
+              AND x.time >= s.time + 900 AND x.time <= s.time + 900 + ?3 ORDER BY x.time LIMIT 1),
            (SELECT x.price_usd FROM token_snapshots x WHERE x.address = s.address
               AND x.time >= s.time + 3600 AND x.time <= s.time + 3600 + ?3 ORDER BY x.time LIMIT 1),
            (SELECT x.price_usd FROM token_snapshots x WHERE x.address = s.address
@@ -227,4 +229,114 @@ async function fillBaseline(env: Env, now: number): Promise<number> {
     ]);
   }
   return done;
+}
+
+type HorizonStats = { n: number; favorable: number | null; median_pct: number | null };
+type GroupStats = {
+  /** Outcomes in the window, including flagged ones. */
+  n: number;
+  /** Left out of every statistic: best price above 11x entry (suspect pool switch). */
+  flagged: number;
+  /** Not flagged, but no price within the tolerance after 4 h. */
+  lost_4h: number;
+  horizons: Record<'15m' | '1h' | '4h', HorizonStats>;
+};
+
+/**
+ * Summary of the last RECORD_DAYS for the Strategy page, stored in
+ * engine_state.track_record so the site reads one row instead of thousands per
+ * request. Outcomes only change when this worker runs; refreshed hourly.
+ * "Favorable" is direction-aware (price down after SELL); the baseline counts
+ * price up. Medians, not means: a few 10x moves would dominate an average.
+ */
+async function updateTrackRecord(env: Env, now: number): Promise<boolean> {
+  const prev = await env.DB.prepare(`SELECT updated_at FROM engine_state WHERE key = 'track_record'`).first<{
+    updated_at: number;
+  }>();
+  if (prev && now - prev.updated_at < RECORD_REFRESH_SEC) return false;
+
+  const since = now - RECORD_DAYS * 86400;
+  const [ev, base, first] = await env.DB.batch<Record<string, number | string | null>>([
+    env.DB.prepare(
+      `SELECT event_type, pnl_pct_15m, pnl_pct_1h, pnl_pct_4h, price_flag
+         FROM signal_outcomes WHERE event_time >= ?`
+    ).bind(since),
+    env.DB.prepare(
+      `SELECT entry_price, price_15m, price_1h, price_4h, max_price_4h
+         FROM baseline_outcomes WHERE sample_time >= ?`
+    ).bind(since),
+    env.DB.prepare(`SELECT MIN(sample_time) AS t FROM baseline_outcomes`)
+  ]);
+
+  const events: Record<string, GroupStats> = {};
+  for (const type of ['buy_trigger', 'sell_trigger', 'fomo_spike']) {
+    const rows = (ev?.results ?? []).filter((r) => r.event_type === type);
+    events[type] = summarize(
+      rows.map((r) => ({
+        flagged: r.price_flag != null,
+        '15m': num(r.pnl_pct_15m),
+        '1h': num(r.pnl_pct_1h),
+        '4h': num(r.pnl_pct_4h)
+      })),
+      type === 'sell_trigger'
+    );
+  }
+
+  const pct = (p: number | null, entry: number): number | null => (p == null || p <= 0 ? null : ((p - entry) / entry) * 100);
+  const baseline = summarize(
+    (base?.results ?? []).map((r) => {
+      const entry = num(r.entry_price) ?? 0;
+      const hi = pct(num(r.max_price_4h), entry);
+      return {
+        flagged: hi != null && hi > SUSPECT_RISE_PCT,
+        '15m': pct(num(r.price_15m), entry),
+        '1h': pct(num(r.price_1h), entry),
+        '4h': pct(num(r.price_4h), entry)
+      };
+    }),
+    false
+  );
+
+  const value = {
+    at: now,
+    days: RECORD_DAYS,
+    events,
+    baseline: { ...baseline, first_sample: num(first?.results?.[0]?.t) }
+  };
+  await env.DB.prepare(
+    `INSERT INTO engine_state (key, value, updated_at) VALUES ('track_record', ?, ?)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
+  )
+    .bind(JSON.stringify(value), now)
+    .run();
+  return true;
+}
+
+type Priced = { flagged: boolean; '15m': number | null; '1h': number | null; '4h': number | null };
+
+function summarize(rows: Priced[], down: boolean): GroupStats {
+  const clean = rows.filter((r) => !r.flagged);
+  const horizons = {} as GroupStats['horizons'];
+  for (const h of ['15m', '1h', '4h'] as const) {
+    const xs = clean.map((r) => r[h]).filter((x): x is number => x != null && Number.isFinite(x));
+    const fav = xs.filter((x) => (down ? x < 0 : x > 0)).length;
+    horizons[h] = { n: xs.length, favorable: xs.length ? fav / xs.length : null, median_pct: median(xs) };
+  }
+  return {
+    n: rows.length,
+    flagged: rows.length - clean.length,
+    lost_4h: clean.filter((r) => r['4h'] == null).length,
+    horizons
+  };
+}
+
+function num(v: unknown): number | null {
+  return typeof v === 'number' && Number.isFinite(v) ? v : null;
+}
+
+function median(xs: number[]): number | null {
+  if (!xs.length) return null;
+  const s = [...xs].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid]! : (s[mid - 1]! + s[mid]!) / 2;
 }

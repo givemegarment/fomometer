@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS baseline_outcomes (
   address       TEXT NOT NULL,
   sample_time   INTEGER NOT NULL,
   entry_price   REAL NOT NULL,
+  price_15m     REAL,
   price_1h      REAL,
   price_4h      REAL,
   max_price_4h  REAL,

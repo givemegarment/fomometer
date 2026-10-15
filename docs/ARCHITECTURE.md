@@ -69,7 +69,7 @@ Schema: `infra/d1-schema.sql`. Times are Unix seconds.
 | `signal_events` | ~4.4k | 72 h + 14 d | BUY, SELL, volume burst, with factors in `metadata_json` |
 | `signal_outcomes` | 45,759 | forever | price after 15m / 1h / 4h per event, factors (since 2026-10-15), `price_flag` |
 | `baseline_outcomes` | | forever | every scored token every 30 min, price after 1h / 4h (since 2026-10-15) |
-| `engine_state` | 5 | | `last_run`, `fomo_th_raw`, `last_scored`, `baseline_cursor` |
+| `engine_state` | 6 | | `last_run`, `fomo_th_raw`, `last_scored`, `baseline_cursor`, `track_record` (7-day summary for the Strategy page, refreshed hourly by the labeler) |
 
 ## JSON API
 
@@ -82,7 +82,7 @@ All routes are `GET`, edge runtime, read-only, no authentication. Prices in USD,
 | `/api/overview` | | `buy_signals_1h`, `avg_score`, `leaders`, `last_buys` |
 | `/api/signals` | `type=buy\|sell\|fomo`, `limit` 20..200 | `events` with token symbol and logo |
 | `/api/tokens/{address}` | | `token`, `history` (6 h of price and score), latest factors, recent events |
-| `/api/strategy` | `days` 1..90 (default 7) | `settings` from `last_run` (thresholds, regime, weights) and `record`: per event type and horizon, n, share favorable, median change |
+| `/api/strategy` | | `settings` from `last_run` (thresholds, regime, weights) and `record` from `track_record`: last 7 days per event type and for the all-tokens baseline, per horizon n, share favorable, median change, plus flagged and no-price-at-4h counts |
 | `/api/watchlist` | `addresses` (comma-separated) | `rows` for the given addresses |
 
 The API is public but not versioned or rate-limited; treat it as the site's internal API.
