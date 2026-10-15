@@ -53,7 +53,7 @@ export function WatchlistClient() {
           icon={<Star className="h-5 w-5" />}
           cta={
             <Button asChild variant="primary" size="md">
-              <Link href="/dashboard/scanner">
+              <Link href="/dashboard">
                 <ScanSearch className="h-4 w-4" aria-hidden />
                 {t('open_scanner')}
               </Link>

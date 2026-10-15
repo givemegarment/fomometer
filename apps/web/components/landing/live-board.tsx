@@ -1,119 +1,75 @@
 'use client';
 
-import useSWR from 'swr';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { ArrowRight } from 'lucide-react';
-import { ScorePill } from '@/components/dashboard/score-pill';
 import { TokenAvatar } from '@/components/dashboard/token-avatar';
-import { StatusBadge } from '@/components/status-badge';
 import { Sparkline } from '@/components/ui/sparkline';
-import { Skeleton } from '@/components/ui/skeleton';
-import { fetcher } from '@/lib/fetcher';
-import { SWR_KEYS, SWR_INTERVALS } from '@/lib/swr-keys';
-import { fmtPct, fmtUSD, pctTone, shortenAddress } from '@/lib/format';
+import { Price } from '@/components/ui/price';
+import { fmtPct, pctTone, shortenAddress } from '@/lib/format';
+import { useLiveRows } from '@/lib/live-data';
 import { cn } from '@/lib/cn';
 
-type Row = {
-  address: string;
-  symbol: string;
-  name: string;
-  image_url: string | null;
-  price_usd: number | null;
-  price_change_h24: number | null;
-  score: number | null;
-  spark: number[];
-};
-
-/** Real top-5 from the scanner API: the landing shows the product, not a mock. */
+/** Real top 5 from the scanner API, as a glass card: the landing shows the product, not a mock. */
 export function LiveBoard() {
   const t = useTranslations('landing');
-  const tCol = useTranslations('scanner.col');
-  const { data, error } = useSWR<{ rows: Row[] }>(SWR_KEYS.scanner(), fetcher, {
-    refreshInterval: SWR_INTERVALS.scanner
-  });
-  const rows = data?.rows?.slice(0, 5) ?? [];
+  const { data, error } = useLiveRows();
+  const rows = data?.rows.slice(0, 5) ?? [];
 
   return (
-    <section aria-labelledby="live-board-title" className="min-w-0">
-      <div className="rounded-lg border border-border bg-bg-card">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-5">
-          <h2 id="live-board-title" className="text-sm font-semibold">
-            {t('board_title')}
-          </h2>
-          <StatusBadge detailed />
-        </div>
-        {error ? (
-          <p className="px-5 py-10 text-center text-sm text-text-muted">{t('board_error')}</p>
-        ) : !data ? (
-          <div className="space-y-2 p-4">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-10" />
-            ))}
-          </div>
-        ) : rows.length === 0 ? (
-          <p className="px-5 py-10 text-center text-sm text-text-muted">{t('board_empty')}</p>
-        ) : (
-          <>
-            <div
-              aria-hidden
-              className="flex items-center gap-3 border-b border-border px-4 py-2 text-xs text-text-muted sm:px-5"
-            >
-              <span className="w-4">#</span>
-              <span className="flex-1">{t('col_token')}</span>
-              <span className="w-20 text-right">{tCol('change_24h')}</span>
-              <span className="hidden w-20 text-center md:block">{tCol('spark')}</span>
-              <span className="w-10 text-right">{t('col_score')}</span>
-            </div>
-            <ol className="divide-y divide-border">
-              {rows.map((row, i) => {
-                const tone = pctTone(row.price_change_h24);
-                return (
-                  <li key={row.address}>
-                    <Link
-                      href={`/dashboard/token/${row.address}`}
-                      className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-white/[0.02] sm:px-5"
-                    >
-                      <span className="w-4 text-xs text-text-muted">{i + 1}</span>
-                      <TokenAvatar src={row.image_url} symbol={row.symbol} />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium">
-                          {row.symbol || shortenAddress(row.address)}
-                        </span>
-                        <span className="num-display block truncate text-xs text-text-muted">
-                          {fmtUSD(row.price_usd)}
-                        </span>
-                      </span>
-                      <span
-                        className={cn(
-                          'num-display w-20 text-right text-sm',
-                          tone === 'up' ? 'text-success' : tone === 'down' ? 'text-danger' : 'text-text-muted'
-                        )}
-                      >
-                        {fmtPct(row.price_change_h24, { sign: true })}
-                      </span>
-                      <Sparkline data={row.spark} className="hidden md:block" />
-                      <span className="flex w-10 justify-end">
-                        <ScorePill score={row.score} />
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ol>
-          </>
-        )}
-        <div className="border-t border-border px-4 py-3 sm:px-5">
-          <Link
-            href="/dashboard/scanner"
-            className="inline-flex items-center gap-1 text-sm text-accent hover:underline"
-          >
-            {t('board_more')}
-            <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-          </Link>
-        </div>
+    <div className="ring-hair overflow-hidden rounded-2xl bg-black/35 text-left backdrop-blur-xl">
+      <div className="flex items-center justify-between px-5 py-4">
+        <p className="text-[15px] font-semibold">{t('board_title')}</p>
+        <span className="text-xs text-white/70">
+          {t('col_24h')} · {t('col_score')}
+        </span>
       </div>
-      <p className="mt-3 text-xs text-text-dim">{t('board_note')}</p>
-    </section>
+      {error ? (
+        <p className="px-5 pb-8 pt-4 text-center text-sm text-text-muted">{t('board_error')}</p>
+      ) : !data ? (
+        <div className="space-y-2 px-5 pb-5">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i} className="skeleton h-11 rounded-md" />
+          ))}
+        </div>
+      ) : rows.length === 0 ? (
+        <p className="px-5 pb-8 pt-4 text-center text-sm text-text-muted">{t('board_empty')}</p>
+      ) : (
+        <ol>
+          {rows.map((row, i) => {
+            const tone = pctTone(row.price_change_h24);
+            const score = row.score == null ? null : Math.round(row.score * 100);
+            return (
+              <li key={row.address} className="border-t border-white/[0.06]">
+                <Link href={`/dashboard/token/${row.address}`} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-white/[0.04]">
+                  <span className="num-display w-4 text-xs text-white/60">{i + 1}</span>
+                  <TokenAvatar src={row.image_url} symbol={row.symbol} size="md" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[15px] font-semibold">{row.symbol || shortenAddress(row.address)}</span>
+                    <Price value={row.price_usd} className="num-display block text-xs text-white/70" />
+                  </span>
+                  <Sparkline data={row.spark} width={64} height={22} className="hidden sm:block" />
+                  <span
+                    className={cn(
+                      'num-display w-20 text-right text-sm',
+                      tone === 'up' ? 'text-success' : tone === 'down' ? 'text-danger' : 'text-white/70'
+                    )}
+                  >
+                    {fmtPct(row.price_change_h24, { sign: true, digits: Math.abs(row.price_change_h24 ?? 0) >= 1000 ? 0 : 1 })}
+                  </span>
+                  <span className={cn('num-display w-9 text-right text-[15px] font-semibold', score != null && score >= 70 ? 'text-accent' : 'text-white')}>
+                    {score ?? '·'}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+      <Link href="/dashboard" className="flex items-center justify-center gap-1.5 border-t border-white/[0.06] px-5 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/[0.04]">
+        {t('board_more')}
+        <ArrowRight className="h-4 w-4" aria-hidden />
+      </Link>
+    </div>
   );
 }

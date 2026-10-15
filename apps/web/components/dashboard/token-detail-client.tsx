@@ -83,7 +83,7 @@ export function TokenDetailClient({ address }: { address: string }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <Link
-          href="/dashboard/scanner"
+          href="/dashboard"
           className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary"
         >
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden />

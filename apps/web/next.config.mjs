@@ -8,7 +8,11 @@ const nextConfig = {
   poweredByHeader: false,
   // Token logos are plain <img> (no Next image optimizer on Cloudflare Pages).
   async redirects() {
-    return [{ source: '/dashboard/settings', destination: '/dashboard', permanent: true }];
+    return [
+      { source: '/dashboard/settings', destination: '/dashboard', permanent: true },
+      // The scanner and the overview became one board at /dashboard.
+      { source: '/dashboard/scanner', destination: '/dashboard', permanent: true }
+    ];
   },
   experimental: {
     typedRoutes: false

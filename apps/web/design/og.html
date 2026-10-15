@@ -1,0 +1,24 @@
+<!doctype html><html><head><meta charset="utf-8">
+<!-- Source of public/og.png. Open at 1200x630 in Chrome, screenshot, scale to 1200x630. -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;width:1200px;height:630px;background:#141415;font-family:Inter,sans-serif;color:#fff;overflow:hidden}
+.bg{position:absolute;inset:0;background:radial-gradient(80% 70% at 50% 0%,rgba(42,42,86,.65),transparent 70%)}
+.bars{position:absolute;left:24px;right:24px;bottom:0;height:300px;display:flex;align-items:flex-end;gap:8px;-webkit-mask-image:linear-gradient(to top,#000 10%,transparent 95%)}
+.bars div{flex:1;border-radius:8px 8px 0 0;background:linear-gradient(to top,rgba(255,255,255,.01),rgba(255,255,255,.1))}
+.bars .hot{background:linear-gradient(to top,rgba(0,178,75,.05),rgba(0,178,75,.5));box-shadow:0 0 28px rgba(0,178,75,.25)}
+.mark{position:absolute;top:56px;left:64px;display:flex;align-items:center;gap:12px;font-size:30px;font-weight:600;letter-spacing:-.02em}
+.wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.pill{display:inline-flex;align-items:center;gap:10px;padding:8px 18px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);font-size:20px;background:rgba(255,255,255,.04)}
+.dot{width:9px;height:9px;border-radius:50%;background:#00B24B}
+h1{margin:26px 0 0;font-size:118px;line-height:.95;letter-spacing:-.04em;font-weight:600}
+p{margin:22px 0 0;font-size:26px;color:rgba(255,255,255,.75);max-width:820px;line-height:1.35}
+.foot{position:absolute;bottom:40px;left:64px;right:64px;display:flex;justify-content:space-between;font-size:18px;color:#8A8E95}
+</style></head><body>
+<div class="bg"></div>
+<div class="bars" id="b"></div>
+<div class="mark"><svg viewBox="0 0 14 12" width="28" height="24"><rect x="0" y="7" width="3" height="5" rx=".5" fill="#3A3A3F"/><rect x="5.5" y="4" width="3" height="8" rx=".5" fill="#8A8E95"/><rect x="11" y="0" width="3" height="12" rx=".5" fill="#00B24B"/></svg>FOMOMETER</div>
+<div class="wrap"><span class="pill"><span class="dot"></span>Live · Solana</span><h1>FOMO, measured.</h1><p>Every promoted Solana memecoin, scored every minute. Open method, public track record.</p></div>
+<div class="foot"><span>fomometer.xyz</span><span>Data: DexScreener · Not financial advice</span></div>
+<script>const h=[.3,.5,.35,.62,.45,.8,.4,.55,.3,.72,.5,.38,.6,.9,.42,.33,.58,.48,.76,.36,.52,.4,.66,.3,.5,.44,.82,.38];const b=document.getElementById('b');h.forEach(v=>{const d=document.createElement('div');d.style.height=(v*100)+'%';if(v>=.7)d.className='hot';b.appendChild(d)})</script>
+</body></html>

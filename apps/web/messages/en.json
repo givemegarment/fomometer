@@ -1,61 +1,129 @@
 {
   "nav": {
-    "overview": "Overview",
     "scanner": "Scanner",
     "signals": "Signals",
     "strategy": "Strategy",
-    "watchlist": "Watchlist"
+    "watchlist": "Watchlist",
+    "board": "Board",
+    "method": "How it works",
+    "whitepaper": "Whitepaper",
+    "roadmap": "Roadmap",
+    "label": "Sections",
+    "docs_label": "Documentation"
   },
   "site": {
-    "dashboard": "Dashboard",
-    "how_it_works": "How it works",
     "disclaimer": "Not financial advice. FOMOMETER publishes statistics about market data. It does not recommend buying or selling any token.",
     "data_source": "Market data:",
     "whitepaper": "Whitepaper",
-    "roadmap": "Roadmap"
+    "roadmap": "Roadmap",
+    "source_code": "Source code",
+    "disclaimer_short": "Statistics about market data. Not financial advice."
   },
   "status": {
     "prices": "prices {ago}",
-    "scores": "scores {ago}"
+    "scores": "scores {ago}",
+    "connecting": "Connecting"
   },
   "landing": {
     "meta_title": "FOMOMETER · Solana memecoin scores, updated every minute",
     "meta_description": "FOMOMETER tracks Solana memecoins promoted on DexScreener, computes 12 market factors for each and publishes a score with a transparent method and track record.",
-    "eyebrow": "Solana memecoin scanner",
-    "title": "Solana memecoins, scored every minute.",
-    "subtitle": "FOMOMETER tracks tokens promoted on DexScreener, computes 12 market factors for each one and flags when a score crosses its threshold. Open to everyone, no sign-up, no wallet.",
-    "cta_open": "Open dashboard",
-    "cta_how": "How it works",
+    "nav_board": "Open the board",
+    "live": "Live",
+    "stale": "Stale",
+    "chain": "Solana",
+    "title": "FOMO, measured.",
+    "subtitle": "Every promoted Solana memecoin, scored every minute on 12 market factors. Open method, public track record, no wallet.",
+    "next_run": "Next scoring run in",
+    "stale_note": "The engine has not reported for a few minutes. Scores on the board may be old.",
+    "hero_card": "Watch scores land on the live board as each run finishes.",
+    "skyline_note": "Each bar is one tracked token, its height its current score.",
+    "scroll": "Scroll down",
+    "marquee_label": "Tracked right now",
+    "facts_title": "Built on public market data",
+    "facts_sub": "Numbers below are live from the engine, not marketing.",
+    "fact_tracked": "tokens tracked right now",
+    "fact_signals": "signals checked in {days} days",
+    "fact_runs": "scoring runs a day",
+    "fact_factors": "factors per token",
+    "fact_compare_title": "Price higher 4 hours later",
+    "fact_compare_buy": "after a BUY signal",
+    "fact_compare_any": "any tracked token",
+    "fact_compare_note": "Last {days} days. No edge yet: the record is published as it is.",
+    "open_tag": "#transparency",
+    "open_kicker": "Why FOMOMETER",
+    "open_title": "Every score, in the open",
+    "open_sub": "The factors, the weights and every past signal are public. Nothing to connect, nothing to buy.",
     "board_title": "Top by score right now",
     "board_empty": "No tracked tokens at the moment.",
     "board_error": "Live data is unavailable right now.",
-    "board_more": "Open the full scanner",
-    "board_note": "Live data. Score is 0 to 100; it ranks tokens against each other and is not a price forecast.",
+    "board_more": "Open the full board",
+    "col_token": "Token",
+    "col_score": "Score",
+    "col_24h": "24h",
     "steps_title": "How it works",
-    "steps": {
-      "collect": {
+    "steps": [
+      {
         "title": "Collect",
-        "body": "Every minute: price, liquidity, volume and buy/sell counts for up to 50 Solana tokens from DexScreener's boosted lists."
+        "body": "Every minute: price, liquidity, volume and buy and sell counts for up to 50 Solana tokens from DexScreener's boosted lists."
       },
-      "measure": {
+      {
         "title": "Measure",
         "body": "12 factors per token, such as buy pressure, volume burst and liquidity depth, each compared with the rest of the list."
       },
-      "score": {
+      {
         "title": "Score",
-        "body": "A 0 to 100 score built from 7 of those factors, plus BUY, SELL and volume-burst signals when thresholds are crossed."
+        "body": "A 0 to 100 score from 7 of those factors. BUY, SELL and volume-burst signals fire when thresholds are crossed."
+      },
+      {
+        "title": "Check",
+        "body": "Every signal is priced 15 minutes, 1 hour and 4 hours later and compared with picking any token at random."
       }
-    },
-    "limits_title": "What FOMOMETER is not",
-    "limits": {
-      "advice": "Not financial advice and not a trading bot. It never touches a wallet.",
-      "universe": "It covers DexScreener's promoted tokens, not the whole Solana market.",
-      "stats": "The track record ignores fees and slippage, and tokens that vanish drop out of it.",
-      "risk": "Memecoins are extremely volatile. Most of them lose most of their value."
-    },
-    "limits_more": "Read the full method",
-    "col_token": "Token",
-    "col_score": "Score"
+    ],
+    "record_title": "Track record",
+    "record_sub": "Share of signals where the price then moved the signal's way, against any tracked token over the same {days} days.",
+    "record_ring": "BUY, higher after 4h",
+    "record_buy": "BUY signals",
+    "record_burst": "Volume bursts",
+    "record_any": "Any token",
+    "record_after": "higher after 4h",
+    "record_median": "median after 4h",
+    "record_n": "{n} priced",
+    "record_cta": "Read the whitepaper",
+    "record_more": "Full statistics",
+    "faq_title": "FAQ",
+    "faq": [
+      {
+        "q": "What is the score?",
+        "a": "A number from 0 to 100: a weighted sum of 7 normalized market factors passed through a sigmoid. It ranks tokens against each other at that minute. It is not a price forecast."
+      },
+      {
+        "q": "Is this financial advice?",
+        "a": "No. FOMOMETER publishes statistics about market data. It does not recommend buying or selling anything, and memecoins lose most of their value more often than not."
+      },
+      {
+        "q": "Where does the data come from?",
+        "a": "DexScreener's public API: the Solana tokens on its boosted lists, which are paid promotion. That is a list of promoted tokens, not the whole market."
+      },
+      {
+        "q": "Do the signals work?",
+        "a": "Not yet better than chance. The Strategy page shows every signal against any tracked token over the same window, and the research plan to change that is on the roadmap."
+      },
+      {
+        "q": "Do I need a wallet or an account?",
+        "a": "No. Everything is open. The watchlist is stored in your browser."
+      },
+      {
+        "q": "Is there a token?",
+        "a": "Not now. A token is only planned after the product earns revenue and the signal beats a random pick. The whitepaper describes the conditions."
+      }
+    ],
+    "footer_product": "Product",
+    "footer_learn": "Learn",
+    "footer_open": "Open source",
+    "footer_github": "GitHub",
+    "footer_rights": "FOMOMETER. Market data: DexScreener.",
+    "sticky_live": "Live",
+    "sticky_next": "next run {s}s"
   },
   "method": {
     "title": "How it works",
@@ -173,18 +241,6 @@
       "hint": "1-hour volume compared with the hourly average over the last 6 hours."
     }
   },
-  "overview": {
-    "title": "Overview",
-    "subtitle": "Tracked tokens and the latest signals",
-    "buy_signals_1h": "BUY signals, last hour",
-    "avg_score": "Average score",
-    "leaders": "Top by score",
-    "last_buys": "Latest BUY signals",
-    "see_all": "See all",
-    "load_error": "Could not load data.",
-    "leaders_empty": "No tracked tokens yet.",
-    "buys_empty": "No BUY signals yet."
-  },
   "scanner": {
     "title": "Scanner",
     "subtitle": "Tracked Solana tokens ranked by score",
@@ -198,12 +254,6 @@
       "fdv": "FDV",
       "fomo": "Burst",
       "spark": "30m"
-    },
-    "filters": {
-      "all": "All",
-      "score_high": "Score 70+",
-      "liq_high": "Liquidity $50k+",
-      "fomo_high": "Burst > 2σ"
     },
     "watch_add": "Add to watchlist",
     "watch_remove": "Remove from watchlist",
@@ -306,7 +356,6 @@
     "error": "Something went wrong",
     "error_body": "Data could not be loaded. Try again in a minute.",
     "retry": "Retry",
-    "disclaimer": "Not financial advice. Scores are statistics, not recommendations to buy or sell.",
     "not_found": "Page not found.",
     "go_home": "Go to home page"
   },
@@ -723,5 +772,35 @@
       "A public research dataset"
     ],
     "whitepaper_link": "Read the whitepaper"
+  },
+  "board": {
+    "title": "Board",
+    "lede": "Promoted Solana memecoins, scored every minute against each other. A score is not a price forecast.",
+    "method_link": "How the score works",
+    "fact_tracked": "Tracked now",
+    "fact_buys": "BUY signals, 1h",
+    "fact_buy_4h": "BUY, higher after 4h",
+    "fact_any_4h": "Any token, higher after 4h",
+    "fact_n": "n={n}, {days} days",
+    "filter_label": "Filter",
+    "filter_all": "All",
+    "filter_score": "Score 70+",
+    "filter_liq": "Liquidity $50k+",
+    "filter_burst": "Burst 2σ+",
+    "low_liq_note": "Dimmed: liquidity under {liq}, too thin for signals.",
+    "low_liq_tag": "Below liquidity filter",
+    "col_token": "Token",
+    "col_score": "Score",
+    "col_price": "Price",
+    "col_24h": "24h",
+    "col_liq": "Liquidity",
+    "col_fdv": "FDV",
+    "col_burst": "Pace",
+    "col_burst_hint": "Volume in the last 5 minutes compared with the hourly pace",
+    "col_30m": "30m",
+    "watch_add": "Add to watchlist",
+    "watch_remove": "Remove from watchlist",
+    "empty": "No tracked tokens right now. Data refreshes every minute.",
+    "footnote": "Prices and 24h change from DexScreener. Score 0 to 100, recomputed every minute."
   }
 }

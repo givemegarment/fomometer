@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useMemo } from 'react';
+import { useMemo } from 'react';
 import { cn } from '@/lib/cn';
 
 export function Sparkline({
@@ -8,9 +8,9 @@ export function Sparkline({
   className,
   width = 80,
   height = 24,
-  positiveColor = '#1FC16B',
-  negativeColor = '#FF4D4F',
-  flatColor = '#8A8D94'
+  positiveColor = '#22C55E',
+  negativeColor = '#F2555A',
+  flatColor = '#80848C'
 }: {
   data: ReadonlyArray<number>;
   className?: string;
@@ -20,10 +20,9 @@ export function Sparkline({
   negativeColor?: string;
   flatColor?: string;
 }) {
-  const gradientId = `spark-${useId().replace(/:/g, '')}`;
-  const { path, fill, color } = useMemo(() => {
+  const { path, color } = useMemo(() => {
     if (!data || data.length < 2) {
-      return { path: '', fill: '', color: flatColor };
+      return { path: '', color: flatColor };
     }
     let min = Infinity;
     let max = -Infinity;
@@ -40,11 +39,10 @@ export function Sparkline({
       const y = height - ((v - min) / range) * height;
       d += i === 0 ? `M${x.toFixed(2)},${y.toFixed(2)}` : ` L${x.toFixed(2)},${y.toFixed(2)}`;
     }
-    const fillPath = `${d} L${width},${height} L0,${height} Z`;
     const first = data[0] ?? 0;
     const last = data[data.length - 1] ?? 0;
     const c = last > first ? positiveColor : last < first ? negativeColor : flatColor;
-    return { path: d, fill: fillPath, color: c };
+    return { path: d, color: c };
   }, [data, width, height, positiveColor, negativeColor, flatColor]);
 
   // Not enough points: a quiet dashed baseline, not a loading shimmer.
@@ -56,7 +54,7 @@ export function Sparkline({
           y1={height / 2}
           x2={width}
           y2={height / 2}
-          stroke="#34373F"
+          stroke="#2C3037"
           strokeWidth="1"
           strokeDasharray="3 3"
         />
@@ -66,14 +64,7 @@ export function Sparkline({
 
   return (
     <svg className={cn(className)} width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={fill} fill={`url(#${gradientId})`} />
-      <path d={path} fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+      <path d={path} fill="none" stroke={color} strokeWidth="1.25" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
 }

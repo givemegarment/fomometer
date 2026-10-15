@@ -15,45 +15,70 @@ const config: Config = {
     },
     extend: {
       colors: {
+        // Matched to the reference look: near-black #141415, white type, one green.
         bg: {
-          base: '#0E0F12',
-          card: '#15161A',
-          elev: '#1B1D22',
-          chip: '#22242B'
+          base: '#141415',
+          card: '#1B1B1D',
+          elev: '#222225',
+          chip: '#2A2A2E'
         },
         border: {
-          DEFAULT: '#26282E',
-          strong: '#34373F'
+          DEFAULT: 'rgba(255,255,255,0.08)',
+          strong: 'rgba(255,255,255,0.14)'
         },
         text: {
-          primary: '#F4F4F5',
-          muted: '#8A8D94',
-          dim: '#82858D'
+          primary: '#FFFFFF',
+          muted: '#9A9EA5',
+          dim: '#8A8E95'
         },
+        // Brand green: primary buttons, live state, the score scale, price up.
         accent: {
-          DEFAULT: '#AB9FF2',
-          strong: '#6E54CC',
-          deep: '#221C4E'
+          DEFAULT: '#00B24B',
+          strong: '#009A41',
+          deep: 'rgba(0,178,75,0.14)',
+          // Button fill: the brand green darkened until white text passes WCAG AA (4.76:1).
+          button: '#00853A',
+          'button-hover': '#007A34'
         },
-        success: { DEFAULT: '#1FC16B', soft: 'rgba(31,193,107,0.14)' },
-        danger: { DEFAULT: '#FF4D4F', soft: 'rgba(255,77,79,0.14)' },
-        warning: { DEFAULT: '#F2C94C', soft: 'rgba(242,201,76,0.14)' }
+        success: { DEFAULT: '#1FCB64', soft: 'rgba(31,203,100,0.14)' },
+        danger: { DEFAULT: '#FF5A5F', soft: 'rgba(255,90,95,0.14)' },
+        warning: { DEFAULT: '#F1BA4A', soft: 'rgba(241,186,74,0.14)' }
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
         mono: ['var(--font-jetbrains)', 'ui-monospace', 'monospace']
       },
       fontSize: {
-        'display-xl': ['clamp(2.75rem,6vw,4.75rem)', { lineHeight: '1.05', letterSpacing: '-0.03em', fontWeight: '700' }],
-        'display-lg': ['clamp(1.5rem,2.5vw,2rem)', { lineHeight: '1.2', letterSpacing: '-0.02em', fontWeight: '600' }]
+        '2xs': ['11px', { lineHeight: '16px', letterSpacing: '0.04em' }],
+        // Display scale taken from the reference: weight 600, tight tracking.
+        'display-2xl': ['clamp(3rem,8vw,6rem)', { lineHeight: '0.95', letterSpacing: '-0.035em', fontWeight: '600' }],
+        'display-xl': ['clamp(2.25rem,4.5vw,3.5rem)', { lineHeight: '1.1', letterSpacing: '-0.025em', fontWeight: '600' }],
+        'display-lg': ['clamp(1.75rem,3vw,2.75rem)', { lineHeight: '1.12', letterSpacing: '-0.022em', fontWeight: '600' }],
+        'display-md': ['clamp(1.5rem,2.2vw,2.25rem)', { lineHeight: '1.15', letterSpacing: '-0.015em', fontWeight: '600' }]
       },
       borderRadius: {
         DEFAULT: '12px',
         sm: '8px',
         md: '12px',
         lg: '16px',
-        xl: '20px',
+        xl: '24px',
+        '2xl': '28px',
+        '3xl': '40px',
         pill: '999px'
+      },
+      transitionTimingFunction: {
+        // The reference's easing for reveals and hovers.
+        snap: 'cubic-bezier(0.5, 0, 0, 1)',
+        out: 'cubic-bezier(0.165, 0.84, 0.44, 1)'
+      },
+      keyframes: {
+        marquee: { from: { transform: 'translateX(0)' }, to: { transform: 'translateX(-50%)' } },
+        'bar-fill': { from: { transform: 'scaleX(0)' }, to: { transform: 'scaleX(1)' } },
+        'nudge-down': { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(4px)' } }
+      },
+      animation: {
+        marquee: 'marquee 40s linear infinite',
+        'nudge-down': 'nudge-down 1.6s ease-in-out infinite'
       }
     }
   },

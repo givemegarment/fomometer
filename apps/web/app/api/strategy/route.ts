@@ -33,7 +33,9 @@ export async function GET() {
         regime: v.regime ?? null,
         normalize_cross_sectional: v.normalize_cross_sectional ?? false,
         regime_aware: v.regime_aware ?? false,
-        weights: pickWeights(v.weights)
+        weights: pickWeights(v.weights),
+        // Events need at least this much liquidity (engine quality filter); the board dims tokens below it.
+        min_liquidity_usd: finite((v.quality_filter as Record<string, unknown> | undefined)?.minLiquidityUsd)
       };
     } catch {
       /* malformed state: show no settings */
@@ -58,4 +60,8 @@ function pickWeights(raw: unknown): Record<string, number> | null {
     if (typeof v === 'number' && Number.isFinite(v)) out[k] = v;
   }
   return Object.keys(out).length ? out : null;
+}
+
+function finite(x: unknown): number | null {
+  return typeof x === 'number' && Number.isFinite(x) ? x : null;
 }

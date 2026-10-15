@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
            t.image_url, sn.price_usd, sn.price_change_h24,
            sn.liquidity_usd, sn.fdv,
            CAST(json_extract(s.factors_json, '$.fomo') AS REAL) AS fomo_factor,
+           s.fomo_raw,
            s.score, s.time AS scored_at
     FROM tracked tr
     JOIN tokens t ON t.address = tr.address
@@ -46,6 +47,7 @@ export async function GET(req: NextRequest) {
     liquidity_usd: number | null;
     fdv: number | null;
     fomo_factor: number | null;
+    fomo_raw: number | null;
     score: number;
     scored_at: number;
   }>();

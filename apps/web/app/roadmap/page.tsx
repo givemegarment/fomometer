@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { Check } from 'lucide-react';
-import { SiteHeader } from '@/components/site-header';
+import { SiteNav } from '@/components/landing/site-nav';
 import { SiteFooter } from '@/components/site-footer';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/cn';
@@ -31,7 +31,7 @@ export default async function RoadmapPage() {
 
   return (
     <>
-      <SiteHeader />
+      <SiteNav />
       <main>
         <article className="mx-auto max-w-3xl px-4 py-14 sm:px-6 sm:py-20">
           <h1 className="text-4xl font-bold tracking-tight">{t('title')}</h1>

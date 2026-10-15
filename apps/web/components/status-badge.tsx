@@ -12,6 +12,7 @@ const LIVE_MAX_AGE_SEC = 3 * 60;
 
 type Status = { snapshot_at: number | null; scored_at: number | null };
 
+/** LIVE / STALE from the newest snapshot; `detailed` adds how old prices and scores are. */
 export function StatusBadge({ detailed = false, className }: { detailed?: boolean; className?: string }) {
   const t = useTranslations('status');
   const { data } = useSWR<Status>(SWR_KEYS.status, fetcher, { refreshInterval: SWR_INTERVALS.status });
@@ -23,24 +24,15 @@ export function StatusBadge({ detailed = false, className }: { detailed?: boolea
 
   return (
     <div className={cn('flex items-center gap-2 text-xs', className)} role="status">
-      <span
-        className={cn(
-          'inline-flex items-center gap-1.5 rounded-pill border px-2 py-0.5 font-semibold',
-          !data
-            ? 'border-border text-text-muted'
-            : live
-              ? 'border-success/40 bg-success-soft text-success'
-              : 'border-warning/40 bg-warning-soft text-warning'
-        )}
-      >
+      <span className={cn('inline-flex items-center gap-1.5 font-semibold', !data ? 'text-text-dim' : live ? 'text-success' : 'text-warning')}>
         <span
           aria-hidden
-          className={cn('h-1.5 w-1.5 rounded-full', !data ? 'bg-text-muted' : live ? 'bg-success' : 'bg-warning')}
+          className={cn('h-1.5 w-1.5 rounded-full', !data ? 'bg-text-dim' : live ? 'bg-success' : 'bg-warning')}
         />
-        {!data ? '·' : live ? 'LIVE' : 'STALE'}
+        {!data ? t('connecting') : live ? 'LIVE' : 'STALE'}
       </span>
       {detailed && data && (
-        <span className="hidden text-text-muted sm:inline">
+        <span className="text-text-dim">
           {snap != null && t('prices', { ago: fmtTimeAgo(snap, now) })}
           {scored != null && ` · ${t('scores', { ago: fmtTimeAgo(scored, now) })}`}
         </span>

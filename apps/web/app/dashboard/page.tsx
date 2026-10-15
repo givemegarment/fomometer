@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { OverviewClient } from '@/components/dashboard/overview-client';
+import { BoardClient } from '@/components/board/board-client';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('nav');
-  return { title: t('overview') };
+  return { title: t('board') };
 }
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
-export default function DashboardOverviewPage() {
-  return <OverviewClient />;
+export default function BoardPage() {
+  return <BoardClient />;
 }
