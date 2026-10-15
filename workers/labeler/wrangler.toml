@@ -6,7 +6,8 @@ compatibility_flags = ["nodejs_compat"]
 # Cron — every 15 minutes. Each run labels events whose 4h-lookahead window
 # has just closed (and back-fills 15m / 1h windows that closed earlier).
 [triggers]
-crons = ["*/15 * * * *"]
+# Labeling every 15 minutes; swaps every minute (src/index.ts SWAPS_CRON).
+crons = ["*/15 * * * *", "* * * * *"]
 
 # Keep run logs (console.log lines) in the dashboard, so failures are visible after the fact.
 [observability]

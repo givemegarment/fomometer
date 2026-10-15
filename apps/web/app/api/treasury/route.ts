@@ -18,7 +18,7 @@ export async function GET() {
   const [{ balances, rpc_error }, swaps] = await Promise.all([readBalances(rpc), readSwaps()]);
   return NextResponse.json(
     { referral_account: JUP_REFERRAL_ACCOUNT, balances, rpc_error, ...swaps },
-    { headers: { 'cache-control': 'public, max-age=120' } }
+    { headers: { 'cache-control': 'public, max-age=30' } }
   );
 }
 

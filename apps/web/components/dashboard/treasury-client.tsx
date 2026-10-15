@@ -49,7 +49,7 @@ function fmtAmount(n: number): string {
  */
 export function TreasuryClient() {
   const t = useTranslations('treasury');
-  const { data, error } = useSWR<Treasury>(SWR_KEYS.treasury, fetcher, { refreshInterval: 60_000 });
+  const { data, error } = useSWR<Treasury>(SWR_KEYS.treasury, fetcher, { refreshInterval: 30_000 });
 
   const sol = data?.totals.find((r) => r.fee_mint === SOL_MINT);
   const all = (data?.totals ?? []).reduce(

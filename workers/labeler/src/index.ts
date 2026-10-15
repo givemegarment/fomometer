@@ -14,6 +14,8 @@
  * pruned, signal_events and signals are), and a price_flag when the price rose
  * more than SUSPECT_RISE_PCT inside the window: on DexScreener that is almost
  * always a switch to a different pool, not a trade anyone could have made.
+ *
+ * A second cron, every minute, records swaps that paid the referral fee (./swaps.ts).
  */
 
 import { summarize, num, type GroupStats } from './summary';
@@ -46,13 +48,17 @@ const BASELINE_START_BACK_SEC = 68 * 3600;
 /** Track record summary for the Strategy page: window and refresh interval. */
 const RECORD_DAYS = 7;
 const RECORD_REFRESH_SEC = 60 * 60;
+/** Must match the second entry of `crons` in wrangler.toml. */
+const SWAPS_CRON = '* * * * *';
 
 export default {
-  async scheduled(_e: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-    ctx.waitUntil(runOnce(env).catch((err) => console.error('labeler error', err)));
+  // Two crons: swaps every minute (the Treasury page shows them), labeling every 15 minutes.
+  async scheduled(e: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+    const job = e.cron === SWAPS_CRON ? runSwaps(env) : runOnce(env);
+    ctx.waitUntil(job.catch((err) => console.error('labeler error', err)));
   },
   async fetch(_req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    ctx.waitUntil(runOnce(env).catch((err) => console.error('labeler error', err)));
+    ctx.waitUntil(Promise.all([runOnce(env), runSwaps(env)]).catch((err) => console.error('labeler error', err)));
     return new Response('labeler: cycle started\n');
   }
 } satisfies ExportedHandler<Env>;
@@ -103,17 +109,8 @@ async function runOnce(env: Env): Promise<void> {
 
   const recordUpdated = await updateTrackRecord(env, now);
 
-  // Swaps come from a third-party RPC; a failure there must not stop the labeling above.
-  let swapLog = 'swaps=off';
-  try {
-    const s = await scanSwaps(env);
-    swapLog = `swaps stored=${s.stored} seen=${s.seen}`;
-  } catch (err) {
-    swapLog = `swaps error: ${(err as Error).message}`;
-  }
-
   console.log(
-    `labeler: scanned=${events.length} labeled=${labeled} skipped=${skipped} baseline slots=${baselineSlots} record=${recordUpdated ? 'updated' : 'kept'} ${swapLog} in ${Date.now() - t0}ms`
+    `labeler: scanned=${events.length} labeled=${labeled} skipped=${skipped} baseline slots=${baselineSlots} record=${recordUpdated ? 'updated' : 'kept'} in ${Date.now() - t0}ms`
   );
 }
 
@@ -316,4 +313,15 @@ async function updateTrackRecord(env: Env, now: number): Promise<boolean> {
     .bind(JSON.stringify(value), now)
     .run();
   return true;
+}
+
+/** Swaps that paid the referral fee, read from the chain. Logs only when something happened. */
+async function runSwaps(env: Env): Promise<void> {
+  try {
+    const s = await scanSwaps(env);
+    if (s.seen) console.log(`swaps stored=${s.stored} seen=${s.seen}`);
+  } catch (err) {
+    // Third-party RPC; the next minute retries from the same cursor.
+    console.error(`swaps error: ${(err as Error).message}`);
+  }
 }
