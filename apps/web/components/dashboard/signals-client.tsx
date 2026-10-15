@@ -10,11 +10,8 @@ import { fetcher } from '@/lib/fetcher';
 import { SWR_KEYS, SWR_INTERVALS } from '@/lib/swr-keys';
 import { fmtTimeAgo, shortenAddress } from '@/lib/format';
 import { cn } from '@/lib/cn';
-import { TRADING_ENABLED } from '@/lib/trade';
-import { BuyButton } from '@/components/trade/buy-button';
-
-/** Older BUY signals get no Buy button: acting on a stale signal is not what the signal said. */
-const BUY_FRESH_SEC = 3600;
+import { BUY_FRESH_SEC, TRADING_ENABLED } from '@/lib/trade';
+import { TradeButton } from '@/components/trade/trade-button';
 
 type EventType = 'buy_trigger' | 'sell_trigger' | 'fomo_spike';
 type SignalEvent = {
@@ -110,7 +107,7 @@ export function SignalsClient() {
                       {TRADING_ENABLED && (
                         <td className="px-2 py-2 text-right sm:px-5">
                           {ev.event_type === 'buy_trigger' && Date.now() / 1000 - ev.time < BUY_FRESH_SEC && (
-                            <BuyButton address={ev.address} label={t('buy')} size="sm" quiet />
+                            <TradeButton address={ev.address} label={t('buy')} size="sm" quiet />
                           )}
                         </td>
                       )}

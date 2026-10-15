@@ -12,6 +12,20 @@
 
 ---
 
+## 2026-10-15 [BUILD] Проход B: Sell, быстрые суммы, Buy на доске (не задеплоено)
+- `components/trade/buy-button.tsx` → `trade-button.tsx` (`TradeButton`): `side` buy/sell, `amountSol`, size sm/md/lg.
+  `initialAmount` у Jupiter Plugin в наименьших единицах: проверено в превью, '0.1' дал 0, '100000000' дал 0.1 SOL.
+- `lib/trade.ts`: `LAMPORTS_PER_SOL`, `BUY_PRESETS_SOL` (0.1/0.5/1), `BUY_FRESH_SEC` (перенесён из signals-client).
+- Страница токена: Buy + ряд 0.1/0.5/1 SOL (кроме токенов ниже фильтра); ряд Sell | Watch; Sell есть всегда,
+  чтобы держатель мог выйти. Первый вариант (Sell в одном ряду с суммами) выглядел как ещё одна сумма: разнёс.
+- Board: тихая Buy (sm+) у токенов с BUY не старше 1 ч, выше фильтра и только после загрузки фильтра (ревью
+  нашло мигание без `minLiq != null`). На телефоне колонка скрыта, таблица 356/356.
+- Проверено: модал 0.5 SOL → поле 0.5 и котировка; Sell → CBUCKS→SOL; котировка продажи feeBps 100, feeMint SOL;
+  Board 3 кнопки = 3 свежих BUY-токена, 0 у low-liq; LAND (low-liq): только Sell и Watch; 390 px: 390.
+  tsc 0, lint 0, vitest 20/20. ARCHITECTURE, ROADMAP (сайт и md), README обновлены.
+- [DEBUG] Страница токена, выпавшего из списка (CBUCKS): движок ещё 4 ч пишет цену без score, последняя строка
+  `score: null`, карточка Score показывает «·» вместо «last score N, no longer tracked».
+
 ## 2026-10-15 [BUILD] Проход D: документация и тексты сайта под модель «комиссия со свопов + $FMTR» (задеплоено `9d336f80`)
 - Решения владельца (AskUserQuestion): $FMTR не запущен, скоро на pump.fun; холдерам доля комиссии со свопов,
   creator fees $FMTR и доход ботов, плюс постоянный байбек (flywheel); боты в документах пока не упоминаются;

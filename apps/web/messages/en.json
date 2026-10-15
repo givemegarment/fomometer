@@ -290,6 +290,8 @@
   },
   "trade": {
     "opening": "Opening",
+    "preset": "{sol} SOL",
+    "sell": "Sell",
     "load_error": "Could not open the swap. Try again.",
     "note": "Swaps run in your own wallet through Jupiter and include a {fee}% FOMOMETER fee. Not financial advice.",
     "faq_q": "Can I buy here?",
@@ -729,7 +731,7 @@
         "items": [
           {
             "done": true,
-            "text": "Buy button on token pages and fresh BUY signals: a Jupiter swap in your own wallet with a 1% fee"
+            "text": "Buy on token pages, the board and fresh BUY signals: a Jupiter swap in your own wallet with a 1% fee"
           },
           {
             "done": true,
@@ -744,8 +746,8 @@
             "text": "Public treasury page with live on-chain balances"
           },
           {
-            "done": false,
-            "text": "Sell button and preset amounts"
+            "done": true,
+            "text": "Sell button and quick amounts"
           }
         ],
         "exit": "Treasury page live and every swap recorded with its signal."
@@ -867,6 +869,8 @@
     "col_liq": "Liquidity",
     "col_fdv": "FDV",
     "col_burst": "Pace",
+    "col_buy": "Buy",
+    "buy": "Buy",
     "col_burst_hint": "Volume in the last 5 minutes compared with the hourly pace",
     "col_30m": "30m",
     "watch_add": "Add to watchlist",

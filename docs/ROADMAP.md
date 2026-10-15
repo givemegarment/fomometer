@@ -33,11 +33,11 @@ Exit: Strategy page shows baseline, lost outcomes and a cleaned record; factors 
 
 Goal: revenue that anyone can check on chain.
 
-- [x] Buy button on token pages and fresh BUY signals: Jupiter Plugin swap in the visitor's wallet, 1% referral fee (`apps/web/lib/trade.ts`).
+- [x] Buy button on token pages, the board and fresh BUY signals: Jupiter Plugin swap in the visitor's wallet, 1% referral fee (`apps/web/lib/trade.ts`).
 - [x] Referral account `Fyhr9NJU2JbwdTL4ZZRRaCpnJH1eLydDnBZsc9khJBTA` (Jupiter Ultra) with SOL, USDC and USDT fee accounts; first fee received on chain, 15 October 2026.
 - [ ] Record every swap with the signal it followed (`onSuccess` → API → D1, verified against the transaction on chain).
 - [ ] `/treasury` page with live on-chain balances of the fee accounts.
-- [ ] Sell button and preset amounts.
+- [x] Sell button and quick amounts (0.1, 0.5, 1 SOL).
 
 Exit: treasury page live and every swap recorded with its signal.
 

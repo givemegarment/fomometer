@@ -4,7 +4,7 @@
 
 :root {
   color-scheme: dark;
-  /* Jupiter swap window (components/trade/buy-button.tsx), RGB triplets. */
+  /* Jupiter swap window (components/trade/trade-button.tsx), RGB triplets. */
   --jupiter-plugin-primary: 0, 178, 75;
   --jupiter-plugin-background: 20, 20, 21;
   --jupiter-plugin-primaryText: 255, 255, 255;

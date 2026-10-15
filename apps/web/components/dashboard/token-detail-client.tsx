@@ -14,8 +14,8 @@ import { fmtPct, fmtUSD, pctTone, fmtTimeAgo, shortenAddress } from '@/lib/forma
 import { cn } from '@/lib/cn';
 import { useWatchlist } from '@/lib/watchlist';
 import { FACTORS } from '@/lib/factors';
-import { FEE_PCT, TRADING_ENABLED } from '@/lib/trade';
-import { BuyButton } from '@/components/trade/buy-button';
+import { BUY_PRESETS_SOL, FEE_PCT, TRADING_ENABLED } from '@/lib/trade';
+import { TradeButton } from '@/components/trade/trade-button';
 
 /** Factor bars are capped here: values are z-scores, beyond ±3 is "far from the rest". */
 const FACTOR_CAP = 3;
@@ -64,6 +64,7 @@ export function TokenDetailClient({ address }: { address: string }) {
   const belowFilter = minLiq != null && data?.token != null && (data.token.liquidity_usd ?? 0) < minLiq;
   // Below the liquidity filter the engine fires no signals, so the score is never shown as a BUY-level green.
   const hot = score != null && score >= buyTh && !belowFilter;
+  const canTrade = TRADING_ENABLED && data?.token != null && minLiq != null;
   const typeLabel = (e: EventType) => (e === 'buy_trigger' ? tSig('type_buy') : e === 'sell_trigger' ? tSig('type_sell') : tSig('type_fomo'));
 
   return (
@@ -85,11 +86,23 @@ export function TokenDetailClient({ address }: { address: string }) {
                 <CopyAddress address={address} />
               </div>
             </div>
-            {/* Wait for the liquidity filter: no Buy on tokens the engine itself considers too thin. */}
-            {TRADING_ENABLED && data?.token != null && minLiq != null && !belowFilter && (
+            {/*
+              Wait for the liquidity filter: no Buy on tokens the engine itself considers too thin.
+              Sell stays available, so a holder can always get out.
+            */}
+            {canTrade && (
               <div className="mt-4">
-                <BuyButton address={address} label={t('buy', { symbol: data.token.symbol || shortenAddress(address) })} />
-                <p className="mt-2 text-xs leading-relaxed text-text-dim">
+                {!belowFilter && (
+                  <>
+                    <TradeButton address={address} label={t('buy', { symbol: data.token.symbol || shortenAddress(address) })} />
+                    <div className="mt-2 flex gap-2">
+                      {BUY_PRESETS_SOL.map((sol) => (
+                        <TradeButton key={sol} address={address} amountSol={sol} label={tTrade('preset', { sol })} size="md" quiet className="flex-1" />
+                      ))}
+                    </div>
+                  </>
+                )}
+                <p className={cn('text-xs leading-relaxed text-text-dim', !belowFilter && 'mt-2')}>
                   {tTrade('note', { fee: FEE_PCT })}{' '}
                   <Link href="/dashboard/strategy" className="text-text-muted underline decoration-border-strong underline-offset-4 hover:text-text-primary">
                     {tTrade('track_record')}
@@ -97,18 +110,21 @@ export function TokenDetailClient({ address }: { address: string }) {
                 </p>
               </div>
             )}
-            <button
-              type="button"
-              onClick={() => watchlist.toggle(address)}
-              aria-pressed={watched}
-              className={cn(
-                'mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md text-sm font-semibold transition-colors duration-150 ease-snap',
-                watched ? 'bg-accent-deep text-accent' : 'bg-white/[0.06] text-text-primary hover:bg-white/[0.1]'
-              )}
-            >
-              <Star className={cn('h-4 w-4', watched && 'fill-accent')} aria-hidden />
-              {watched ? t('unwatch') : t('watch')}
-            </button>
+            <div className="mt-4 flex gap-2">
+              {canTrade && <TradeButton address={address} side="sell" label={tTrade('sell')} size="md" quiet className="flex-1" />}
+              <button
+                type="button"
+                onClick={() => watchlist.toggle(address)}
+                aria-pressed={watched}
+                className={cn(
+                  'inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md text-sm font-semibold transition-colors duration-150 ease-snap',
+                  watched ? 'bg-accent-deep text-accent' : 'bg-white/[0.06] text-text-primary hover:bg-white/[0.1]'
+                )}
+              >
+                <Star className={cn('h-4 w-4', watched && 'fill-accent')} aria-hidden />
+                {watched ? t('unwatch') : t('watch')}
+              </button>
+            </div>
           </section>
 
           <section className="ring-hair rounded-xl bg-bg-card p-5" aria-labelledby="score-title">

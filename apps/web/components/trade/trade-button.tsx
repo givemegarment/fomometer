@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { buttonVariants } from '@/components/ui/button-variants';
-import { JUP_REFERRAL_ACCOUNT, JUP_REFERRAL_FEE_BPS, SOL_MINT, TRADING_ENABLED } from '@/lib/trade';
+import { JUP_REFERRAL_ACCOUNT, JUP_REFERRAL_FEE_BPS, LAMPORTS_PER_SOL, SOL_MINT, TRADING_ENABLED } from '@/lib/trade';
 import { cn } from '@/lib/cn';
 
 const PLUGIN_SRC = 'https://plugin.jup.ag/plugin-v1.js';
@@ -11,7 +11,14 @@ const PLUGIN_SRC = 'https://plugin.jup.ag/plugin-v1.js';
 type JupiterPlugin = {
   init: (props: {
     displayMode: 'modal';
-    formProps: { initialInputMint: string; initialOutputMint: string; referralAccount: string; referralFee: number };
+    formProps: {
+      initialInputMint: string;
+      initialOutputMint: string;
+      /** In the input token's smallest unit (lamports for SOL). */
+      initialAmount?: string;
+      referralAccount: string;
+      referralFee: number;
+    };
   }) => void;
 };
 
@@ -42,20 +49,25 @@ function loadPlugin(): Promise<JupiterPlugin> {
 }
 
 /**
- * Opens Jupiter's swap window with SOL in and this token out. The visitor connects and signs
- * in their own wallet; the referral fee goes to FOMOMETER. Renders nothing until a referral
- * account is configured.
+ * Opens Jupiter's swap window: SOL into this token to buy, the token into SOL to sell. The
+ * visitor connects and signs in their own wallet; the referral fee goes to FOMOMETER. Renders
+ * nothing until a referral account is configured.
  */
-export function BuyButton({
+export function TradeButton({
   address,
   label,
+  side = 'buy',
+  amountSol,
   size = 'lg',
   quiet = false,
   className
 }: {
   address: string;
   label: string;
-  size?: 'sm' | 'lg';
+  side?: 'buy' | 'sell';
+  /** Prefills the SOL amount of a buy. */
+  amountSol?: number;
+  size?: 'sm' | 'md' | 'lg';
   /** Secondary look, for rows where a column of green buttons would shout. */
   quiet?: boolean;
   className?: string;
@@ -68,11 +80,13 @@ export function BuyButton({
     setState('loading');
     try {
       const jup = await loadPlugin();
+      const buy = side === 'buy';
       jup.init({
         displayMode: 'modal',
         formProps: {
-          initialInputMint: SOL_MINT,
-          initialOutputMint: address,
+          initialInputMint: buy ? SOL_MINT : address,
+          initialOutputMint: buy ? address : SOL_MINT,
+          initialAmount: buy && amountSol ? String(Math.round(amountSol * LAMPORTS_PER_SOL)) : undefined,
           referralAccount: JUP_REFERRAL_ACCOUNT,
           referralFee: JUP_REFERRAL_FEE_BPS
         }

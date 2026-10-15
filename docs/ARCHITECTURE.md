@@ -44,9 +44,9 @@ Buying runs entirely in the browser and on Jupiter; no FOMOMETER server is invol
 
 | Part | Where | What it does |
 |---|---|---|
-| Settings | `apps/web/lib/trade.ts` | referral account, fee in basis points (100 = 1%), SOL mint; an empty account hides every Buy button |
-| Button | `apps/web/components/trade/buy-button.tsx` | on the first click loads `https://plugin.jup.ag/plugin-v1.js`, then opens its modal with SOL in, the token out and the referral fee |
-| Placement | token page (not below the liquidity filter), Signals (BUY events younger than 1 hour) | |
+| Settings | `apps/web/lib/trade.ts` | referral account, fee in basis points (100 = 1%), SOL mint, quick amounts, BUY freshness (1 hour); an empty account hides every trade button |
+| Button | `apps/web/components/trade/trade-button.tsx` | on the first click loads `https://plugin.jup.ag/plugin-v1.js`, then opens its modal: buy is SOL in and the token out (optionally with an amount, passed in lamports), sell is the reverse; both carry the referral fee |
+| Placement | token page: Buy and quick amounts unless below the liquidity filter, Sell always; Board and Signals: Buy for BUY events younger than 1 hour (Board: above the filter, hidden on phones) | |
 | Fee | Jupiter Ultra `/order` with `referralAccount` and `referralFee`; Jupiter keeps 20% of it | lands in the referral account's token account for the fee mint, almost always SOL |
 
 The visitor connects and signs in their own wallet. A referral account that is not initialized under Jupiter's Ultra project makes `/order` fail with 400, so a wrong address breaks buying, not only the fee. A missing token account for the fee mint only drops the fee.

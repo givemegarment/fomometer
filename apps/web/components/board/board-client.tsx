@@ -14,6 +14,8 @@ import { SWR_KEYS, SWR_INTERVALS } from '@/lib/swr-keys';
 import { fmtPace, fmtPct, fmtUSD, pctTone, shortenAddress } from '@/lib/format';
 import { useWatchlist } from '@/lib/watchlist';
 import { cn } from '@/lib/cn';
+import { BUY_FRESH_SEC, TRADING_ENABLED } from '@/lib/trade';
+import { TradeButton } from '@/components/trade/trade-button';
 
 type Filter = 'all' | 'score' | 'liq' | 'fomo';
 
@@ -40,6 +42,7 @@ type Strategy = {
   record: { days: number; events: { buy_trigger: Group }; baseline: Group } | null;
 };
 type Overview = { buy_signals_1h: number };
+type BuyEvents = { events: Array<{ address: string; time: number }> };
 
 /** Below this many priced outcomes a share is noise. Same rule as the Strategy page. */
 const MIN_SAMPLE = 20;
@@ -59,6 +62,9 @@ export function BoardClient() {
   });
   const { data: strategy } = useSWR<Strategy>(SWR_KEYS.strategy, fetcher, { refreshInterval: 300_000 });
   const { data: overview } = useSWR<Overview>(SWR_KEYS.overview, fetcher, { refreshInterval: SWR_INTERVALS.overview });
+  // Tokens with a BUY signal in the last hour get a Buy button; the same rule as the Signals page.
+  const { data: buys } = useSWR<BuyEvents>(TRADING_ENABLED ? SWR_KEYS.signals('buy') : null, fetcher, { refreshInterval: SWR_INTERVALS.signals });
+  const freshBuy = new Set((buys?.events ?? []).filter((e) => Date.now() / 1000 - e.time < BUY_FRESH_SEC).map((e) => e.address));
 
   const buyTh = strategy?.settings?.buy_th ?? null;
   const minLiq = strategy?.settings?.min_liquidity_usd ?? null;
@@ -125,6 +131,11 @@ export function BoardClient() {
                 {t('col_burst')}
               </th>
               <th scope="col" className="label hidden px-3 py-2 text-right sm:table-cell">{t('col_30m')}</th>
+              {TRADING_ENABLED && (
+                <th scope="col" className="hidden px-2 py-2 sm:table-cell">
+                  <span className="sr-only">{t('col_buy')}</span>
+                </th>
+              )}
               <th scope="col" className="w-10 px-2 py-2">
                 <span className="sr-only">{t('watch_add')}</span>
               </th>
@@ -134,7 +145,7 @@ export function BoardClient() {
             {isLoading && !data
               ? Array.from({ length: 12 }).map((_, i) => (
                   <tr key={i}>
-                    <td colSpan={10} className="px-3 py-2.5">
+                    <td colSpan={TRADING_ENABLED ? 11 : 10} className="px-3 py-2.5">
                       <div className="skeleton h-5 rounded" />
                     </td>
                   </tr>
@@ -185,6 +196,11 @@ export function BoardClient() {
                       <td className="hidden px-3 py-2 sm:table-cell">
                         <Sparkline data={row.spark} width={72} height={20} className="ml-auto" />
                       </td>
+                      {TRADING_ENABLED && (
+                        <td className="hidden px-2 py-2 text-right sm:table-cell">
+                          {freshBuy.has(row.address) && minLiq != null && !lowLiq && <TradeButton address={row.address} label={t('buy')} size="sm" quiet />}
+                        </td>
+                      )}
                       <td className="px-2 py-2 text-center">
                         <button
                           type="button"

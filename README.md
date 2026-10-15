@@ -35,7 +35,7 @@ workers/engine   ──►  Cloudflare D1  ◄──  apps/web (Next.js on Cloud
 
 | Path | What it is |
 |---|---|
-| `apps/web` | Next.js 14 (App Router), Tailwind, next-intl (English; all copy in `messages/en.json`). Landing, method page, dashboard. All API routes are read-only `SELECT`s against D1. Swaps: `lib/trade.ts` and `components/trade/buy-button.tsx` load the Jupiter Plugin in the browser. |
+| `apps/web` | Next.js 14 (App Router), Tailwind, next-intl (English; all copy in `messages/en.json`). Landing, method page, dashboard. All API routes are read-only `SELECT`s against D1. Swaps: `lib/trade.ts` and `components/trade/trade-button.tsx` load the Jupiter Plugin in the browser. |
 | `workers/engine` | Cron every minute: fetches DexScreener, stores snapshots, computes factors and scores, emits signal events. |
 | `workers/labeler` | Cron every 15 minutes: records the price 15 minutes, 1 hour and 4 hours after each signal (`signal_outcomes`). |
 | `packages/shared` | Factor math, scoring, DexScreener client, shared types. |
