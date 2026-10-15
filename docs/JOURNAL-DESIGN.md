@@ -6,12 +6,18 @@
 - Страницы: лендинг (hero + живой топ-5), `/how-it-works` (методология), дашборд: обзор, сканер, сигналы,
   стратегия, избранное (localStorage). Settings удалена (308 → /dashboard).
 - Хостинг: Cloudflare Pages `fomometer-web`, домены `fomometer.xyz` и `www` привязаны 2026-10-14.
-- Прод: деплой `8c8d2421` (2026-10-15, этап 2: «Стратегия» с базой и потерянными, фикс чтений D1, отметки дорожной карты).
-- Открыто по сайту: логотипы с CDN DexScreener ставят сторонний cookie (Best Practices 77), прокси по решению владельца.
+- Прод: деплой `8fdf5718` (2026-10-15: только английский, прокси логотипов). Lighthouse mobile: главная и сканер 100/100/100/100.
+- Логотипы через `/api/logo`, сторонних cookie нет.
 
 ---
 
-## 2026-10-15 [BUILD] Сайт только на английском (владелец: «чтобы нигде не было русского языка», не задеплоено)
+## 2026-10-15 [BUILD] Деплой `8fdf5718` (команда владельца «деплой»)
+- fomometer.xyz с `Accept-Language: ru` и cookie `LOCALE=ru`: 9 страниц 200 и 404, `lang="en"`, кириллицы 0.
+- `/api/logo/<id>?s=64`: 200 webp 1.7 КБ, `set-cookie` нет, `cache-control: public, max-age=604800, immutable`.
+- Lighthouse mobile: главная и /dashboard/scanner: Accessibility 100, Best Practices 100 (было 77), SEO 100, Agentic 100.
+
+
+## 2026-10-15 [BUILD] Сайт только на английском (владелец: «чтобы нигде не было русского языка», задеплоено `8fdf5718`)
 - `i18n.ts`: одна локаль `en`, без cookie `LOCALE` и `Accept-Language`. next-intl оставлен как хранилище копирайта
   (`messages/en.json`); импорт по шаблонному пути, чтобы тип сообщений с массивами (`t.raw`) не ломал `RequestConfig`.
 - Удалены `messages/ru.json`, `components/locale-toggle.tsx` (шапка и topbar), ключ `common.language`.
@@ -24,7 +30,7 @@
 - Ключ `strategy.horizon` (из прошлого DEBUG) теперь только EN: 15m / 1h / 4h.
 
 
-## 2026-10-15 [BUILD] Прокси логотипов (решение владельца «делаем», не задеплоено)
+## 2026-10-15 [BUILD] Прокси логотипов (решение владельца «делаем», задеплоено `8fdf5718`)
 - `app/api/logo/[id]/route.ts`: принимает только id CMS-картинки DexScreener (`[A-Za-z0-9_-]{6,64}`) и размер 64/128/256
   (CDN другие отдаёт 422), берёт `cdn.dexscreener.com/cms/images/<id>?format=webp`, отбрасывает заголовки апстрима
   (в том числе `set-cookie: __cf_bm`), кэш `caches.default` и `Cache-Control: public, max-age=604800, immutable`.
