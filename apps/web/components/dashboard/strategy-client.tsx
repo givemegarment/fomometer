@@ -76,7 +76,7 @@ export function StrategyClient() {
           {error ? (
             <p className="text-sm text-danger">{t('load_error')}</p>
           ) : !data ? (
-            <Skeleton className="h-24" />
+            <Skeleton className="h-[184px] sm:h-[120px] lg:h-14" />
           ) : !s ? (
             <p className="text-sm text-text-muted">{t('settings_empty')}</p>
           ) : (
@@ -118,12 +118,12 @@ function WeightsCard({ settings, loaded, failed }: { settings: Settings | null |
         {failed ? (
           <p className="text-sm text-danger">{t('load_error')}</p>
         ) : !loaded ? (
-          <Skeleton className="h-40" />
+          <Skeleton className="h-[212px]" />
         ) : !rows.length ? (
           <p className="text-sm text-text-muted">{t('weights_empty')}</p>
         ) : (
           <>
-            <ul className="space-y-3">
+            <ul className="max-w-3xl space-y-3">
               {rows.map(([key, w]) => (
                 <li key={key} className="grid grid-cols-[minmax(0,10rem)_1fr_3.5rem] items-center gap-3 text-sm sm:grid-cols-[minmax(0,14rem)_1fr_4rem]">
                   <span className="leading-snug" title={tf.has(`${key}.hint`) ? tf(`${key}.hint`) : undefined}>
@@ -181,7 +181,7 @@ function RecordCard({ record, loaded, failed }: { record: TrackRecord | null | u
           <p className="px-4 pb-6 text-sm text-danger sm:px-6">{t('load_error')}</p>
         ) : !loaded ? (
           <div className="p-6">
-            <Skeleton className="h-32" />
+            <Skeleton className="h-[600px] sm:h-[360px]" />
           </div>
         ) : !record ? (
           <p className="px-4 pb-6 text-sm text-text-muted sm:px-6">{t('record_empty')}</p>
@@ -258,49 +258,57 @@ function RecordRow({ label, hint, group, baseline }: { label: string; hint: stri
         <span className="block text-xs font-normal text-text-muted">{hint}</span>
       </th>
       <td className="num-display px-4 py-3 text-right text-text-muted">{fmt(group.n)}</td>
-      {HORIZONS.map((h) => {
-        const v = group.horizons[h];
-        return (
-          <td key={h} className="num-display px-4 py-3 text-right">
-            {v.n < MIN_SAMPLE || v.favorable == null ? (
-              <span className="text-text-muted">{t('not_enough')}</span>
+      {group.n === 0 ? (
+        <td colSpan={HORIZONS.length + 3} className="px-4 py-3 text-left text-text-muted sm:pr-6">
+          {t('none_in_window')}
+        </td>
+      ) : (
+        <>
+          {HORIZONS.map((h) => {
+            const v = group.horizons[h];
+            return (
+              <td key={h} className="num-display px-4 py-3 text-right">
+                {v.n < MIN_SAMPLE || v.favorable == null ? (
+                  <span className="text-text-muted">{t('not_enough')}</span>
+                ) : (
+                  <>
+                    {(v.favorable * 100).toFixed(0)}%
+                    <span className="block text-xs text-text-muted">n={fmt(v.n)}</span>
+                  </>
+                )}
+              </td>
+            );
+          })}
+          {(['1h', '4h'] as const).map((h) => {
+            const v = group.horizons[h];
+            const m = v.median_pct;
+            const enough = v.n >= MIN_SAMPLE && m != null;
+            return (
+              <td
+                key={h}
+                className={cn(
+                  'num-display px-4 py-3 text-right',
+                  !enough ? 'text-text-muted' : m > 0 ? 'text-success' : m < 0 ? 'text-danger' : 'text-text-muted'
+                )}
+              >
+                {!enough ? t('not_enough') : `${m > 0 ? '+' : ''}${m.toFixed(2)}%`}
+              </td>
+            );
+          })}
+          <td className="num-display px-4 py-3 text-right text-text-muted sm:pr-6">
+            {priced < MIN_SAMPLE ? (
+              t('not_enough')
             ) : (
               <>
-                {(v.favorable * 100).toFixed(0)}%
-                <span className="block text-xs text-text-muted">n={fmt(v.n)}</span>
+                {((group.lost_4h / priced) * 100).toFixed(0)}%
+                <span className="block text-xs">
+                  {fmt(group.lost_4h)}/{fmt(priced)}
+                </span>
               </>
             )}
           </td>
-        );
-      })}
-      {(['1h', '4h'] as const).map((h) => {
-        const v = group.horizons[h];
-        const m = v.median_pct;
-        const enough = v.n >= MIN_SAMPLE && m != null;
-        return (
-          <td
-            key={h}
-            className={cn(
-              'num-display px-4 py-3 text-right',
-              !enough ? 'text-text-muted' : m > 0 ? 'text-success' : m < 0 ? 'text-danger' : 'text-text-muted'
-            )}
-          >
-            {!enough ? t('not_enough') : `${m > 0 ? '+' : ''}${m.toFixed(2)}%`}
-          </td>
-        );
-      })}
-      <td className="num-display px-4 py-3 text-right text-text-muted sm:pr-6">
-        {priced < MIN_SAMPLE ? (
-          t('not_enough')
-        ) : (
-          <>
-            {((group.lost_4h / priced) * 100).toFixed(0)}%
-            <span className="block text-xs">
-              {fmt(group.lost_4h)}/{fmt(priced)}
-            </span>
-          </>
-        )}
-      </td>
+        </>
+      )}
     </tr>
   );
 }

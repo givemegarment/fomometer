@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Star } from 'lucide-react';
 import { Sparkline } from '@/components/ui/sparkline';
+import { FilterChips } from '@/components/ui/filter-chips';
 import { Price } from '@/components/ui/price';
 import { TokenAvatar } from '@/components/dashboard/token-avatar';
 import { fetcher } from '@/lib/fetcher';
@@ -103,22 +104,7 @@ export function BoardClient() {
       </ul>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div role="group" aria-label={t('filter_label')} className="no-scrollbar -mx-1 flex max-w-full overflow-x-auto">
-          {filters.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              aria-pressed={filter === f.id}
-              onClick={() => setFilter(f.id)}
-              className={cn(
-                'mx-1 whitespace-nowrap rounded-pill px-3.5 py-1.5 text-[13px] font-medium transition-colors duration-150 ease-snap',
-                filter === f.id ? 'bg-white text-bg-base' : 'ring-hair text-text-muted hover:bg-white/[0.06] hover:text-text-primary'
-              )}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
+        <FilterChips items={filters} value={filter} onChange={setFilter} label={t('filter_label')} />
         {minLiq != null && (
           <p className="text-xs text-text-dim">{t('low_liq_note', { liq: fmtUSD(minLiq, { compact: true }) })}</p>
         )}

@@ -16,7 +16,7 @@ export function EmptyState({
     <Card>
       <CardContent className="flex flex-col items-center gap-3 px-6 py-16 text-center">
         {icon ? (
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-pill bg-accent/10 text-accent">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-pill bg-white/[0.06] text-text-primary">
             {icon}
           </div>
         ) : null}

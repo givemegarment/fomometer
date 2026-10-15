@@ -237,24 +237,6 @@
       "hint": "1-hour volume compared with the hourly average over the last 6 hours."
     }
   },
-  "scanner": {
-    "title": "Scanner",
-    "subtitle": "Tracked Solana tokens ranked by score",
-    "col": {
-      "rank": "#",
-      "token": "Token",
-      "score": "Score",
-      "price": "Price",
-      "change_24h": "24h",
-      "liquidity": "Liquidity",
-      "fdv": "FDV",
-      "fomo": "Burst",
-      "spark": "30m"
-    },
-    "watch_add": "Add to watchlist",
-    "watch_remove": "Remove from watchlist",
-    "empty": "No tracked tokens right now. Data refreshes every minute."
-  },
   "token_detail": {
     "back": "Back to the board",
     "price_chart": "Price, last 6 hours",
@@ -284,7 +266,7 @@
   },
   "signals": {
     "title": "Signals",
-    "subtitle": "Score crossings and volume bursts, newest first",
+    "subtitle": "Score crossings and volume bursts, newest first. Each one is priced 15 minutes, 1 hour and 4 hours later on the Strategy page.",
     "empty": "No signals of this type yet.",
     "type_buy": "BUY",
     "type_sell": "SELL",
@@ -293,7 +275,12 @@
     "filter_buy": "BUY",
     "filter_sell": "SELL",
     "filter_fomo": "Volume burst",
-    "prev_score": "Previous score"
+    "prev_score": "Previous score",
+    "filter_label": "Signal type",
+    "col_signal": "Signal",
+    "col_token": "Token",
+    "col_score": "Score",
+    "col_when": "When"
   },
   "strategy": {
     "title": "Strategy",
@@ -351,13 +338,20 @@
       "15m": "15m",
       "1h": "1h",
       "4h": "4h"
-    }
+    },
+    "none_in_window": "None in this window."
   },
   "watchlist": {
     "title": "Watchlist",
     "empty_title": "Your watchlist is empty",
-    "empty_body": "Star tokens in the scanner to follow them here. The list is stored in this browser.",
-    "open_scanner": "Open scanner"
+    "empty_body": "Star tokens on the board to follow them here. The list is stored in this browser.",
+    "subtitle": "Tokens you starred. Stored in this browser only.",
+    "open_board": "Open the board",
+    "col_token": "Token",
+    "col_score": "Score",
+    "col_price": "Price",
+    "col_24h": "24h",
+    "remove": "Remove from watchlist"
   },
   "common": {
     "error": "Something went wrong",
