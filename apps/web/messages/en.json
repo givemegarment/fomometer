@@ -256,11 +256,9 @@
     "empty": "No tracked tokens right now. Data refreshes every minute."
   },
   "token_detail": {
-    "back": "Back to scanner",
+    "back": "Back to the board",
     "price_chart": "Price, last 6 hours",
-    "factor_radar": "Factors",
     "signal_events": "Signal history",
-    "links": "External links",
     "watch": "Watch",
     "unwatch": "Unwatch",
     "stat_price": "Price",
@@ -269,7 +267,20 @@
     "stat_fdv": "FDV",
     "no_price": "No price data in the last 6 hours.",
     "no_events": "No signals for this token yet.",
-    "prev_score": "Previous score"
+    "prev_score": "Previous score",
+    "score_title": "Score",
+    "buy_level": "White mark: BUY threshold, {th}",
+    "score_note": "Ranks this token against the other tracked tokens at the last run. Not a price forecast.",
+    "factors_title": "Factors against the other tokens",
+    "factors_note": "0 is the average tracked token right now. Right is above it, left below; bars stop at ±{cap}.",
+    "in_score": "used in the score",
+    "in_score_note": "White names are used in the score; grey ones are context.",
+    "copy": "Copy the token address",
+    "col_signal": "Signal",
+    "col_when": "When",
+    "col_score": "Score",
+    "meta_title": "{symbol} score",
+    "below_filter": "Liquidity is under {liq}, the engine's quality filter: this token gets a score but no signals."
   },
   "signals": {
     "title": "Signals",

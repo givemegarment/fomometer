@@ -102,3 +102,7 @@ button:focus-visible,
 
 /* Hairline ring the reference uses instead of borders. */
 .ring-hair { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
+
+/* Horizontal strips that scroll by swipe (mobile tabs, filters): no visible scrollbar. */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

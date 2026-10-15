@@ -103,7 +103,7 @@ export function BoardClient() {
       </ul>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div role="group" aria-label={t('filter_label')} className="-mx-1 flex max-w-full overflow-x-auto">
+        <div role="group" aria-label={t('filter_label')} className="no-scrollbar -mx-1 flex max-w-full overflow-x-auto">
           {filters.map((f) => (
             <button
               key={f.id}

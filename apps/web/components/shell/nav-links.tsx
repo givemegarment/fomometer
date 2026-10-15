@@ -74,7 +74,7 @@ export function MobileTabs() {
   const t = useTranslations('nav');
   const items = [...PRIMARY.map((i) => ({ ...i, active: i.match(path) })), ...SECONDARY.map((i) => ({ ...i, active: path === i.href }))];
   return (
-    <nav aria-label={t('label')} className="flex h-10 items-stretch overflow-x-auto border-t border-border px-2 md:hidden">
+    <nav aria-label={t('label')} className="no-scrollbar flex h-10 items-stretch overflow-x-auto border-t border-border px-2 md:hidden">
       {items.map((item) => (
         <Link
           key={item.href}
