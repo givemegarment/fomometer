@@ -1,6 +1,5 @@
 {
   "nav": {
-    "scanner": "Scanner",
     "signals": "Signals",
     "strategy": "Strategy",
     "watchlist": "Watchlist",
@@ -173,7 +172,8 @@
     "limits": {
       "title": "Limitations",
       "body": "The track record has no fees and no slippage, and entry is the snapshot price. Since 15 October 2026 the engine keeps pricing a token for 4 hours after it leaves the list; before that, tokens that disappeared (often after a collapse) had no later price and dropped out, which flatters older results. The Strategy page shows how many outcomes still have no price, leaves out prices that jump more than 11 times (a switch to another pool), and compares every signal with all tracked tokens priced the same way. Samples are small and markets change, so past results say little about future ones. Scoring runs can fail or lag; the LIVE / STALE badge shows how fresh the data is. Nothing on this site is financial advice."
-    }
+    },
+    "kicker": "Method"
   },
   "factors": {
     "ret": {
@@ -363,7 +363,6 @@
   "whitepaper": {
     "title": "Whitepaper",
     "meta_description": "What FOMOMETER does, how well its signals have done so far, how it plans to earn revenue and how a community token would share it.",
-    "version": "Version 0.1, 14 October 2026. Sections 6 and 7 describe plans, not things that exist today.",
     "toc": "Contents",
     "summary": {
       "title": "Summary",
@@ -598,7 +597,9 @@
     "disclaimer": {
       "title": "Disclaimer",
       "body": "Nothing here is financial advice or an offer to sell anything. Scores and signals are statistics about public market data. Past results do not predict future ones."
-    }
+    },
+    "kicker": "Version 0.1 · 14 October 2026",
+    "lede": "What FOMOMETER measures, what the record shows so far, how it plans to earn, and the token that may follow. Sections 6 and 7 describe plans, not things that exist today."
   },
   "roadmap": {
     "title": "Roadmap",
@@ -772,7 +773,8 @@
       "More data sources than DexScreener",
       "A public research dataset"
     ],
-    "whitepaper_link": "Read the whitepaper"
+    "whitepaper_link": "Read the whitepaper",
+    "toc": "Phases"
   },
   "board": {
     "title": "Board",

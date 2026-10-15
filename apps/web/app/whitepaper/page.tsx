@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
-import { SiteNav } from '@/components/landing/site-nav';
-import { SiteFooter } from '@/components/site-footer';
-import { DocSection, DocTable } from '@/components/doc-section';
+import { DocLayout } from '@/components/docs/doc-layout';
+import { DocCard, DocSection, DocTable } from '@/components/doc-section';
 
 export const runtime = 'edge';
 
@@ -30,7 +29,7 @@ type Named = { name: string; body: string };
 type ModelItem = { name: string; for: string; adds: string };
 type Param = { k: string; v: string };
 
-const TH = 'px-4 py-3 font-medium';
+const TH = 'label px-4 py-3';
 const TD = 'px-4 py-3';
 
 export default async function WhitepaperPage() {
@@ -40,27 +39,13 @@ export default async function WhitepaperPage() {
   const baseline = t.raw('evidence.baseline') as Outcome[];
 
   return (
-    <>
-      <SiteNav />
-      <main>
-        <article className="mx-auto max-w-3xl px-4 py-14 sm:px-6 sm:py-20">
-          <h1 className="text-4xl font-bold tracking-tight">{t('title')}</h1>
-          <p className="mt-4 text-sm text-text-muted">{t('version')}</p>
-
-          <nav aria-label={t('toc')} className="mt-8 rounded-lg border border-border bg-bg-card p-5">
-            <p className="text-sm font-semibold">{t('toc')}</p>
-            <ol className="mt-3 grid gap-1.5 text-sm sm:grid-cols-2">
-              {SECTIONS.map((s, i) => (
-                <li key={s}>
-                  <a href={`#${s}`} className="text-text-muted hover:text-text-primary">
-                    {i + 1}. {t(`${s}.title`)}
-                  </a>
-                </li>
-              ))}
-            </ol>
-          </nav>
-
-          <div className="mt-12 space-y-14">
+    <DocLayout
+      kicker={t('kicker')}
+      title={t('title')}
+      lede={t('lede')}
+      tocLabel={t('toc')}
+      toc={SECTIONS.map((s) => ({ id: s, title: t(`${s}.title`) }))}
+    >
             <DocSection id="summary" title={t('summary.title')}>
               {paragraphs('summary.body')}
             </DocSection>
@@ -109,7 +94,7 @@ export default async function WhitepaperPage() {
                   t('evidence.col_med_4h')
                 ]}
               />
-              <div className="rounded-lg border border-border bg-bg-card p-5">
+              <div className="ring-hair rounded-xl bg-bg-card p-5">
                 <p className="font-semibold text-text-primary">{t('evidence.reading_title')}</p>
                 <p className="mt-2">{t('evidence.reading')}</p>
               </div>
@@ -128,7 +113,7 @@ export default async function WhitepaperPage() {
             <DocSection id="model" title={t('model.title')} badge={t('model.badge')}>
               <p>{t('model.intro')}</p>
               <DocTable>
-                <thead className="bg-bg-card text-xs text-text-muted">
+                <thead className="border-b border-border">
                   <tr>
                     <th scope="col" className={TH}>{t('model.col_product')}</th>
                     <th scope="col" className={TH}>{t('model.col_for')}</th>
@@ -157,7 +142,7 @@ export default async function WhitepaperPage() {
                   <li key={s} className="flex gap-3">
                     <span
                       aria-hidden="true"
-                      className="num-display flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border bg-bg-card text-xs text-text-primary"
+                      className="num-display flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/[0.08] text-xs text-text-primary"
                     >
                       {i + 1}
                     </span>
@@ -203,11 +188,7 @@ export default async function WhitepaperPage() {
             <DocSection id="disclaimer" title={t('disclaimer.title')}>
               <p>{t('disclaimer.body')}</p>
             </DocSection>
-          </div>
-        </article>
-      </main>
-      <SiteFooter />
-    </>
+    </DocLayout>
   );
 }
 
@@ -215,7 +196,7 @@ function OutcomeTable({ head, rows }: { head: string[]; rows: Outcome[] }) {
   const hasN = rows.some((r) => r.n != null);
   return (
     <DocTable>
-      <thead className="bg-bg-card text-xs text-text-muted">
+      <thead className="border-b border-border">
         <tr>
           {head.map((h, i) => (
             <th key={h} scope="col" className={`${TH} ${i ? 'text-right' : ''}`}>
@@ -245,13 +226,12 @@ function OutcomeTable({ head, rows }: { head: string[]; rows: Outcome[] }) {
 
 function NamedList({ items }: { items: Named[] }) {
   return (
-    <dl className="space-y-4">
+    <div className="space-y-3">
       {items.map((it) => (
-        <div key={it.name} className="rounded-lg border border-border bg-bg-card p-4">
-          <dt className="font-semibold text-text-primary">{it.name}</dt>
-          <dd className="mt-1">{it.body}</dd>
-        </div>
+        <DocCard key={it.name} title={it.name}>
+          {it.body}
+        </DocCard>
       ))}
-    </dl>
+    </div>
   );
 }
