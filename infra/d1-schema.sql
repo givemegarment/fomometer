@@ -5,34 +5,6 @@
 -- Idempotent: uses IF NOT EXISTS everywhere.
 -- =============================================================================
 
--- Users (Telegram identities) -------------------------------------------------
-CREATE TABLE IF NOT EXISTS users (
-  tg_id          TEXT PRIMARY KEY,           -- store as text to avoid 53-bit JS overflow
-  username       TEXT,
-  first_name     TEXT,
-  photo_url      TEXT,
-  is_subscribed  INTEGER NOT NULL DEFAULT 1,
-  last_check_at  INTEGER NOT NULL,
-  created_at     INTEGER NOT NULL DEFAULT (unixepoch())
-);
-
-CREATE INDEX IF NOT EXISTS idx_users_subscribed ON users(is_subscribed);
-CREATE INDEX IF NOT EXISTS idx_users_last_check ON users(last_check_at);
-
--- Sessions --------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS sessions (
-  jti                TEXT PRIMARY KEY,
-  tg_id              TEXT NOT NULL,
-  expires_at         INTEGER NOT NULL,
-  refresh_token_hash TEXT NOT NULL,
-  user_agent         TEXT,
-  ip_hash            TEXT,
-  created_at         INTEGER NOT NULL DEFAULT (unixepoch())
-);
-
-CREATE INDEX IF NOT EXISTS idx_sessions_tg_id ON sessions(tg_id);
-CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
-
 -- Tokens (mostly metadata) ----------------------------------------------------
 CREATE TABLE IF NOT EXISTS tokens (
   address       TEXT PRIMARY KEY,
@@ -82,6 +54,7 @@ CREATE TABLE IF NOT EXISTS signals (
   factors_json   TEXT NOT NULL,
   is_buy         INTEGER NOT NULL DEFAULT 0,
   is_sell        INTEGER NOT NULL DEFAULT 0,
+  fomo_raw       REAL,                       -- raw volume-burst factor (threshold percentile source)
   PRIMARY KEY (address, time)
 );
 
@@ -97,7 +70,7 @@ CREATE TABLE IF NOT EXISTS signal_events (
   event_type     TEXT NOT NULL,    -- 'buy_trigger' | 'sell_trigger' | 'fomo_spike'
   score          REAL NOT NULL,
   prev_score     REAL,
-  metadata_json  TEXT
+  metadata_json  TEXT              -- {regime, threshold, factors: {scored, raw}}
 );
 
 CREATE INDEX IF NOT EXISTS idx_events_time     ON signal_events(time DESC);
@@ -122,22 +95,14 @@ CREATE TABLE IF NOT EXISTS signal_outcomes (
   pnl_pct_4h      REAL,
   max_pnl_pct_4h  REAL,                       -- best PnL within the 4h window
   min_pnl_pct_4h  REAL,                       -- worst PnL within the 4h window
-  labeled_at      INTEGER NOT NULL DEFAULT (unixepoch())
+  labeled_at      INTEGER NOT NULL DEFAULT (unixepoch()),
+  price_flag      TEXT,                       -- 'rise_over_1000pct': suspect pool switch
+  factors_json    TEXT                        -- {scored, raw} copied from the event
 );
 
 CREATE INDEX IF NOT EXISTS idx_outcomes_event_time ON signal_outcomes(event_time DESC);
 CREATE INDEX IF NOT EXISTS idx_outcomes_event_type ON signal_outcomes(event_type);
 CREATE INDEX IF NOT EXISTS idx_outcomes_address    ON signal_outcomes(address, event_time DESC);
-
--- User watchlist --------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS watchlist (
-  tg_id     TEXT NOT NULL,
-  address   TEXT NOT NULL,
-  added_at  INTEGER NOT NULL DEFAULT (unixepoch()),
-  PRIMARY KEY (tg_id, address)
-);
-
-CREATE INDEX IF NOT EXISTS idx_watchlist_user ON watchlist(tg_id);
 
 -- Engine cursor / state (key-value) -------------------------------------------
 CREATE TABLE IF NOT EXISTS engine_state (

@@ -28,10 +28,8 @@ export async function GET(req: NextRequest) {
             sn.price_usd, sn.price_change_h24,
             (SELECT score FROM signals WHERE address = t.address ORDER BY time DESC LIMIT 1) AS score
      FROM tokens t
-     LEFT JOIN (
-       SELECT address, MAX(time) AS t FROM token_snapshots GROUP BY address
-     ) lt ON lt.address = t.address
-     LEFT JOIN token_snapshots sn ON sn.address = t.address AND sn.time = lt.t
+     LEFT JOIN token_snapshots sn ON sn.address = t.address
+       AND sn.time = (SELECT MAX(time) FROM token_snapshots WHERE address = t.address)
      WHERE t.address IN (${placeholders})`
   )
     .bind(...addresses)

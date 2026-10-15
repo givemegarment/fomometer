@@ -15,7 +15,8 @@ set -a; . ./.env; set +a
 | Site | `pnpm deploy:web` | next-on-pages build, then Pages deploy. Prints a `*.fomometer-web.pages.dev` preview URL; production domains update at the same time. |
 | Engine | `pnpm deploy:engine` | Takes effect on the next minute. |
 | Labeler | `pnpm deploy:labeler` | |
-| Schema | `pnpm d1:apply:remote` | Idempotent (`IF NOT EXISTS`). Never drops data. |
+| Schema | `pnpm d1:apply:remote` | Idempotent (`IF NOT EXISTS`). Creates missing tables only; it does not add columns to existing ones. |
+| Migration | `npx wrangler d1 execute fomometer --remote --file=./infra/migrations/<file>.sql` | Column changes for an existing database. Run each file once, before deploying the workers that use it. |
 
 Before a deploy: `pnpm typecheck`, `pnpm -F @fomometer/web lint`, `pnpm -F @fomometer/web build`.
 
@@ -44,7 +45,7 @@ D1 queries: `npx wrangler d1 execute fomometer --remote --command "…"` (run in
 
 ## Retraining the score
 
-1. Dump outcomes joined with factors (see the header of `research/backtest_walk_forward_stdlib.py`). Only the last 72 hours have factors, see [ARCHITECTURE.md](ARCHITECTURE.md#known-limitations-of-the-design).
+1. Dump outcomes with their factors (query in the header of `research/backtest_walk_forward_stdlib.py`). Outcomes from 2026-10-15 carry their own factors; older ones only within the last 72 hours of `signals`, see [ARCHITECTURE.md](ARCHITECTURE.md#known-limitations-of-the-design).
 2. `python3 research/backtest_walk_forward_stdlib.py --input data/outcomes.json --output infra/best_meme_strategy.candidate.json --trials 1500`
 3. Compare the candidate's test metrics with the current file and with the baseline (all tracked tokens, same window). Do not ship a candidate that does not beat the baseline on the test split.
 4. `npx wrangler secret put STRATEGY_FORMULA_JSON -c workers/engine/wrangler.toml < infra/best_meme_strategy.json`

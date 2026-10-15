@@ -8,14 +8,17 @@ and runs on any laptop without `pip install`.
 
 Usage
 -----
-    # 1. Dump outcomes + signals as JSON
+    # 1. Dump outcomes as JSON. Factors come from the outcome (stored since
+    #    2026-10-15) or, for older rows, from signals (kept 72 h). Outcomes with
+    #    a price_flag (suspect pool switch) are left out.
     pnpm exec wrangler d1 execute fomometer --remote --json --command=" \\
         SELECT o.event_id, o.address, o.event_time, o.event_type, \\
                o.pnl_pct_15m, o.pnl_pct_1h, o.pnl_pct_4h, \\
-               o.max_pnl_pct_4h, o.min_pnl_pct_4h, \\
-               s.score, s.factors_json \\
+               o.max_pnl_pct_4h, o.min_pnl_pct_4h, s.score, \\
+               COALESCE(json_extract(o.factors_json, '$.scored'), s.factors_json) AS factors_json \\
         FROM signal_outcomes o \\
-        LEFT JOIN signals s ON s.address=o.address AND s.time=o.event_time" \\
+        LEFT JOIN signals s ON s.address=o.address AND s.time=o.event_time \\
+        WHERE o.price_flag IS NULL" \\
         | python3 -c "import sys,json; \\
             d=json.loads(sys.stdin.read()); \\
             json.dump(d[0]['results'], open('data/outcomes.json','w'))"

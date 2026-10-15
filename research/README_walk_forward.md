@@ -1,74 +1,69 @@
 # Walk-forward training pipeline
 
-End-to-end loop for re-fitting the FOMOMETER engine on the data the engine
-itself produced.
+Refits the score's weights and BUY/SELL thresholds on the outcomes the engine itself produced.
 
 ```
-Production engine ──▶ token_snapshots ──▶ signals + signal_events
-                                                │
-                                          (4h lookahead)
-                                                ▼
-                                        signal_outcomes  ◀── labeler cron
-                                                │
-                                       wrangler d1 export
-                                                ▼
-                                  research/backtest_walk_forward.py
-                                                │
-                                  best_meme_strategy.json (weights + thresholds)
-                                                │
-                              wrangler secret put STRATEGY_FORMULA_JSON
-                                                ▼
-                                    Production engine (refreshed)
+engine (every minute) ──▶ token_snapshots, signals, signal_events (factors in metadata_json)
+                                              │
+                                   labeler (every 15 min, after the 4 h horizon)
+                                              ▼
+                     signal_outcomes: prices at 15 m / 1 h / 4 h, best and worst move,
+                     price_flag, factors_json (kept forever)
+                                              │
+                          dump (wrangler d1 execute --json) or d1 export
+                                              ▼
+                     research/backtest_walk_forward_stdlib.py  (or backtest_walk_forward.py)
+                                              │
+                     infra/best_meme_strategy.json (weights + thresholds + metrics)
+                                              │
+                     wrangler secret put STRATEGY_FORMULA_JSON
+                                              ▼
+                     engine uses the new weights on its next run
 ```
 
 ## Components
 
-| Layer | Path | Cron | Purpose |
+| Layer | Path | Schedule | Purpose |
 |---|---|---|---|
-| Engine | `workers/engine/src/index.ts` | `*/1 * * * *` | Snapshot DexScreener, score, emit BUY/SELL/FOMO events |
-| Labeler | `workers/labeler/src/index.ts` | `*/15 * * * *` | Auto-label each event with 15m / 1h / 4h forward PnL |
-| Trainer | `research/backtest_walk_forward.py` | manual / weekly | Random-search fallback weights + thresholds |
-| Dashboard | `apps/web/app/api/strategy/accuracy` + `/dashboard/strategy` | live | Surface precision / hit-rate / regime / current thresholds |
+| Engine | `workers/engine/src/index.ts` | every minute | Snapshot DexScreener, score, emit BUY / SELL / volume-burst events with both factor vectors |
+| Labeler | `workers/labeler/src/index.ts` | every 15 min | Price each event at 15 m, 1 h and 4 h, copy its factors, flag suspect prices |
+| Trainer | `research/backtest_walk_forward_stdlib.py` | by hand | Random search over fallback weights and BUY/SELL thresholds; standard library only |
+| Trainer (SQLite) | `research/backtest_walk_forward.py` | by hand | Same search, reads a `d1 export` file |
+| Track record | `apps/web/app/api/strategy/route.ts`, `/dashboard/strategy` | live | Outcome statistics from the same table |
 
-## Engine flags (defaults: all on)
+## What the training data contains
 
-| Flag | Effect |
+- **Factors.** Since 2026-10-15 every event stores `{"scored": {...}, "raw": {...}}`: the vector the score used (after cross-sectional normalization) and the raw one. The labeler copies it to `signal_outcomes.factors_json`, which is never pruned. Older outcomes only have factors through the `signals` table, which keeps 72 hours. The trainer queries take `factors_json.scored` first and fall back to `signals`.
+- **Lost outcomes.** `price_4h IS NULL` means no snapshot within 10 minutes after the 4 h horizon. Since 2026-10-15 the engine keeps snapshotting a token for 4 h 10 m after its last event even when it leaves the boosted lists, so this should be rare for new events. Older history loses about 40 % of 4 h prices this way.
+- **Suspect prices.** `price_flag = 'rise_over_1000pct'` when the best price inside the 4 h window is more than 11× entry. On DexScreener this is almost always a switch to a different pool. The trainer queries exclude these rows; older rows were flagged by the same rule when the column was added.
+
+## Engine settings that matter for training
+
+| Setting | Effect |
 |---|---|
-| `ENGINE_CROSS_SECTIONAL_NORM=true` | Z-score every factor against the universe at each tick — kills market-wide false positives |
-| `ENGINE_ADAPTIVE_THRESHOLDS=true`  | BUY = 75th / SELL = 25th percentile of recent scores; FOMO = 95th percentile (floor 1.5) |
-| `ENGINE_REGIME_AWARE=true`         | Detect bull / bear / panic from score distribution + vol_trend; modulate fallback weights |
+| `ENGINE_CROSS_SECTIONAL_NORM=true` | Each factor is z-scored against the other tokens at the same minute, clamped to ±5 |
+| `ENGINE_ADAPTIVE_THRESHOLDS=true` | Without trained thresholds: BUY at the 75th and SELL at the 25th percentile of scores over 6 h. Volume burst: 95th percentile of the raw burst factor (`signals.fomo_raw`) over 6 h, floor 1.5 |
+| `ENGINE_REGIME_AWARE=true` | Bull / bear / panic detection adjusts the weights |
+| `ENGINE_WARM_UP_MIN=10` | No events until a token has 10 snapshots in the 90-minute window |
+| Quality filter | Liquidity ≥ $25k, buy/sell ratio 0.8 to 3.0, no events after a 50–100 % hour. Events only; scores are still written |
 
-Plus a 30-min warm-up gate · BUY/SELL transitions don't fire until a token has 30 snapshots
-(stops noise from short-history tokens).
+Trained thresholds (`meta.thresholds`) take priority over the adaptive BUY/SELL percentiles.
 
-## One-shot training
+## Training run
 
 ```bash
-# 1. Apply latest schema (idempotent — adds signal_outcomes if missing)
-pnpm d1:apply:remote
-
-# 2. Deploy the labeler so outcomes start filling in 4 h after the next event
-pnpm deploy:labeler
-
-# 3. After ≥ ~3 days of accumulated outcomes (≥ 200 labeled events),
-#    pull the data locally and refit:
-pnpm d1:export
-pnpm train:walk-forward
-
-# 4. Push the resulting strategy as a worker secret. The engine reads it and
-#    swaps in the trained weights + thresholds on the next run.
-wrangler secret put STRATEGY_FORMULA_JSON --name fomometer-engine \
+# 1. Dump outcomes (the exact query is in the header of backtest_walk_forward_stdlib.py)
+# 2. Fit
+python3 research/backtest_walk_forward_stdlib.py --input data/outcomes.json \
+    --output infra/best_meme_strategy.candidate.json --trials 1500
+# 3. Compare the candidate's test metrics with the current strategy's, then publish:
+npx wrangler secret put STRATEGY_FORMULA_JSON -c workers/engine/wrangler.toml \
     < infra/best_meme_strategy.json
 ```
 
-## Data flow contract
+`data/` and `infra/best_meme_strategy*.json` are git-ignored: they hold production data and fitted weights. The current weights are public on the Strategy page anyway.
 
-`backtest_walk_forward.py` ports `packages/shared/src/engine/factors.ts` and
-`score.ts` 1:1 to Python. If you change the TS factor set or scoring formula,
-update the Python mirror **in the same commit** — the comment block at the
-top of `backtest_walk_forward.py` calls this out.
-
-The trainer emits a `best_meme_strategy.json` with this shape:
+Output shape:
 
 ```json
 {
@@ -76,47 +71,20 @@ The trainer emits a `best_meme_strategy.json` with this shape:
   "trained_at": "2026-05-07T12:34:56+00:00",
   "meta": {
     "trainer": "walk_forward_v1",
-    "fallback_weights": { "fomo": 0.31, "pressure": 0.18, ... },
+    "fallback_weights": { "fomo": 0.31, "pressure": 0.18 },
     "thresholds": { "buy": 0.72, "sell": 0.28 },
-    "metrics": { "val": { ... }, "test": { ... } },
-    "split": { "train": [...], "val": [...], "test": [...] }
+    "metrics": { "val": {}, "test": {} },
+    "split": { "train": [], "val": [], "test": [] }
   }
 }
 ```
 
-`tokens=[]` is intentional · the engine sees `meta.fallback_weights`, picks
-the trained weights, and runs through the well-tested fallback path. When we
-graduate to a real StackVM formula (re-running `AlphaGPT/model_core/engine.py`
-on the same outcome data), `tokens` will be filled and the VM path takes over.
+`tokens=[]` makes the engine use the weighted-sum score with `meta.fallback_weights`.
 
-## What "good" looks like
+## Keeping Python and TypeScript in sync
 
-For paper-trading promotion we want, on the held-out test slice:
+The trainers re-implement the weighted-sum score from `packages/shared/src/engine/score.ts`. A change to the factor set or the score formula needs the same change in both trainers in the same commit.
 
-| Horizon | precision | avg PnL | n events |
-|---|---|---|---|
-| 1 h | ≥ 55 % | ≥ +1.0 % | ≥ 100 |
-| 4 h | ≥ 50 % | ≥ +2.0 % | ≥ 100 |
+## When to ship a new strategy
 
-The accuracy panel on `/dashboard/strategy` shows live numbers from the same
-table the trainer reads — no separate report file to ship.
-
-## Re-training cadence
-
-Run `pnpm d1:export && pnpm train:walk-forward` on a weekly cron (manually for
-now). Only swap `STRATEGY_FORMULA_JSON` if the new test Sharpe is at least 5 %
-better than the version recorded in the previous strategy's `meta.metrics.test`.
-
-## Files touched by this pipeline
-
-```
-infra/d1-schema.sql                              · adds signal_outcomes table
-infra/best_meme_strategy.json                    · output of the trainer (worker secret)
-workers/engine/src/index.ts                      · normalization · regime · adaptive thresholds · weight loading
-workers/labeler/                                 · new cron worker
-packages/shared/src/engine/factors.ts            · computePopulationStats / normalizeByPopulation
-packages/shared/src/engine/score.ts              · adaptiveThresholds · detectMarketRegime · regimeAdjustedWeights
-apps/web/app/api/strategy/accuracy/route.ts      · accuracy aggregates
-apps/web/components/dashboard/strategy-client.tsx · accuracy panel
-research/backtest_walk_forward.py           · the trainer
-```
+Only when it beats the baseline (all tracked tokens over the same window) on the held-out test split, after an allowance for fees and slippage. See phase 3 of [docs/ROADMAP.md](../docs/ROADMAP.md).

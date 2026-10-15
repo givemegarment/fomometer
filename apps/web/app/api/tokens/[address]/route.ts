@@ -23,10 +23,8 @@ export async function GET(
     `SELECT t.address, COALESCE(t.symbol,'') AS symbol, COALESCE(t.name,'') AS name, t.image_url, t.pair_address,
             sn.price_usd, sn.price_change_h24, sn.liquidity_usd, sn.fdv
      FROM tokens t
-     LEFT JOIN (
-       SELECT address, MAX(time) AS t FROM token_snapshots GROUP BY address
-     ) lt ON lt.address = t.address
-     LEFT JOIN token_snapshots sn ON sn.address = t.address AND sn.time = lt.t
+     LEFT JOIN token_snapshots sn ON sn.address = t.address
+       AND sn.time = (SELECT MAX(time) FROM token_snapshots WHERE address = t.address)
      WHERE t.address = ?`
   )
     .bind(address)

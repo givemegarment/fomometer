@@ -244,7 +244,12 @@ class Report:
 
 
 def load_outcomes(db_path: str) -> pd.DataFrame:
-    """Load every labeled signal_outcome from the SQLite snapshot."""
+    """Load labeled signal_outcomes from the SQLite snapshot.
+
+    Factors come from the outcome itself (stored since 2026-10-15, never pruned) and,
+    for older rows, from the signals table (kept 72 h). Outcomes with a price_flag
+    (suspect pool switch) are left out.
+    """
     if not os.path.exists(db_path):
         raise FileNotFoundError(
             f"D1 snapshot not found at {db_path}. "
@@ -257,10 +262,12 @@ def load_outcomes(db_path: str) -> pd.DataFrame:
             SELECT o.event_id, o.address, o.event_time, o.event_type,
                    o.entry_price, o.pnl_pct_15m, o.pnl_pct_1h, o.pnl_pct_4h,
                    o.max_pnl_pct_4h, o.min_pnl_pct_4h,
-                   s.score, s.factors_json
+                   s.score,
+                   COALESCE(json_extract(o.factors_json, '$.scored'), s.factors_json) AS factors_json
               FROM signal_outcomes o
               LEFT JOIN signals s
                 ON s.address = o.address AND s.time = o.event_time
+             WHERE o.price_flag IS NULL
             """,
             con,
         )

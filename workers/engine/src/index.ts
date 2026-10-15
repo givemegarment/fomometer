@@ -2,6 +2,8 @@
  * FOMOMETER — Engine cron worker
  * Runs every minute. Steps:
  *  1. Determine target token universe = Top-N DexScreener boosted Solana tokens.
+ *     Tokens with an event in the last 4 h 10 m are snapshotted too (not scored), so the
+ *     labeler can price their outcome after they leave the boosted lists.
  *  2. Snapshot via DexScreener (batches of 30).
  *  3. Persist tokens + token_snapshots.
  *  4. Compute the 12-factor vector per token on a rolling window (one D1 query for all tokens).
@@ -67,6 +69,9 @@ const FOMO_FACTOR_INDEX = 3;         // index of `fomo` in FactorVector
 const FOMO_FALLBACK_THRESHOLD = 2.5; // used only when adaptive percentile is unavailable
 const FOMO_PERCENTILE = 0.95;        // FOMO spike fires above 95th percentile of recent fomo factor
 const FOMO_TH_REFRESH_SEC = 30 * 60; // adaptive FOMO threshold is recomputed at most every 30 min
+// Keep snapshotting a token this long after its last event: the 4 h horizon plus the labeler tolerance.
+const POST_EVENT_TRACK_SEC = 4 * 3600 + 10 * 60;
+const POST_EVENT_TRACK_MAX = 60;     // bound on extra tokens per run
 
 // Quality prefilter defaults — empirically validated against 609 labeled events.
 // Population stats: liq<$25k → 37% hit, liq≥$25k → 53-58% hit; b/s≥3.0 → 37% hit/-13.7% avg;
@@ -102,10 +107,13 @@ async function runOnce(env: Env): Promise<void> {
     console.log('engine: empty universe, skipping');
     return;
   }
+  const universeSet = new Set(universe);
+  // Tokens still inside an event's 4 h horizon but no longer boosted: price only, no score.
+  const trackOnly = await loadPostEventAddresses(env, now, universeSet);
 
   // 2. Snapshot in batches of 30.
   const pairs = await Promise.all(
-    chunk(universe, 30).map((c) => ds.getTokensBatch(c))
+    chunk([...universe, ...trackOnly], 30).map((c) => ds.getTokensBatch(c))
   ).then((parts) => parts.flat());
 
   // Build snapshots map keyed by address.
@@ -138,9 +146,11 @@ async function runOnce(env: Env): Promise<void> {
     warm: boolean;
   };
 
-  const windows = await loadRollingWindows(env, [...snapByAddr.keys()], now, ROLLING_WINDOW_MIN);
+  const scoredAddrs = [...snapByAddr.keys()].filter((a) => universeSet.has(a));
+  const windows = await loadRollingWindows(env, scoredAddrs, now, ROLLING_WINDOW_MIN);
   const computed: Computed[] = [];
-  for (const [addr, snap] of snapByAddr) {
+  for (const addr of scoredAddrs) {
+    const snap = snapByAddr.get(addr)!;
     const window = windows.get(addr) ?? [];
     if (window.length === 0) window.push(snap);
     const factorsRaw = computeFactors(window);
@@ -242,22 +252,24 @@ async function runOnce(env: Env): Promise<void> {
   for (const c of eligible) {
     const { addr, score } = c;
     const prevScore = prevScores.get(addr) ?? null;
+    const ev = { regime, scored: c.factorsScored, raw: c.factorsRaw };
 
     if (prevScore != null && prevScore < buyTh && score >= buyTh) {
       buyTriggers++;
       flags.set(addr, { buy: true, sell: false });
-      eventStmts.push(eventStmt(env, addr, now, 'buy_trigger', score, prevScore, regime, buyTh));
+      eventStmts.push(eventStmt(env, addr, now, 'buy_trigger', score, prevScore, { ...ev, threshold: buyTh }));
     } else if (prevScore != null && prevScore >= buyTh && score <= sellTh) {
       sellTriggers++;
       flags.set(addr, { buy: false, sell: true });
-      eventStmts.push(eventStmt(env, addr, now, 'sell_trigger', score, prevScore, regime, sellTh));
+      eventStmts.push(eventStmt(env, addr, now, 'sell_trigger', score, prevScore, { ...ev, threshold: sellTh }));
     }
 
-    // FOMO spike: tagged factor (raw, not normalized — we want the magnitude).
+    // FOMO spike: raw factor (not normalized, we want the magnitude), compared with a
+    // percentile of the same raw factor (signals.fomo_raw).
     const fomoFactor = c.factorsRaw[FOMO_FACTOR_INDEX] ?? 0;
     if (fomoFactor > fomoTh && !fomoThrottled.has(addr)) {
       fomoSpikes++;
-      eventStmts.push(eventStmt(env, addr, now, 'fomo_spike', score, prevScore, regime, fomoTh));
+      eventStmts.push(eventStmt(env, addr, now, 'fomo_spike', score, prevScore, { ...ev, threshold: fomoTh }));
     }
   }
 
@@ -266,9 +278,17 @@ async function runOnce(env: Env): Promise<void> {
   const signalStmts = scored.map((c) => {
     const f = flags.get(c.addr);
     return env.DB.prepare(
-      `INSERT OR REPLACE INTO signals (address, time, score, factors_json, is_buy, is_sell)
-       VALUES (?, ?, ?, ?, ?, ?)`
-    ).bind(c.addr, now, c.score, JSON.stringify(factorsObject(c.factorsScored)), f?.buy ? 1 : 0, f?.sell ? 1 : 0);
+      `INSERT OR REPLACE INTO signals (address, time, score, factors_json, is_buy, is_sell, fomo_raw)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      c.addr,
+      now,
+      c.score,
+      JSON.stringify(factorsObject(c.factorsScored)),
+      f?.buy ? 1 : 0,
+      f?.sell ? 1 : 0,
+      c.factorsRaw[FOMO_FACTOR_INDEX] ?? null
+    );
   });
   await env.DB.batch([...signalStmts, ...eventStmts]);
 
@@ -286,6 +306,7 @@ async function runOnce(env: Env): Promise<void> {
         at: now,
         universe: universe.length,
         snapshots: snapByAddr.size,
+        tracked_after_event: trackOnly.length,
         buy_triggers: buyTriggers,
         sell_triggers: sellTriggers,
         fomo_spikes: fomoSpikes,
@@ -445,6 +466,19 @@ async function persistTokensAndSnapshots(
   if (stmts.length) await env.DB.batch(stmts);
 }
 
+/** Addresses with an event inside the post-event tracking window that are not in this run's universe. */
+async function loadPostEventAddresses(env: Env, nowSec: number, universe: Set<string>): Promise<string[]> {
+  const r = await env.DB.prepare(
+    `SELECT address FROM signal_events WHERE time >= ? GROUP BY address ORDER BY MAX(time) DESC`
+  )
+    .bind(nowSec - POST_EVENT_TRACK_SEC)
+    .all<{ address: string }>();
+  return (r.results ?? [])
+    .map((x) => x.address)
+    .filter((a) => !universe.has(a))
+    .slice(0, POST_EVENT_TRACK_MAX);
+}
+
 /** Rolling windows for many tokens in one query, grouped by address in time order. */
 async function loadRollingWindows(
   env: Env,
@@ -495,13 +529,13 @@ async function loadFomoThrottled(env: Env, nowSec: number): Promise<Set<string>>
 }
 
 /**
- * 95th percentile of the stored `fomo` factor over ADAPTIVE_LOOKBACK_HOURS, floored at 1.5.
- * Computed in SQL (json_extract + ORDER BY/OFFSET) and cached in engine_state for
- * FOMO_TH_REFRESH_SEC, so the worker never parses thousands of factor rows.
+ * 95th percentile of the raw `fomo` factor (signals.fomo_raw) over ADAPTIVE_LOOKBACK_HOURS,
+ * floored at 1.5. Same scale as the value it is compared with (factorsRaw). Computed in SQL
+ * and cached in engine_state for FOMO_TH_REFRESH_SEC.
  * Returns null when there are fewer than 30 samples.
  */
 async function loadFomoThreshold(env: Env, nowSec: number): Promise<number | null> {
-  const cached = await env.DB.prepare(`SELECT value, updated_at FROM engine_state WHERE key = 'fomo_th'`).first<{
+  const cached = await env.DB.prepare(`SELECT value, updated_at FROM engine_state WHERE key = 'fomo_th_raw'`).first<{
     value: string;
     updated_at: number;
   }>();
@@ -511,7 +545,7 @@ async function loadFomoThreshold(env: Env, nowSec: number): Promise<number | nul
   }
 
   const since = nowSec - ADAPTIVE_LOOKBACK_HOURS * 3600;
-  const valid = `time >= ? AND json_type(factors_json, '$.fomo') IN ('real', 'integer')`;
+  const valid = `time >= ? AND fomo_raw IS NOT NULL`;
   const cnt = await env.DB.prepare(`SELECT COUNT(*) AS n FROM signals WHERE ${valid}`)
     .bind(since)
     .first<{ n: number }>();
@@ -520,7 +554,7 @@ async function loadFomoThreshold(env: Env, nowSec: number): Promise<number | nul
   let th: number | null = null;
   if (n >= 30) {
     const row = await env.DB.prepare(
-      `SELECT json_extract(factors_json, '$.fomo') AS v FROM signals WHERE ${valid}
+      `SELECT fomo_raw AS v FROM signals WHERE ${valid}
        ORDER BY v ASC LIMIT 1 OFFSET ?`
     )
       .bind(since, Math.min(n - 1, Math.floor(FOMO_PERCENTILE * (n - 1))))
@@ -530,7 +564,7 @@ async function loadFomoThreshold(env: Env, nowSec: number): Promise<number | nul
   }
 
   await env.DB.prepare(
-    `INSERT INTO engine_state (key, value, updated_at) VALUES ('fomo_th', ?, ?)
+    `INSERT INTO engine_state (key, value, updated_at) VALUES ('fomo_th_raw', ?, ?)
      ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
   )
     .bind(th == null ? 'null' : String(th), nowSec)
@@ -538,6 +572,11 @@ async function loadFomoThreshold(env: Env, nowSec: number): Promise<number | nul
   return th;
 }
 
+/**
+ * Event row. metadata_json keeps both factor vectors so the labeler can copy them into
+ * signal_outcomes, which is never pruned: `factors.scored` is what the score used,
+ * `factors.raw` is before cross-sectional normalization.
+ */
 function eventStmt(
   env: Env,
   address: string,
@@ -545,13 +584,13 @@ function eventStmt(
   event_type: 'buy_trigger' | 'sell_trigger' | 'fomo_spike',
   score: number,
   prev_score: number | null,
-  regime?: MarketRegime,
-  threshold?: number
+  ev: { regime?: MarketRegime; threshold: number; scored: FactorVector; raw: FactorVector }
 ): D1PreparedStatement {
-  const metadata =
-    regime || threshold != null
-      ? JSON.stringify({ regime: regime ?? null, threshold: threshold ?? null })
-      : null;
+  const metadata = JSON.stringify({
+    regime: ev.regime ?? null,
+    threshold: ev.threshold,
+    factors: { scored: factorsObject(ev.scored), raw: factorsObject(ev.raw) }
+  });
   return env.DB.prepare(
     `INSERT INTO signal_events (address, time, event_type, score, prev_score, metadata_json)
      VALUES (?, ?, ?, ?, ?, ?)`

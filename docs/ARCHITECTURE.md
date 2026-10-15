@@ -42,18 +42,18 @@ The site never writes to the database. The watchlist lives in the visitor's brow
 
 One run per minute, inside the Workers free-plan CPU limit (50 ms). Measured after the October 2026 rewrite: 15 to 57 ms CPU, 1.4 to 3.7 s wall time, mostly waiting on DexScreener and D1.
 
-1. **Universe.** Token-boost lists (top and latest), Solana only, up to `ENGINE_TOP_N` (50). An empty response skips the minute.
+1. **Universe.** Token-boost lists (top and latest), Solana only, up to `ENGINE_TOP_N` (50). An empty response skips the minute. Tokens with an event in the last 4 h 10 m that are no longer boosted are added for snapshots only (up to 60, `last_run.tracked_after_event`): they get a price but no score, so their outcome is not lost.
 2. **Snapshots.** Pair data for each token: price, liquidity, FDV, volumes (5m, 1h, 6h, 24h), price changes, buy and sell counts. Written to `token_snapshots`. Token metadata goes to `tokens`; an empty logo from DexScreener does not overwrite a stored one.
 3. **Factors.** One query loads the last 90 minutes of snapshots for every token (`json_each`). `packages/shared/src/engine/factors.ts` computes 12 factors.
 4. **Normalization.** Each factor is z-scored across the tokens of this minute and capped at ±5 (`ENGINE_CROSS_SECTIONAL_NORM`).
 5. **Score.** A sigmoid of a weighted sum of 7 normalized factors (`score.ts`). Weights and thresholds come from the `STRATEGY_FORMULA_JSON` secret, otherwise from defaults. A market regime (neutral, bull, bear, panic) shifts three of the weights (`ENGINE_REGIME_AWARE`).
-6. **Events.** BUY when the score crosses the BUY threshold upward, SELL when it drops from above BUY to below SELL in one step, volume burst when the raw `fomo` factor beats the 95th percentile of the last 6 hours (floor 1.5, once per token per 30 minutes). Only tokens that pass the quality filter (10 snapshots, $25k liquidity, buy/sell ratio 0.8 to 3.0, not up 50 to 100% in the hour) can emit events.
-7. **Writes.** All `signals` and `signal_events` rows go in one `DB.batch`. The run summary goes to `engine_state.last_run`; the burst threshold is cached in `engine_state.fomo_th` for 30 minutes.
+6. **Events.** BUY when the score crosses the BUY threshold upward, SELL when it drops from above BUY to below SELL in one step, volume burst when the raw `fomo` factor beats the 95th percentile of the same raw factor over the last 6 hours (`signals.fomo_raw`, floor 1.5, once per token per 30 minutes). Only tokens that pass the quality filter (10 snapshots, $25k liquidity, buy/sell ratio 0.8 to 3.0, not up 50 to 100% in the hour) can emit events.
+7. **Writes.** All `signals` and `signal_events` rows go in one `DB.batch`. Each event's `metadata_json` holds the regime, the threshold and both factor vectors (`factors.scored`, `factors.raw`). The run summary goes to `engine_state.last_run`; the burst threshold is cached in `engine_state.fomo_th_raw` for 30 minutes.
 8. **Retention.** Snapshots and signals older than 72 hours are deleted, events older than 72 hours plus 14 days.
 
 ## Labeler
 
-Every 15 minutes it takes events without an outcome whose 4-hour horizon has passed (events 4 to 16 hours old, `LABELER_LOOKBACK_HOURS` = 12), finds the first snapshot at or after 15 minutes, 1 hour and 4 hours (accepted only within 10 minutes of the horizon), and writes `signal_outcomes` with the price changes and the best and worst move inside 4 hours. Outcomes are never pruned; they are the long-term record (45,618 rows on 2026-10-14, from 2026-05-06).
+Every 15 minutes it takes events without an outcome whose 4-hour horizon has passed (events 4 h 10 m to 16 hours old, so every snapshot inside the 10-minute tolerance already exists; `LABELER_LOOKBACK_HOURS` = 12), finds the first snapshot at or after 15 minutes, 1 hour and 4 hours (accepted only within 10 minutes of the horizon), and writes `signal_outcomes` with the price changes, the best and worst move inside 4 hours, the event's factor vectors (`factors_json`) and `price_flag`. `price_flag = 'rise_over_1000pct'` marks a best price more than 11× entry inside the window, which on DexScreener is almost always a switch to a different pool (441 of 45,759 outcomes on 2026-10-15). Outcomes are never pruned; they are the long-term record (from 2026-05-06).
 
 ## Data model
 
@@ -63,11 +63,10 @@ Schema: `infra/d1-schema.sql`. Times are Unix seconds.
 |---|---|---|---|
 | `tokens` | 11,653 | forever | symbol, name, logo, pair |
 | `token_snapshots` | ~133k | 72 h | one row per token per minute |
-| `signals` | ~15k | 72 h | score and all 12 factors (`factors_json`) per token per minute |
-| `signal_events` | ~4.4k | 72 h + 14 d | BUY, SELL, volume burst |
-| `signal_outcomes` | 45,618 | forever | price after 15m / 1h / 4h per event |
-| `engine_state` | 2 | | `last_run`, `fomo_th` |
-| `users`, `sessions`, `watchlist` | 3, 0, 0 | | left from the Telegram-gated version, unused |
+| `signals` | ~15k | 72 h | score, all 12 normalized factors (`factors_json`) and the raw burst factor (`fomo_raw`) per token per minute |
+| `signal_events` | ~4.4k | 72 h + 14 d | BUY, SELL, volume burst, with factors in `metadata_json` |
+| `signal_outcomes` | 45,759 | forever | price after 15m / 1h / 4h per event, factors (since 2026-10-15), `price_flag` |
+| `engine_state` | 2 | | `last_run`, `fomo_th_raw` |
 
 ## JSON API
 
@@ -98,9 +97,9 @@ The API is public but not versioned or rate-limited; treat it as the site's inte
 
 ## Known limitations of the design
 
-- Factors are stored only in `signals`, which is pruned after 72 hours. The trainer joins outcomes to `signals`, so it can only learn from the last 3 days even though outcomes go back to May.
-- The volume-burst event compares the raw `fomo` factor with a percentile of stored normalized values: two different scales.
-- Tokens that leave the boosted lists stop getting snapshots, so their outcomes are missing. Losers are more likely to leave, which biases the record upward.
+- Outcomes before 2026-10-15 have no stored factors; for them the trainer can only use the last 72 hours of `signals`.
+- Before 2026-10-15 tokens that left the boosted lists stopped getting snapshots: about 40 % of those outcomes have no 4-hour price. Losers are more likely to leave, which biases that part of the record upward.
+- `price_flag` is a single rule (best price above 11× entry). A pool switch that lowers the price, or one smaller than 11×, is not caught.
 - One data source (DexScreener). An outage or an empty list skips minutes.
 
 These are tracked in [ROADMAP.md](ROADMAP.md).

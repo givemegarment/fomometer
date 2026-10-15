@@ -9,6 +9,11 @@
  * fallback-weight optimization and the dashboard accuracy panel. We label
  * automatically rather than wait for user feedback so the loop is closed
  * even before the product has many users.
+ *
+ * Each outcome also keeps the event's factor vectors (signal_outcomes is never
+ * pruned, signal_events and signals are), and a price_flag when the price rose
+ * more than SUSPECT_RISE_PCT inside the window: on DexScreener that is almost
+ * always a switch to a different pool, not a trade anyone could have made.
  */
 
 export interface Env {
@@ -20,6 +25,8 @@ export interface Env {
 const HORIZON_4H_SEC = 4 * 3600;
 /** A horizon price must come from a snapshot at most this long after the horizon; otherwise it is missing. */
 const HORIZON_TOLERANCE_SEC = 10 * 60;
+/** Best price in the 4 h window above entry by more than this (percent) marks the outcome as suspect. */
+const SUSPECT_RISE_PCT = 1000;
 
 export default {
   async scheduled(_e: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
@@ -45,9 +52,10 @@ async function runOnce(env: Env): Promise<void> {
   const lookbackSec = (parseInt(env.LABELER_LOOKBACK_HOURS, 10) || 12) * 3600;
   const batchSize = parseInt(env.LABELER_BATCH_SIZE, 10) || 500;
 
-  // Pick events whose 4h horizon has already elapsed and which we have not
-  // yet labeled. Bound by a lookback to avoid replaying ancient events.
-  const cutoffNewest = now - HORIZON_4H_SEC;
+  // Pick events whose 4h horizon plus the tolerance has elapsed (so every snapshot
+  // that could price the horizon already exists) and which we have not yet
+  // labeled. Bound by a lookback to avoid replaying ancient events.
+  const cutoffNewest = now - HORIZON_4H_SEC - HORIZON_TOLERANCE_SEC;
   const cutoffOldest = now - lookbackSec - HORIZON_4H_SEC;
 
   const rows = await env.DB.prepare(
@@ -115,14 +123,17 @@ async function labelOne(env: Env, e: EventRow, now: number): Promise<boolean> {
     .first<{ hi: number | null; lo: number | null }>();
   const maxPnl = pct(extr?.hi ?? null);
   const minPnl = pct(extr?.lo ?? null);
+  const priceFlag = maxPnl != null && maxPnl > SUSPECT_RISE_PCT ? 'rise_over_1000pct' : null;
 
   await env.DB.prepare(
     `INSERT OR REPLACE INTO signal_outcomes
        (event_id, address, event_time, event_type, entry_price,
         price_15m, price_1h, price_4h,
         pnl_pct_15m, pnl_pct_1h, pnl_pct_4h,
-        max_pnl_pct_4h, min_pnl_pct_4h, labeled_at)
-     VALUES (?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?)`
+        max_pnl_pct_4h, min_pnl_pct_4h, labeled_at,
+        price_flag, factors_json)
+     VALUES (?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?,
+             ?, (SELECT json_extract(metadata_json, '$.factors') FROM signal_events WHERE id = ?))`
   )
     .bind(
       e.id,
@@ -138,7 +149,9 @@ async function labelOne(env: Env, e: EventRow, now: number): Promise<boolean> {
       pct(price4h),
       maxPnl,
       minPnl,
-      now
+      now,
+      priceFlag,
+      e.id
     )
     .run();
 
