@@ -12,7 +12,7 @@
 
 ---
 
-## 2026-10-15 [BUILD] Страница Treasury (не задеплоено)
+## 2026-10-15 [BUILD] Страница Treasury (задеплоено dbdccce8, prod проверен: страница 200, /treasury 307, /api/treasury 9 балансов без rpc_error)
 - `/dashboard/treasury` (`components/dashboard/treasury-client.tsx`), пункт «Treasury» в навигации и подвале,
   редирект `/treasury` → `/dashboard/treasury` (временный), sitemap. Данные `/api/treasury`, обновление раз в минуту.
 - Состав: 4 плитки (Fees earned SOL, Swaps с buys/sells, Volume SOL, Buys after a signal «n of m»); прочие fee mint
@@ -25,7 +25,7 @@
 - Проверено в превью на прод-данных: 0.00001 SOL, 1 swap «1 buy, 0 sells», 0.001 SOL, «1 of 1», DIKSHIT Buy BUY.
   tsc 0, lint 0.
 
-## 2026-10-15 [DEBUG] Страница токена: одинокий Sell без объяснения и «·» вместо score (не задеплоено)
+## 2026-10-15 [DEBUG] Страница токена: одинокий Sell без объяснения и «·» вместо score (задеплоено)
 - Владелец (скрин Sonny): «почему одна кнопка sell». Причина: Buy скрыт ниже фильтра ликвидности, а объяснение было
   только внизу в карточке Score. Фикс: на месте Buy строка «Buy is off: liquidity is under $25K… Sell still works».
 - «·» в Score: последняя строка истории бывает без score (движок пишет цену до балла в ту же минуту; и 4 ч после
