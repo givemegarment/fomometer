@@ -1,0 +1,14 @@
+name = "fomometer-web"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
+
+# D1
+[[d1_databases]]
+binding = "DB"
+database_name = "fomometer"
+database_id = "9ac47005-db06-43e5-8a79-87e8d0b0acf8"
+
+# Vars (non-secret)
+[vars]
+PUBLIC_APP_URL = "https://fomometer.xyz"

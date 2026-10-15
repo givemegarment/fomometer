@@ -1,0 +1,44 @@
+{
+  "name": "@fomometer/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbo",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "preview": "pnpm pages:build && wrangler pages dev .vercel/output/static",
+    "pages:build": "npx @cloudflare/next-on-pages",
+    "deploy": "pnpm pages:build && wrangler pages deploy .vercel/output/static --project-name=fomometer-web"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.1.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.460.0",
+    "next": "14.2.18",
+    "next-intl": "^3.26.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "recharts": "^2.13.3",
+    "swr": "^2.2.5",
+    "tailwind-merge": "^2.5.4"
+  },
+  "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.7",
+    "@cloudflare/workers-types": "^4.20241022.0",
+    "@types/node": "^22.9.0",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "14.2.18",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.14",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "^5.6.3",
+    "vercel": "^37.14.0",
+    "wrangler": "^4.20.0"
+  }
+}

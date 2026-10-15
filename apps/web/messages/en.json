@@ -1,0 +1,716 @@
+{
+  "nav": {
+    "overview": "Overview",
+    "scanner": "Scanner",
+    "signals": "Signals",
+    "strategy": "Strategy",
+    "watchlist": "Watchlist"
+  },
+  "site": {
+    "dashboard": "Dashboard",
+    "how_it_works": "How it works",
+    "disclaimer": "Not financial advice. FOMOMETER publishes statistics about market data. It does not recommend buying or selling any token.",
+    "data_source": "Market data:",
+    "whitepaper": "Whitepaper",
+    "roadmap": "Roadmap"
+  },
+  "status": {
+    "prices": "prices {ago}",
+    "scores": "scores {ago}"
+  },
+  "landing": {
+    "meta_title": "FOMOMETER · Solana memecoin scores, updated every minute",
+    "meta_description": "FOMOMETER tracks Solana memecoins promoted on DexScreener, computes 12 market factors for each and publishes a score with a transparent method and track record.",
+    "eyebrow": "Solana memecoin scanner",
+    "title": "Solana memecoins, scored every minute.",
+    "subtitle": "FOMOMETER tracks tokens promoted on DexScreener, computes 12 market factors for each one and flags when a score crosses its threshold. Open to everyone, no sign-up, no wallet.",
+    "cta_open": "Open dashboard",
+    "cta_how": "How it works",
+    "board_title": "Top by score right now",
+    "board_empty": "No tracked tokens at the moment.",
+    "board_error": "Live data is unavailable right now.",
+    "board_more": "Open the full scanner",
+    "board_note": "Live data. Score is 0 to 100; it ranks tokens against each other and is not a price forecast.",
+    "steps_title": "How it works",
+    "steps": {
+      "collect": {
+        "title": "Collect",
+        "body": "Every minute: price, liquidity, volume and buy/sell counts for up to 50 Solana tokens from DexScreener's boosted lists."
+      },
+      "measure": {
+        "title": "Measure",
+        "body": "12 factors per token, such as buy pressure, volume burst and liquidity depth, each compared with the rest of the list."
+      },
+      "score": {
+        "title": "Score",
+        "body": "A 0 to 100 score built from 7 of those factors, plus BUY, SELL and volume-burst signals when thresholds are crossed."
+      }
+    },
+    "limits_title": "What FOMOMETER is not",
+    "limits": {
+      "advice": "Not financial advice and not a trading bot. It never touches a wallet.",
+      "universe": "It covers DexScreener's promoted tokens, not the whole Solana market.",
+      "stats": "The track record ignores fees and slippage, and tokens that vanish drop out of it.",
+      "risk": "Memecoins are extremely volatile. Most of them lose most of their value."
+    },
+    "limits_more": "Read the full method",
+    "col_token": "Token",
+    "col_score": "Score"
+  },
+  "method": {
+    "title": "How it works",
+    "meta_description": "The data, the 12 factors, the score formula, signal rules and how the track record is measured.",
+    "intro": "FOMOMETER is a scoring tool for Solana memecoins. It does not use a neural network or a language model: the score is a transparent formula over public market data. This page describes exactly what it does and where it falls short.",
+    "toc": "On this page",
+    "data": {
+      "title": "Data",
+      "body": "Every minute the engine reads DexScreener's boosted-token lists (top and latest boosts) and keeps the Solana tokens, up to 50. Boosts are paid promotion, so this is a list of promoted tokens, not of the most popular ones. For each token it records price, liquidity, fully diluted value, volume and buy/sell counts. Snapshots are kept for 72 hours."
+    },
+    "factors": {
+      "title": "The 12 factors",
+      "body": "From the last 90 minutes of snapshots the engine computes 12 factors per token. Each factor is then standardized against all tokens in the same minute (a z-score capped at ±5), so a value says how unusual a token is compared with the rest of the list right now.",
+      "col_factor": "Factor",
+      "col_meaning": "What it measures",
+      "col_in_score": "In the score",
+      "yes": "Yes",
+      "no": "No, context only"
+    },
+    "score": {
+      "title": "The score",
+      "body": "The score is a weighted sum of 7 factors passed through a sigmoid, shown on the site as 0 to 100. The 7 factors are volume burst, buy pressure, reversal, liquidity depth, volume trend, RSI and deviation from average. The weights were fitted on past signals with a walk-forward random search. The other 5 factors are shown for context and do not change the score. The current weights are on the Strategy page.",
+      "regime": "The engine also labels the market as neutral, bull, bear or panic from the spread of scores and volume trends across the list, and shifts the weights for volume burst, buy pressure and liquidity accordingly. The current regime is on the Strategy page."
+    },
+    "signals": {
+      "title": "Signals",
+      "body": "Signals are events recorded when a token's score or volume crosses a threshold. They describe what happened in the data; they are not instructions to trade.",
+      "buy": {
+        "name": "BUY",
+        "rule": "The score rises from below the BUY threshold to at or above it."
+      },
+      "sell": {
+        "name": "SELL",
+        "rule": "The score falls from at or above the BUY threshold to at or below the SELL threshold in one step. This is rare by design."
+      },
+      "fomo": {
+        "name": "Volume burst",
+        "rule": "The raw volume-burst factor exceeds its threshold: the 95th percentile of the last 6 hours, and never below 1.5. At most one per token every 30 minutes."
+      },
+      "thresholds": "Thresholds are either fitted together with the weights or derived from recent score percentiles.",
+      "thresholds_link": "Current values are on the Strategy page."
+    },
+    "gates": {
+      "title": "Quality filter",
+      "body": "A token can trigger signals only if it has at least 10 snapshots, at least $25,000 of liquidity, a buy/sell ratio between 0.8 and 3.0 over the last hour, and has not risen between 50% and 100% in the last hour. Tokens that fail are still scored and shown, they just cannot trigger signals."
+    },
+    "record": {
+      "title": "Track record",
+      "body": "15 minutes, 1 hour and 4 hours after each signal the price change is recorded. The Strategy page shows how often the price moved in the signal's direction (up after BUY and volume burst, down after SELL) and the median change. Medians are used because a few extreme moves would dominate an average. Percentages are hidden when there are fewer than 20 outcomes."
+    },
+    "limits": {
+      "title": "Limitations",
+      "body": "The track record has no fees and no slippage, and entry is the snapshot price. Tokens that disappear from the list, often after a collapse, have no later price and drop out of the statistics, which makes results look better than they are. Samples are small and markets change, so past results say little about future ones. Scoring runs can fail or lag; the LIVE / STALE badge shows how fresh the data is. Nothing on this site is financial advice."
+    }
+  },
+  "factors": {
+    "ret": {
+      "label": "1-minute return",
+      "short": "Return",
+      "hint": "Log price change since the previous snapshot, about one minute."
+    },
+    "liq_score": {
+      "label": "Liquidity depth",
+      "short": "Liquidity",
+      "hint": "Liquidity relative to fully diluted value, scaled to 0..1. Higher means a position is easier to exit."
+    },
+    "pressure": {
+      "label": "Buy pressure",
+      "short": "Pressure",
+      "hint": "Balance of buy and sell transactions over the last hour, from -1 (only sells) to +1 (only buys)."
+    },
+    "fomo": {
+      "label": "Volume burst",
+      "short": "Burst",
+      "hint": "Volume of the last 5 minutes compared with the pace of the last hour. Shows a sudden rush of trading."
+    },
+    "dev": {
+      "label": "Deviation from average",
+      "short": "Deviation",
+      "hint": "How far the price is from its average over the last 20 snapshots."
+    },
+    "log_vol": {
+      "label": "Volume size",
+      "short": "Volume",
+      "hint": "Logarithm of 1-hour trading volume."
+    },
+    "vol_cluster": {
+      "label": "Volatility",
+      "short": "Volatility",
+      "hint": "Spread of 1-minute returns over the last 10 snapshots."
+    },
+    "momentum_rev": {
+      "label": "Reversal",
+      "short": "Reversal",
+      "hint": "1 when the last 5-minute move goes against the 5 minutes before it, otherwise 0."
+    },
+    "rel_strength": {
+      "label": "RSI",
+      "short": "RSI",
+      "hint": "Relative strength index over 14 one-minute returns, rescaled to -1..1."
+    },
+    "hl_range": {
+      "label": "1-hour move",
+      "short": "1h move",
+      "hint": "Size of the 1-hour price change reported by DexScreener, in either direction."
+    },
+    "close_pos": {
+      "label": "Range position",
+      "short": "Range pos.",
+      "hint": "Where the current price sits between the low and the high of the last 60 snapshots, 0..1."
+    },
+    "vol_trend": {
+      "label": "Volume trend",
+      "short": "Vol. trend",
+      "hint": "1-hour volume compared with the hourly average over the last 6 hours."
+    }
+  },
+  "overview": {
+    "title": "Overview",
+    "subtitle": "Tracked tokens and the latest signals",
+    "buy_signals_1h": "BUY signals, last hour",
+    "avg_score": "Average score",
+    "leaders": "Top by score",
+    "last_buys": "Latest BUY signals",
+    "see_all": "See all",
+    "load_error": "Could not load data.",
+    "leaders_empty": "No tracked tokens yet.",
+    "buys_empty": "No BUY signals yet."
+  },
+  "scanner": {
+    "title": "Scanner",
+    "subtitle": "Tracked Solana tokens ranked by score",
+    "col": {
+      "rank": "#",
+      "token": "Token",
+      "score": "Score",
+      "price": "Price",
+      "change_24h": "24h",
+      "liquidity": "Liquidity",
+      "fdv": "FDV",
+      "fomo": "Burst",
+      "spark": "30m"
+    },
+    "filters": {
+      "all": "All",
+      "score_high": "Score 70+",
+      "liq_high": "Liquidity $50k+",
+      "fomo_high": "Burst > 2σ"
+    },
+    "watch_add": "Add to watchlist",
+    "watch_remove": "Remove from watchlist",
+    "empty": "No tracked tokens right now. Data refreshes every minute."
+  },
+  "token_detail": {
+    "back": "Back to scanner",
+    "price_chart": "Price, last 6 hours",
+    "factor_radar": "Factors",
+    "signal_events": "Signal history",
+    "links": "External links",
+    "watch": "Watch",
+    "unwatch": "Unwatch",
+    "stat_price": "Price",
+    "stat_24h": "24h",
+    "stat_liquidity": "Liquidity",
+    "stat_fdv": "FDV",
+    "no_price": "No price data in the last 6 hours.",
+    "no_events": "No signals for this token yet.",
+    "prev_score": "Previous score"
+  },
+  "signals": {
+    "title": "Signals",
+    "subtitle": "Score crossings and volume bursts, newest first",
+    "empty": "No signals of this type yet.",
+    "type_buy": "BUY",
+    "type_sell": "SELL",
+    "type_fomo": "Volume burst",
+    "filter_all": "All",
+    "filter_buy": "BUY",
+    "filter_sell": "SELL",
+    "filter_fomo": "Volume burst",
+    "prev_score": "Previous score"
+  },
+  "strategy": {
+    "title": "Strategy",
+    "subtitle": "Current engine settings and how past signals played out.",
+    "method_link": "How the score works",
+    "load_error": "Could not load data.",
+    "settings_title": "Current settings",
+    "settings_updated": "reported {ago}",
+    "settings_empty": "The engine has not reported its settings yet.",
+    "buy_th": "BUY threshold",
+    "sell_th": "SELL threshold",
+    "fomo_th": "Burst threshold",
+    "regime": "Market regime",
+    "weights": "Weights",
+    "thresholds": "Thresholds",
+    "weights_title": "Score weights",
+    "weights_subtitle": "Weight of each factor in the score formula. Factors are normalized across tokens first, so the weights are comparable. Factors not listed are shown for context only.",
+    "weights_regime": "Base weights. In a bull, bear or panic regime the engine shifts them.",
+    "weights_empty": "The engine has not reported its weights yet.",
+    "trained": "Fitted",
+    "adaptive": "Adaptive",
+    "default": "Default",
+    "regimes": {
+      "neutral": "Neutral",
+      "bull": "Bull",
+      "bear": "Bear",
+      "panic": "Panic"
+    },
+    "record_title": "Track record, last {days} days",
+    "record_subtitle": "Share of signals where the price then moved in the signal's direction.",
+    "col_type": "Signal",
+    "col_n": "Signals",
+    "col_favorable": "After {h}",
+    "col_median_1h": "Median 1h",
+    "not_enough": "Not enough data",
+    "types": {
+      "buy": "BUY",
+      "sell": "SELL",
+      "fomo": "Volume burst"
+    },
+    "favorable": {
+      "buy": "counted when price is higher",
+      "sell": "counted when price is lower",
+      "fomo": "counted when price is higher"
+    },
+    "caveats": "No fees or slippage. Entry is the snapshot price at the signal. Tokens without a later price are left out, which flatters the results. Past results do not predict future ones."
+  },
+  "watchlist": {
+    "title": "Watchlist",
+    "empty_title": "Your watchlist is empty",
+    "empty_body": "Star tokens in the scanner to follow them here. The list is stored in this browser.",
+    "open_scanner": "Open scanner"
+  },
+  "common": {
+    "error": "Something went wrong",
+    "error_body": "Data could not be loaded. Try again in a minute.",
+    "retry": "Retry",
+    "disclaimer": "Not financial advice. Scores are statistics, not recommendations to buy or sell.",
+    "not_found": "Page not found.",
+    "go_home": "Go to home page",
+    "language": "Language"
+  },
+  "whitepaper": {
+    "title": "Whitepaper",
+    "meta_description": "What FOMOMETER does, how well its signals have done so far, how it plans to earn revenue and how a community token would share it.",
+    "version": "Version 0.1, 14 October 2026. Sections 6 and 7 describe plans, not things that exist today.",
+    "toc": "Contents",
+    "summary": {
+      "title": "Summary",
+      "body": [
+        "FOMOMETER scores Solana memecoins every minute from public market data and publishes how its past signals actually played out, including when they did badly. It is free and has no accounts.",
+        "The plan is to keep the core open and free, sell faster and deeper access to people who want it, and tie a community token to that revenue through public, rule-based buybacks. The order matters: measured signal quality first, revenue second, buybacks only from revenue that exists."
+      ]
+    },
+    "problem": {
+      "title": "The problem",
+      "body": [
+        "Memecoin traders choose from thousands of new tokens a day. Raw data terminals show everything and rank nothing. Signal bots and callers rank everything and show no record: their calls are screenshots of winners, never a full list with the losers.",
+        "What is missing is a ranking whose method is public and whose every call is measured afterwards, so anyone can see how much to trust it."
+      ]
+    },
+    "product": {
+      "title": "What FOMOMETER does",
+      "intro": "Every minute the engine:",
+      "steps": [
+        "Reads DexScreener's boosted-token lists and keeps the Solana tokens, up to 50.",
+        "Computes 12 market factors per token from the last 90 minutes of data.",
+        "Compares each factor with the other tokens in the same minute, so a value means unusual compared with the rest of the list right now.",
+        "Combines 7 factors into a score from 0 to 100. Weights and thresholds are fitted on past outcomes and published on the Strategy page.",
+        "Records BUY, SELL and volume-burst events when thresholds are crossed, behind a quality filter.",
+        "Records the price 15 minutes, 1 hour and 4 hours after every event."
+      ],
+      "outro": "No neural network or language model is involved.",
+      "method_link": "Full method"
+    },
+    "evidence": {
+      "title": "Evidence so far",
+      "intro": "Since 6 May 2026 the outcome of 45,618 events has been recorded (data as of 14 October 2026). Favorable means the price was higher afterwards, lower for SELL. Medians are used because a few broken prices produce averages of thousands of percent.",
+      "col_event": "Event",
+      "col_n": "With outcome",
+      "col_fav_1h": "Favorable after 1h",
+      "col_med_1h": "Median 1h",
+      "col_fav_4h": "Favorable after 4h",
+      "col_med_4h": "Median 4h",
+      "all_time": [
+        {
+          "event": "BUY",
+          "n": "26,200",
+          "f1": "41.6%",
+          "m1": "−0.92%",
+          "f4": "37.4%",
+          "m4": "−4.37%"
+        },
+        {
+          "event": "Volume burst",
+          "n": "19,401",
+          "f1": "39.2%",
+          "m1": "−0.66%",
+          "f4": "37.9%",
+          "m4": "−2.44%"
+        },
+        {
+          "event": "SELL",
+          "n": "17",
+          "f1": "too few",
+          "m1": "",
+          "f4": "",
+          "m4": ""
+        }
+      ],
+      "drawdown": "Within 4 hours after a BUY, the worst point was a fall of 11% in the median case, and 16% of BUY tokens fell by half or more at some point.",
+      "baseline_intro": "To see whether this beats picking at random, compare with every tracked token over the same 72 hours, one sample every 10 minutes:",
+      "col_group": "Last 72 hours",
+      "col_up_1h": "Higher after 1h",
+      "col_up_4h": "Higher after 4h",
+      "baseline": [
+        {
+          "event": "Any tracked token",
+          "f1": "33.1%",
+          "m1": "0.00%",
+          "f4": "36.3%",
+          "m4": "−1.15%"
+        },
+        {
+          "event": "BUY events",
+          "f1": "40.7%",
+          "m1": "−0.86%",
+          "f4": "29.7%",
+          "m4": "−8.97%"
+        },
+        {
+          "event": "Volume-burst events",
+          "f1": "38.5%",
+          "m1": "−0.61%",
+          "f4": "39.1%",
+          "m4": "−2.24%"
+        }
+      ],
+      "reading_title": "What this says",
+      "reading": "The promoted-token list loses value on average. BUY events pick tokens that are more often up an hour later than a random tracked token, but their median move is worse, and after 4 hours they do clearly worse than the baseline. The current score finds momentum that tends to reverse. It has no demonstrated trading edge, and the site does not claim one.",
+      "caveats": "No fees or slippage. Tokens that leave the list have no later price and are left out, which flatters every row. Outcomes before 14 October 2026 could use a price taken after the horizon when a token had gaps. The method changed several times, so the all-time table mixes versions. These numbers are why the roadmap starts with signal research, not features.",
+      "live_link": "Live track record"
+    },
+    "principles": {
+      "title": "Principles",
+      "items": [
+        {
+          "name": "Every call is recorded and scored",
+          "body": "No deleting and no cherry-picking. The track record is computed from all events."
+        },
+        {
+          "name": "The method is public",
+          "body": "Factors, formula, weights and thresholds are published. An edge, if one is found, has to come from doing the work well, not from secrecy."
+        },
+        {
+          "name": "No paid placement",
+          "body": "Projects cannot pay to be scored higher, listed or featured. Revenue comes from users."
+        },
+        {
+          "name": "No custody",
+          "body": "FOMOMETER never holds user funds or keys and does not trade for anyone."
+        },
+        {
+          "name": "Plain language",
+          "body": "No claims of artificial intelligence, no guaranteed returns, no countdowns."
+        }
+      ]
+    },
+    "model": {
+      "title": "Business model",
+      "badge": "Planned",
+      "intro": "The free site stays free: scanner, signals, token pages, method and track record. Paid access is priced in USDC or SOL.",
+      "col_product": "Product",
+      "col_for": "For",
+      "col_adds": "Adds",
+      "items": [
+        {
+          "name": "Pro",
+          "for": "active traders",
+          "adds": "instant alerts by web push and email, 30-day history, custom filters, CSV export"
+        },
+        {
+          "name": "API",
+          "for": "bots and dashboards",
+          "adds": "versioned API with keys and rate limits, a live stream of events"
+        },
+        {
+          "name": "Data",
+          "for": "researchers",
+          "adds": "daily dumps of factors and outcomes"
+        }
+      ],
+      "note": "Revenue will be published monthly. There is no revenue today."
+    },
+    "token": {
+      "title": "Token",
+      "badge": "Planned",
+      "intro": "A community token launched fairly on pump.fun. Holding it unlocks Pro, and a fixed share of product revenue buys it back from the market and burns it.",
+      "loop_title": "The loop",
+      "loop": [
+        "Better signals bring more users.",
+        "Users pay for Pro and the API.",
+        "Half of net revenue buys the token on the market and burns it, every week, on chain.",
+        "The other half pays for operations and signal research.",
+        "Holding the token unlocks Pro; paying for Pro in the token burns all of it.",
+        "Holders become users, and research makes the signals better."
+      ],
+      "params_title": "Proposed parameters",
+      "params": [
+        {
+          "k": "Supply",
+          "v": "1,000,000,000, fixed. Minting is disabled at creation."
+        },
+        {
+          "k": "Launch",
+          "v": "Fair launch on pump.fun. No presale, no private round."
+        },
+        {
+          "k": "Team",
+          "v": "One disclosed launch buy of at most 2%, locked for 6 months. No other team buys."
+        },
+        {
+          "k": "Net revenue split",
+          "v": "50% buyback and burn, 30% operations, 20% research."
+        },
+        {
+          "k": "Buybacks",
+          "v": "Weekly, spread over 24 hours, from a 2-of-3 multisig treasury. Every transaction published."
+        },
+        {
+          "k": "Holder access",
+          "v": "Tokens worth $50 or more unlock Pro, checked by a wallet signature. No transaction, no custody."
+        },
+        {
+          "k": "Own token",
+          "v": "Excluded from FOMOMETER's own scanner and signals."
+        }
+      ],
+      "rules_title": "Rules that do not change",
+      "rules": [
+        "Buybacks are paid only from realized product revenue, never from token sales or treasury tokens.",
+        "Trading fees earned from the token itself are reported separately and never counted as revenue.",
+        "No revenue means no buyback, and the monthly report says so.",
+        "The token gives no ownership, no claim on revenue and no vote over the company."
+      ],
+      "order": "Launch order: signal research first, then Pro with paying users, then legal review, then the token. Launching earlier would mean months with no revenue to fund buybacks."
+    },
+    "roadmap": {
+      "title": "Roadmap",
+      "body": "Public launch is done. Next come data integrity, signal research, Pro and the API, and then the token. Each phase starts when the previous one has met its exit criteria.",
+      "link": "Full roadmap"
+    },
+    "risks": {
+      "title": "Risks",
+      "items": [
+        {
+          "name": "The signal may never work",
+          "body": "Memecoins are close to a lottery with a negative drift. Research can end with no edge, and the site will say so."
+        },
+        {
+          "name": "One data source",
+          "body": "Everything comes from DexScreener. Outages or API changes stop the product."
+        },
+        {
+          "name": "Survivorship",
+          "body": "Tokens that disappear are often the worst performers, and they are missing from the record."
+        },
+        {
+          "name": "Token risk",
+          "body": "A token like this can lose most or all of its value whatever the product does. Buybacks do not set a floor."
+        },
+        {
+          "name": "Regulation",
+          "body": "A token whose buybacks are funded by a company's revenue may be treated as a security in some jurisdictions. Legal review comes before launch."
+        }
+      ]
+    },
+    "disclaimer": {
+      "title": "Disclaimer",
+      "body": "Nothing here is financial advice or an offer to sell anything. Scores and signals are statistics about public market data. Past results do not predict future ones."
+    }
+  },
+  "roadmap": {
+    "title": "Roadmap",
+    "meta_description": "FOMOMETER roadmap: public launch, data integrity, signal research, Pro and API, community token.",
+    "intro": "Phases run in order. A phase starts when the previous one has met its exit criteria, not on a date.",
+    "updated": "Updated 14 October 2026",
+    "status": {
+      "done": "Done",
+      "next": "Next",
+      "planned": "Planned"
+    },
+    "goal": "Goal",
+    "exit": "Done when",
+    "phases": [
+      {
+        "status": "done",
+        "name": "Public launch",
+        "goal": "An open site with an honest method.",
+        "items": [
+          {
+            "done": true,
+            "text": "Site open to everyone, no login"
+          },
+          {
+            "done": true,
+            "text": "Method page and documentation"
+          },
+          {
+            "done": true,
+            "text": "Data fixes: freshness, logos, charts, direction-aware track record"
+          },
+          {
+            "done": true,
+            "text": "Engine fits its CPU limit, scores written every minute"
+          },
+          {
+            "done": true,
+            "text": "Outcome prices only within 10 minutes of each horizon"
+          },
+          {
+            "done": true,
+            "text": "Current weights and thresholds on the Strategy page"
+          }
+        ],
+        "exit": "Site live with a working engine."
+      },
+      {
+        "status": "next",
+        "name": "Data integrity",
+        "goal": "A track record nobody can call flattering.",
+        "items": [
+          {
+            "done": false,
+            "text": "Store all 12 factors with every event, so research can use months of history"
+          },
+          {
+            "done": false,
+            "text": "Keep tracking a token for 4 hours after an event even if it leaves the list"
+          },
+          {
+            "done": false,
+            "text": "Show events whose token disappeared as a separate outcome"
+          },
+          {
+            "done": false,
+            "text": "Show the random-pick baseline next to the track record"
+          },
+          {
+            "done": false,
+            "text": "Fix the scale of the volume-burst threshold"
+          },
+          {
+            "done": false,
+            "text": "Flag outcomes with impossible prices"
+          },
+          {
+            "done": false,
+            "text": "Remove data and services left from the old login"
+          },
+          {
+            "done": false,
+            "text": "Serve token logos from fomometer.xyz"
+          }
+        ],
+        "exit": "Baseline and lost outcomes on the Strategy page, 30 days of stored factors."
+      },
+      {
+        "status": "planned",
+        "name": "Signal research",
+        "goal": "A score that beats picking at random, or a public statement that it does not.",
+        "items": [
+          {
+            "done": false,
+            "text": "Refit on 30+ days with a walk-forward split and a cost model"
+          },
+          {
+            "done": false,
+            "text": "Test predicting drawdowns instead of upside"
+          },
+          {
+            "done": false,
+            "text": "Decide whether BUY should be narrowed, inverted or dropped"
+          },
+          {
+            "done": false,
+            "text": "Publish a model card for every shipped strategy"
+          }
+        ],
+        "exit": "A strategy that beats the baseline out of sample after costs, or a published negative result."
+      },
+      {
+        "status": "planned",
+        "name": "Pro and API",
+        "goal": "First revenue.",
+        "items": [
+          {
+            "done": false,
+            "text": "Alerts by web push and email"
+          },
+          {
+            "done": false,
+            "text": "30-day history and CSV export"
+          },
+          {
+            "done": false,
+            "text": "Public API with keys and an event stream"
+          },
+          {
+            "done": false,
+            "text": "Payments in USDC and SOL, no custody"
+          },
+          {
+            "done": false,
+            "text": "Monthly public revenue report"
+          }
+        ],
+        "exit": "Paying users for two months in a row."
+      },
+      {
+        "status": "planned",
+        "name": "Community token",
+        "goal": "Share product revenue with holders through buyback and burn.",
+        "items": [
+          {
+            "done": false,
+            "text": "Legal review"
+          },
+          {
+            "done": false,
+            "text": "Treasury multisig and a public treasury page"
+          },
+          {
+            "done": false,
+            "text": "Fair launch on pump.fun"
+          },
+          {
+            "done": false,
+            "text": "Pro access for holders by wallet signature"
+          },
+          {
+            "done": false,
+            "text": "Weekly buyback and burn, monthly report"
+          }
+        ],
+        "exit": "Three monthly reports published."
+      }
+    ],
+    "later_title": "Later, not committed",
+    "later": [
+      "More chains with the same method",
+      "More data sources than DexScreener",
+      "A public research dataset"
+    ],
+    "whitepaper_link": "Read the whitepaper"
+  }
+}

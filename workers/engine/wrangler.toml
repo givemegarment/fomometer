@@ -1,0 +1,33 @@
+name = "fomometer-engine"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Cron — every minute
+[triggers]
+crons = ["*/1 * * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "fomometer"
+database_id = "9ac47005-db06-43e5-8a79-87e8d0b0acf8"
+
+[vars]
+ENGINE_CHAIN = "solana"
+ENGINE_TOP_N = "50"
+ENGINE_BUY_THRESHOLD = "0.70"
+ENGINE_SELL_THRESHOLD = "0.30"
+ENGINE_HISTORY_RETENTION_HOURS = "72"
+DEXSCREENER_BASE_URL = "https://api.dexscreener.com"
+STRATEGY_FALLBACK_MODE = "weighted_sum"
+# New accuracy upgrades — see workers/engine/src/index.ts and research/backtest_walk_forward.py
+ENGINE_CROSS_SECTIONAL_NORM = "true"
+ENGINE_ADAPTIVE_THRESHOLDS = "true"
+ENGINE_REGIME_AWARE = "true"
+ENGINE_WARM_UP_MIN = "10"
+# Quality prefilter — empirically validated against 609 labeled events.
+ENGINE_MIN_LIQUIDITY_USD = "25000"
+ENGINE_BS_RATIO_MIN = "0.8"
+ENGINE_BS_RATIO_MAX = "3.0"
+ENGINE_PUMP_BLOCK_LO = "50"
+ENGINE_PUMP_BLOCK_HI = "100"

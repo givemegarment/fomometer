@@ -1,0 +1,30 @@
+{
+  "name": "fomometer-xyz",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.12.0",
+  "scripts": {
+    "dev": "pnpm -F @fomometer/web dev",
+    "build": "pnpm -F @fomometer/web build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "deploy:web": "pnpm -F @fomometer/web run deploy",
+    "deploy:engine": "pnpm -F @fomometer/engine run deploy",
+    "deploy:labeler": "pnpm -F @fomometer/labeler run deploy",
+    "deploy:workers": "pnpm deploy:engine && pnpm deploy:labeler",
+    "d1:apply:local": "wrangler d1 execute fomometer --local --file=./infra/d1-schema.sql",
+    "d1:apply:remote": "wrangler d1 execute fomometer --remote --file=./infra/d1-schema.sql",
+    "d1:export": "wrangler d1 export fomometer --output=./data/fomometer.sqlite",
+    "train:walk-forward": "python3 research/backtest_walk_forward.py --db ./data/fomometer.sqlite --output infra/best_meme_strategy.json --trials 400"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "wrangler": "^4.20.0",
+    "@cloudflare/workers-types": "^4.20241022.0"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  }
+}

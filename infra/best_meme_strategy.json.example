@@ -1,0 +1,10 @@
+{
+  "_comment": "Example strategy formula. Train on AlphaGPT/ then replace this file with best_meme_strategy.json. Tokens 0..11 are factor indices (FACTOR_KEYS); tokens 12..23 are op indices (OPS order).",
+  "tokens": [3, 2, 12, 7, 12, 1, 17],
+  "trained_at": "2026-01-01T00:00:00Z",
+  "meta": {
+    "factor_offset": 12,
+    "ops_order": ["ADD","SUB","MUL","DIV","NEG","ABS","SIGN","GATE","JUMP","DECAY","DELAY1","MAX3"],
+    "note": "fomo + pressure + ADD, plus momentum_rev + liq_score + ADD. Replace with real-trained tokens."
+  }
+}
