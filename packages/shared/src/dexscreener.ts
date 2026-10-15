@@ -49,27 +49,49 @@ export type DsBoostItem = {
 };
 
 const USER_AGENT = 'fomometer-engine/1.0 (+https://fomometer.xyz)';
+/**
+ * Waits before retry 1, 2 and 3. From Cloudflare, DexScreener answers 429 for some egress
+ * addresses and not others (the limit is shared with every other Worker), so a later attempt
+ * often goes through. Jitter keeps retries from landing together; Retry-After is honoured up to
+ * MAX_WAIT_MS. Waiting costs wall time, not CPU.
+ */
+const RETRY_DELAYS_MS = [2000, 5000, 10000];
+const MAX_WAIT_MS = 10000;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const retryable = (status: number) => status === 429 || status >= 500;
 
 export class DexScreenerClient {
   constructor(private base: string = DEFAULT_BASE) {}
 
-  /** Failed requests of this client, for the caller's log ("/token-boosts/top/v1 HTTP 429"). */
+  /** Requests that failed after every attempt, for the caller's log ("/token-boosts/top/v1 HTTP 429 after 4 tries"). */
   errors: string[] = [];
+  /** Attempts beyond the first, across all requests of this client. */
+  retries = 0;
 
   private async getJson<T>(url: string): Promise<T | null> {
-    const path = new URL(url).pathname;
-    try {
-      // A Worker sends no user agent by default; sites behind Cloudflare throttle such clients harder.
-      const res = await fetch(url, { headers: { accept: 'application/json', 'user-agent': USER_AGENT } });
-      if (!res.ok) {
-        this.errors.push(`${path} HTTP ${res.status}`);
-        return null;
+    const path = new URL(url).pathname.replace(/^(\/tokens\/v1\/solana\/).+$/, '$1…');
+    let last = '';
+    let tries = 0;
+    for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+      tries++;
+      try {
+        // A Worker sends no user agent by default; sites behind Cloudflare throttle such clients harder.
+        const res = await fetch(url, { headers: { accept: 'application/json', 'user-agent': USER_AGENT } });
+        if (res.ok) return (await res.json()) as T;
+        last = `HTTP ${res.status}`;
+        if (!retryable(res.status) || attempt === RETRY_DELAYS_MS.length) break;
+        const after = Number(res.headers.get('retry-after')) * 1000;
+        const base = RETRY_DELAYS_MS[attempt]!;
+        await sleep(Math.min(MAX_WAIT_MS, Number.isFinite(after) && after > 0 ? after : base * (0.75 + Math.random() / 2)));
+      } catch (err) {
+        last = (err as Error).message;
+        if (attempt === RETRY_DELAYS_MS.length) break;
+        await sleep(RETRY_DELAYS_MS[attempt]!);
       }
-      return (await res.json()) as T;
-    } catch (err) {
-      this.errors.push(`${path} ${(err as Error).message}`);
-      return null;
+      this.retries++;
     }
+    this.errors.push(`${path} ${last} after ${tries} ${tries === 1 ? 'try' : 'tries'}`);
+    return null;
   }
 
   /**

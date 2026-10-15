@@ -81,11 +81,10 @@ const POST_SCORE_TRACK_SEC = 4 * 3600 + 10 * 60;
 const POST_SCORE_TRACK_MAX = 60;     // bound on extra tokens per run
 // DexScreener answers the boost lists with HTTP 429 from Cloudflare (shared egress), for 4 to 27
 // minutes an hour on 15 Oct and for streaks longer than that. Boosts change over hours, so the
-// list is fetched at most every UNIVERSE_REFRESH_SEC, retried once, and the last good list is
+// list is fetched at most every UNIVERSE_REFRESH_SEC (with retries in the client), and the last good list is
 // used for up to UNIVERSE_CACHE_MAX_AGE_SEC. Prices still come every minute from the pairs
 // endpoint, which has its own, higher limit.
 const UNIVERSE_REFRESH_SEC = 3 * 60;
-const UNIVERSE_RETRY_MS = 1500;
 const UNIVERSE_CACHE_MAX_AGE_SEC = 60 * 60;
 
 // Quality prefilter defaults — empirically validated against 609 labeled events.
@@ -126,13 +125,8 @@ async function runOnce(env: Env): Promise<void> {
   }>();
   const cacheAge = cached ? now - cached.updated_at : Infinity;
   let trending: Array<{ tokenAddress: string }> = [];
-  if (cacheAge >= UNIVERSE_REFRESH_SEC) {
-    trending = await ds.getTrendingSolana();
-    if (trending.length === 0) {
-      await new Promise((r) => setTimeout(r, UNIVERSE_RETRY_MS));
-      trending = await ds.getTrendingSolana();
-    }
-  }
+  // Retries with backoff live in the client (DexScreenerClient.getJson).
+  if (cacheAge >= UNIVERSE_REFRESH_SEC) trending = await ds.getTrendingSolana();
   let universe = Array.from(new Set(trending.slice(0, topN).map((t) => t.tokenAddress)));
   let universeSource: 'live' | 'cache' = 'live';
   if (universe.length > 0) {
@@ -390,7 +384,7 @@ async function runOnce(env: Env): Promise<void> {
     .run();
 
   console.log(
-    `engine cycle: ${snapByAddr.size} tokens, +${buyTriggers}b/${sellTriggers}s/${fomoSpikes}f (filt ${filteredOut}), regime=${regime ?? 'off'}, th=${buyTh.toFixed(2)}/${sellTh.toFixed(2)}, ${Date.now() - t0}ms`
+    `engine cycle: ${snapByAddr.size} tokens, +${buyTriggers}b/${sellTriggers}s/${fomoSpikes}f (filt ${filteredOut}), regime=${regime ?? 'off'}, th=${buyTh.toFixed(2)}/${sellTh.toFixed(2)}, universe=${universeSource}, ds retries=${ds.retries}, ${Date.now() - t0}ms`
   );
 }
 
