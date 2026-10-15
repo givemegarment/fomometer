@@ -173,3 +173,11 @@ CREATE TABLE IF NOT EXISTS x_posts (
   UNIQUE (kind, ref, mode)
 );
 CREATE INDEX IF NOT EXISTS idx_x_posts_time ON x_posts(mode, posted_at);
+
+-- Visits from ?ref= links ---------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ref_visits (
+  day  TEXT NOT NULL,     -- UTC date, YYYY-MM-DD
+  src  TEXT NOT NULL,     -- 'x'
+  n    INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (day, src)
+);

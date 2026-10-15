@@ -3,6 +3,11 @@
  * losses alike), a daily summary and a weekly one. At most one post per POST_GAP_SEC. Cards
  * come from the site (/api/card/*); text is built here.
  *
+ * Links: X charges $0.200 for a post with a URL against $0.015 without (since April 2026) and
+ * shows linked posts to fewer people. Only the weekly summary carries one (with ?ref=x, counted on
+ * the site); everything else has none, not even a bare domain, which X would turn into a link.
+ * The site is on the card image and in the profile.
+ *
  * X_POST_MODE: 'off' (default) does nothing; 'dry' builds each post and logs it, writing the
  * x_posts row with status 'dry' so it is not built again; 'live' posts. Live never reads dry rows.
  */
@@ -63,20 +68,17 @@ export function signalText(s: {
   price: number | null;
   liquidity: number | null;
   chain_sig: string;
-  site: string;
 }): string {
   const score = `Score ${s.prev_score != null ? `${Math.round(s.prev_score * 100)} → ` : ''}${Math.round(s.score * 100)}${
     s.threshold != null ? ` (threshold ${Math.round(s.threshold * 100)})` : ''
   }`;
   return [
-    `BUY signal: ${ticker(s.symbol, s.address)}`,
+    `${ticker(s.symbol, s.address)} BUY signal`,
     score,
     `Price ${priceText(s.price)} · Liquidity ${money(s.liquidity)}`,
     '',
-    `On Solana before the price moved: https://solscan.io/tx/${s.chain_sig}`,
-    `${s.site}/dashboard/token/${s.address}`,
-    '',
-    `Signal #${s.id}. Not advice. Result in 4 hours, win or lose.`
+    `Recorded on Solana before the move: tx ${s.chain_sig.slice(0, 4)}…${s.chain_sig.slice(-4)}`,
+    `Signal #${s.id}. Result in 4 hours, win or lose. Not advice.`
   ].join('\n');
 }
 
@@ -102,13 +104,15 @@ export function outcomeText(o: {
 
 export function summaryText(days: 1 | 7, s: { priced: number; share: number | null; median: number | null; base_share: number | null; base_median: number | null }, site: string) {
   const head = days === 7 ? 'BUY signals, last 7 days' : 'BUY signals, last 24 hours';
-  if (!s.priced) return `${head}: none with a 4-hour result yet.\n\nFull record: ${site}/dashboard/strategy`;
+  // The weekly post is the one with a link; the daily one points to the profile.
+  const tail = days === 7 ? `Every signal and its result: ${site}/dashboard/strategy?ref=x` : 'Every signal and its result: link in bio.';
+  if (!s.priced) return `${head}: none with a 4-hour result yet.\n\n${tail}`;
   return [
     `${head}: ${s.priced} with a 4-hour result.`,
     `Higher after 4h: ${s.share == null ? 'n/a' : `${Math.round(s.share)}%`} (any token ${s.base_share == null ? 'n/a' : `${Math.round(s.base_share)}%`})`,
     `Median after 4h: ${pctText(s.median)} (any token ${pctText(s.base_median)})`,
     '',
-    `Every signal and its result: ${site}/dashboard/strategy`
+    tail
   ].join('\n');
 }
 
@@ -210,7 +214,7 @@ export async function nextPost(env: Env, now: number, mode: 'dry' | 'live', capL
   return {
     kind: 'signal',
     ref: String(sig.id),
-    text: signalText({ ...sig, site }),
+    text: signalText(sig),
     card: `${site}/api/card/signal/${sig.id}`
   };
 }
@@ -233,7 +237,7 @@ export async function runSocial(env: Env, now = Math.floor(Date.now() / 1000)): 
     .prepare(`SELECT COUNT(*) AS n FROM x_posts WHERE mode = ? AND status IN ('posted', 'dry') AND posted_at >= ?`)
     .bind(mode, monthStart)
     .first<{ n: number }>();
-  const cap = parseInt(env.X_MONTHLY_CAP ?? '', 10) || 450;
+  const cap = parseInt(env.X_MONTHLY_CAP ?? '', 10) || 1300;
   const capLeft = cap - (used?.n ?? 0);
   if (capLeft <= 0) return 'x cap reached';
 

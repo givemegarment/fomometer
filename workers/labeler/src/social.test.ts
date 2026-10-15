@@ -2,7 +2,7 @@ import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import type { DatabaseSync as DB } from 'node:sqlite';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { outcomeText, priceText, runSocial, signalText } from './social';
+import { outcomeText, priceText, runSocial, signalText, summaryText } from './social';
 
 // Loaded at runtime: vitest 2.1 does not resolve the node:sqlite builtin itself.
 const { DatabaseSync } = createRequire(import.meta.url)('node:sqlite') as typeof import('node:sqlite');
@@ -44,12 +44,25 @@ describe('post text', () => {
     expect(priceText(null)).toBe('·');
   });
 
-  it('keeps a signal post under 280 characters with both links counted as 23', () => {
-    const t = signalText({ id: 47100, address: MINT, symbol: 'CBUCKS', score: 0.73, prev_score: 0.67, threshold: 0.7, price: 0.0006707, liquidity: 92300, chain_sig: 'x'.repeat(88), site: 'https://fomometer.xyz' });
-    const weighted = t.replace(/https:\/\/\S+/g, 'x'.repeat(23)).length;
-    expect(weighted).toBeLessThanOrEqual(280);
-    expect(t).toContain('BUY signal: $CBUCKS');
+  it('keeps a signal post under 280 characters, cashtag first', () => {
+    const t = signalText({ id: 47100, address: MINT, symbol: 'CBUCKS', score: 0.73, prev_score: 0.67, threshold: 0.7, price: 0.0006707, liquidity: 92300, chain_sig: '5g578MbG' + 'x'.repeat(72) + 'gsibt' });
+    expect(t.length).toBeLessThanOrEqual(280);
+    expect(t.startsWith('$CBUCKS BUY signal')).toBe(true);
     expect(t).toContain('Score 67 → 73 (threshold 70)');
+    expect(t).toContain('tx 5g57…sibt');
+  });
+
+  it('puts no link and no bare domain anywhere but the weekly summary (X charges $0.20 for those)', () => {
+    // What X auto-links: a scheme or anything shaped like host.tld.
+    const linky = /https?:\/\/|\b[a-z0-9-]+\.(?:xyz|io|com|net|org|app|fun)\b/i;
+    const sig = signalText({ id: 1, address: MINT, symbol: 'CBUCKS', score: 0.7, prev_score: 0.6, threshold: 0.7, price: 0.001, liquidity: 50000, chain_sig: 'x'.repeat(88) });
+    const out = outcomeText({ pnl_4h: 12, entry: 0.001, best: 30, worst: -5, base_median: 0 });
+    const lost = outcomeText({ pnl_4h: null, entry: 0.001, best: null, worst: null, base_median: null });
+    const s = { priced: 10, share: 40, median: -2, base_share: 35, base_median: -1 };
+    for (const t of [sig, out, lost, summaryText(1, s, 'https://fomometer.xyz'), summaryText(1, { ...s, priced: 0 }, 'https://fomometer.xyz')]) {
+      expect(t).not.toMatch(linky);
+    }
+    expect(summaryText(7, s, 'https://fomometer.xyz')).toContain('https://fomometer.xyz/dashboard/strategy?ref=x');
   });
 
   it('reports a loss and a missing price plainly', () => {
@@ -67,7 +80,7 @@ describe('runSocial', () => {
   it('dry mode: posts the landed BUY, then its result once the outcome exists', async () => {
     const { raw, DB } = d1();
     seed(raw);
-    expect(await runSocial({ DB, X_POST_MODE: 'dry' }, NOW)).toMatch(/^x dry signal 47100: BUY signal: \$CBUCKS/);
+    expect(await runSocial({ DB, X_POST_MODE: 'dry' }, NOW)).toMatch(/^x dry signal 47100: \$CBUCKS BUY signal/);
     expect(await runSocial({ DB, X_POST_MODE: 'dry' }, NOW + 60)).toBeNull(); // nothing new
     raw
       .prepare(

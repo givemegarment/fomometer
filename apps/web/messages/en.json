@@ -1035,7 +1035,8 @@
           "id": "browser",
           "title": "Stored in your browser",
           "body": [
-            "Your watchlist is kept in your browser's local storage and never sent to FOMOMETER. Clearing site data removes it."
+            "Your watchlist is kept in your browser's local storage and never sent to FOMOMETER. Clearing site data removes it.",
+            "A visit that arrives through a link marked ?ref= in FOMOMETER's own posts adds one to a daily count for that source; a flag in the tab's session storage stops it counting twice. Nothing else about the visit is stored."
           ]
         },
         {
