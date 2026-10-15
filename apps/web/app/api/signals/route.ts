@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
 
   const sql = `
     SELECT e.id, e.address, COALESCE(t.symbol,'') AS symbol, t.image_url, e.time, e.event_type,
-           e.score, e.prev_score
+           e.score, e.prev_score, CASE WHEN e.chain_ok = 1 THEN e.chain_sig END AS chain_sig
     FROM signal_events e
     LEFT JOIN tokens t ON t.address = e.address
     ${type ? 'WHERE e.event_type = ?' : ''}
@@ -33,6 +33,7 @@ export async function GET(req: NextRequest) {
     event_type: 'buy_trigger' | 'sell_trigger' | 'fomo_spike';
     score: number;
     prev_score: number | null;
+    chain_sig: string | null;
   }>();
 
   return NextResponse.json({ events: r.results ?? [] });

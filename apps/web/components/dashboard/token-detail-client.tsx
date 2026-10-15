@@ -1,5 +1,6 @@
 'use client';
 
+import { ChainLink } from '@/components/dashboard/chain-link';
 import { useState } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
@@ -40,7 +41,7 @@ type TokenDetail = {
   };
   history: Array<{ time: number; price: number; score: number | null }>;
   factors: number[];
-  events: Array<{ time: number; event_type: EventType; score: number; prev_score: number | null }>;
+  events: Array<{ time: number; event_type: EventType; score: number; prev_score: number | null; chain_sig: string | null }>;
 };
 
 const EVENT_COLOR: Record<EventType, string> = {
@@ -247,6 +248,7 @@ export function TokenDetailClient({ address }: { address: string }) {
                           <span aria-hidden className="h-2 w-2 rounded-full" style={{ background: EVENT_COLOR[e.event_type] }} />
                           {typeLabel(e.event_type)}
                         </span>
+                        <ChainLink sig={e.chain_sig} />
                       </td>
                       <td className="px-3 py-2.5 text-text-muted">{fmtTimeAgo(e.time * 1000, Date.now())}</td>
                       <td className="num-display px-5 py-2.5 text-right">

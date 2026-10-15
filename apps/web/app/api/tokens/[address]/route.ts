@@ -69,14 +69,20 @@ export async function GET(
   }
 
   const eventsRes = await cf.env.DB.prepare(
-    `SELECT time, event_type, score, prev_score
+    `SELECT time, event_type, score, prev_score, CASE WHEN chain_ok = 1 THEN chain_sig END AS chain_sig
      FROM signal_events
      WHERE address = ?
      ORDER BY time DESC
      LIMIT 50`
   )
     .bind(address)
-    .all<{ time: number; event_type: 'buy_trigger' | 'sell_trigger' | 'fomo_spike'; score: number; prev_score: number | null }>();
+    .all<{
+      time: number;
+      event_type: 'buy_trigger' | 'sell_trigger' | 'fomo_spike';
+      score: number;
+      prev_score: number | null;
+      chain_sig: string | null;
+    }>();
 
   return NextResponse.json({
     token: {

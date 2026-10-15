@@ -1,5 +1,6 @@
 'use client';
 
+import { ChainLink } from '@/components/dashboard/chain-link';
 import { useState } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
@@ -23,6 +24,7 @@ type SignalEvent = {
   event_type: EventType;
   score: number;
   prev_score: number | null;
+  chain_sig: string | null;
 };
 
 const FILTERS = ['all', 'buy', 'sell', 'fomo'] as const;
@@ -83,6 +85,7 @@ export function SignalsClient() {
                           <span aria-hidden className={cn('h-2 w-2 rounded-full', DOT[ev.event_type])} />
                           {label(ev.event_type)}
                         </span>
+                        <ChainLink sig={ev.chain_sig} />
                         {/* Phones: the When column is hidden, so the time sits under the signal. */}
                         <span className="block pl-4 text-xs text-text-dim sm:hidden">{fmtTimeAgo(ev.time * 1000, Date.now())}</span>
                       </td>

@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { DocLayout } from '@/components/docs/doc-layout';
 import { DocCard, DocSection, DocTable } from '@/components/doc-section';
 import { FACTORS } from '@/lib/factors';
+import { CHAIN_RECORD_ADDRESS, CHAIN_RECORD_ON, solscanAccount } from '@/lib/chain';
 
 export const runtime = 'edge';
 
@@ -12,7 +13,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title'), description: t('meta_description') };
 }
 
-const SECTIONS = ['data', 'factors', 'score', 'signals', 'gates', 'record', 'limits'] as const;
+// 'onchain' only once the on-chain record has started (lib/chain.ts).
+const SECTIONS = ['data', 'factors', 'score', 'signals', 'gates', 'record', ...(CHAIN_RECORD_ON ? (['onchain'] as const) : []), 'limits'] as const;
 const SIGNALS = ['buy', 'sell', 'fomo'] as const;
 
 export default async function HowItWorksPage() {
@@ -85,6 +87,18 @@ export default async function HowItWorksPage() {
       <DocSection id="record" title={t('record.title')}>
         <p>{t('record.body')}</p>
       </DocSection>
+
+      {CHAIN_RECORD_ON && (
+        <DocSection id="onchain" title={t('onchain.title')}>
+          <p>{t('onchain.body')}</p>
+          <p className="font-mono text-sm">{t('onchain.format')}</p>
+          <p>
+            <a href={solscanAccount(CHAIN_RECORD_ADDRESS)} target="_blank" rel="noopener noreferrer" className="text-accent underline underline-offset-2">
+              {t('onchain.wallet')}
+            </a>
+          </p>
+        </DocSection>
+      )}
 
       <DocSection id="limits" title={t('limits.title')}>
         <p>{t('limits.body')}</p>
