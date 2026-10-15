@@ -535,14 +535,16 @@ async function loadPrevScores(env: Env, addresses: string[], nowSec: number): Pr
   return out;
 }
 
-/** Addresses that already had a FOMO spike in the last 30 minutes. */
+/**
+ * Addresses that already had a FOMO spike in the last 30 minutes.
+ * Reads every event of the window by time and filters the type here: with the type in
+ * SQL the planner walked a whole index (≈ 1,900 rows a minute instead of ≈ 13).
+ */
 async function loadFomoThrottled(env: Env, nowSec: number): Promise<Set<string>> {
-  const r = await env.DB.prepare(
-    `SELECT DISTINCT address FROM signal_events WHERE event_type = 'fomo_spike' AND time >= ?`
-  )
+  const r = await env.DB.prepare(`SELECT address, event_type FROM signal_events WHERE time >= ?`)
     .bind(nowSec - 30 * 60)
-    .all<{ address: string }>();
-  return new Set((r.results ?? []).map((x) => x.address));
+    .all<{ address: string; event_type: string }>();
+  return new Set((r.results ?? []).filter((x) => x.event_type === 'fomo_spike').map((x) => x.address));
 }
 
 /**
