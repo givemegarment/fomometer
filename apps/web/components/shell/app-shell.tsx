@@ -1,15 +1,13 @@
 import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
 import { Wordmark } from '@/components/wordmark';
 import { StatusBadge } from '@/components/status-badge';
 import { PrimaryNav, SecondaryNav, MobileTabs } from '@/components/shell/nav-links';
 
 /**
- * One frame for every page: a 48px top bar (product sections, reading links, status),
- * the page, and a one-line disclaimer.
+ * One frame for every dashboard page: a 48px top bar (product sections, reading links, status)
+ * and the page. The disclaimer lives in the terms and the site footer.
  */
 export async function AppShell({ children }: { children: React.ReactNode }) {
-  const t = await getTranslations('site');
   return (
     <div className="flex min-h-screen flex-col bg-bg-base">
       <header className="sticky top-0 z-30 border-b border-border bg-bg-base/95 backdrop-blur">
@@ -30,9 +28,6 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      <footer className="border-t border-border">
-        <p className="mx-auto max-w-[1440px] px-4 py-3 text-xs text-text-dim sm:px-6">{t('disclaimer_short')}</p>
-      </footer>
     </div>
   );
 }

@@ -34,10 +34,7 @@ export function WatchlistClient() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-display-lg">{t('title')}</h1>
-        <p className="mt-1 text-sm text-text-muted">{t('subtitle')}</p>
-      </div>
+      <h1 className="text-display-lg">{t('title')}</h1>
 
       {!watchlist.ready || (isLoading && !data && watchlist.list.length > 0) ? (
         <div className="space-y-2">

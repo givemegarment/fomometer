@@ -34,7 +34,9 @@ export function PrimaryNav({ className }: { className?: string }) {
             href={item.href}
             aria-current={active ? 'page' : undefined}
             className={cn(
-              'relative flex items-center whitespace-nowrap px-3 text-sm transition-colors',
+              // Keyboard focus as a soft fill, not the global outline: some browsers keep the
+              // outline after a mouse click, which boxed the active tab.
+              'relative flex items-center whitespace-nowrap rounded-md px-3 text-sm transition-colors focus-visible:bg-white/[0.06] focus-visible:outline-none',
               active ? 'text-text-primary' : 'text-text-muted hover:text-text-primary'
             )}
           >

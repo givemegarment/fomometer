@@ -116,12 +116,8 @@ export function TokenDetailClient({ address }: { address: string }) {
                     </div>
                   </>
                 )}
-                <p className={cn('text-xs leading-relaxed text-text-dim', !belowFilter && 'mt-2')}>
-                  {tTrade('note', { fee: FEE_PCT })}{' '}
-                  <Link href="/dashboard/strategy" className="text-text-muted underline decoration-border-strong underline-offset-4 hover:text-text-primary">
-                    {tTrade('track_record')}
-                  </Link>
-                </p>
+                {/* The fee stays disclosed next to the button. */}
+                <p className={cn('text-xs text-text-dim', !belowFilter && 'mt-2')}>{tTrade('note', { fee: FEE_PCT })}</p>
               </div>
             )}
             <div className="mt-4 flex gap-2">
@@ -158,8 +154,6 @@ export function TokenDetailClient({ address }: { address: string }) {
             ) : (
               history.length > 0 && score == null && <p className="mt-2 text-xs text-text-dim">{t('score_none')}</p>
             )}
-            <p className="mt-2 text-xs text-text-dim">{t('buy_level', { th: Math.round(buyTh * 100) })}</p>
-            <p className="mt-3 text-sm leading-relaxed text-text-muted">{t('score_note')}</p>
             {belowFilter && (
               <p className="mt-3 rounded-md bg-warning-soft px-3 py-2 text-sm text-warning">
                 {t('below_filter', { liq: fmtUSD(minLiq, { compact: true }) })}
@@ -306,7 +300,6 @@ function FactorBars({ values }: { values: number[] | undefined }) {
   return (
     <section className="ring-hair rounded-xl bg-bg-card p-5" aria-labelledby="factors-title">
       <h2 id="factors-title" className="text-[15px] font-semibold">{t('factors_title')}</h2>
-      <p className="mt-1 text-xs text-text-dim">{t('factors_note', { cap: FACTOR_CAP })}</p>
       <ul className="mt-4 grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
         {FACTORS.map((f, i) => {
           const raw = values?.[i];
@@ -330,10 +323,6 @@ function FactorBars({ values }: { values: number[] | undefined }) {
           );
         })}
       </ul>
-      <p className="mt-4 flex items-center gap-2 text-xs text-text-dim">
-        <span aria-hidden className="h-2 w-2 rounded-full bg-text-primary" />
-        {t('in_score_note')}
-      </p>
     </section>
   );
 }

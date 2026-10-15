@@ -1,7 +1,6 @@
 'use client';
 
 import useSWR from 'swr';
-import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -44,21 +43,12 @@ const EVENT_TYPES = ['buy_trigger', 'sell_trigger', 'fomo_spike'] as const;
 
 export function StrategyClient() {
   const t = useTranslations('strategy');
-  const locale = useLocale();
   const { data, error } = useSWR<StrategyResponse>(SWR_KEYS.strategy, fetcher, { refreshInterval: 60_000 });
   const s = data?.settings;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-display-lg">{t('title')}</h1>
-        <p className="mt-1 max-w-2xl text-sm text-text-muted">
-          {t('subtitle')}{' '}
-          <Link href="/how-it-works" className="text-accent underline underline-offset-2">
-            {t('method_link')}
-          </Link>
-        </p>
-      </div>
+      <h1 className="text-display-lg">{t('title')}</h1>
 
       <Card>
         <CardHeader>
@@ -104,7 +94,6 @@ function WeightsCard({ settings, loaded, failed }: { settings: Settings | null |
     <Card>
       <CardHeader>
         <CardTitle>{t('weights_title')}</CardTitle>
-        <p className="mt-1 max-w-2xl text-sm text-text-muted">{t('weights_subtitle')}</p>
       </CardHeader>
       <CardContent>
         {failed ? (
@@ -131,7 +120,6 @@ function WeightsCard({ settings, loaded, failed }: { settings: Settings | null |
                 </li>
               ))}
             </ul>
-            <p className="mt-4 text-xs text-text-muted">{t('weights_regime')}</p>
           </>
         )}
       </CardContent>
@@ -150,7 +138,6 @@ function Setting({ label, value }: { label: string; value: string }) {
 
 function RecordCard({ record, loaded, failed }: { record: TrackRecord | null | undefined; loaded: boolean; failed: boolean }) {
   const t = useTranslations('strategy');
-  const locale = useLocale();
   const flagged = record
     ? EVENT_TYPES.reduce((sum, k) => sum + record.events[k].flagged, 0) + record.baseline.flagged
     : 0;
@@ -159,7 +146,6 @@ function RecordCard({ record, loaded, failed }: { record: TrackRecord | null | u
     <Card>
       <CardHeader>
         <CardTitle>{t('record_title', { days: record?.days ?? 7 })}</CardTitle>
-        <p className="mt-1 text-sm text-text-muted">{t('record_subtitle')}</p>
       </CardHeader>
       <CardContent className="p-0">
         {failed ? (
@@ -197,14 +183,14 @@ function RecordCard({ record, loaded, failed }: { record: TrackRecord | null | u
                     <RecordRow
                       key={type}
                       label={t(`types.${key}`)}
-                      hint={t(`favorable.${key}`)}
+                      // Only SELL needs its rule spelled out: it wins when the price falls.
+                      hint={key === 'sell' ? t('favorable.sell') : undefined}
                       group={record.events[type]}
                     />
                   );
                 })}
                 <RecordRow
                   label={t('baseline_label')}
-                  hint={t('favorable.baseline')}
                   group={record.baseline}
                   baseline
                 />
@@ -212,27 +198,14 @@ function RecordCard({ record, loaded, failed }: { record: TrackRecord | null | u
             </table>
           </div>
         )}
-        <div className="space-y-2 border-t border-border px-4 py-4 text-xs leading-relaxed text-text-muted sm:px-6">
-          {record?.baseline.first_sample != null && (
-            <p>
-              {t('baseline_note', {
-                date: new Date(record.baseline.first_sample * 1000).toLocaleDateString(locale, {
-                  day: 'numeric',
-                  month: 'long',
-                  timeZone: 'UTC'
-                })
-              })}
-            </p>
-          )}
-          {flagged > 0 && <p>{t('flagged_note', { n: flagged })}</p>}
-          <p>{t('caveats')}</p>
-        </div>
+        {/* One line kept on purpose: without it the rows read better than they are. */}
+        <p className="border-t border-border px-4 py-3 text-xs text-text-dim sm:px-6">{t('record_footer', { n: flagged })}</p>
       </CardContent>
     </Card>
   );
 }
 
-function RecordRow({ label, hint, group, baseline }: { label: string; hint: string; group: Group; baseline?: boolean }) {
+function RecordRow({ label, hint, group, baseline }: { label: string; hint?: string; group: Group; baseline?: boolean }) {
   const t = useTranslations('strategy');
   const fmt = new Intl.NumberFormat(useLocale()).format;
   const priced = group.n - group.flagged;
@@ -240,7 +213,7 @@ function RecordRow({ label, hint, group, baseline }: { label: string; hint: stri
     <tr className={baseline ? 'border-t-2 border-border bg-bg-chip/40' : undefined}>
       <th scope="row" className="px-4 py-3 text-left font-medium sm:px-6">
         {label}
-        <span className="block text-xs font-normal text-text-muted">{hint}</span>
+        {hint && <span className="block text-xs font-normal text-text-muted">{hint}</span>}
       </th>
       <td className="num-display px-4 py-3 text-right text-text-muted">{fmt(group.n)}</td>
       {group.n === 0 ? (

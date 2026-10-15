@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { fetcher } from '@/lib/fetcher';
 import { SWR_KEYS } from '@/lib/swr-keys';
 import { fmtTimeAgo, shortenAddress } from '@/lib/format';
-import { FEE_MINT_SYMBOLS, JUP_FEE_ACCOUNTS, POOL_SPLIT, SOL_MINT } from '@/lib/trade';
+import { FEE_MINT_SYMBOLS, POOL_SPLIT, SOL_MINT } from '@/lib/trade';
 import { cn } from '@/lib/cn';
 
 type Totals = { fee_mint: string; swaps: number; buys: number; sells: number; from_signal: number; fees: number; volume: number };
@@ -61,21 +61,19 @@ export function TreasuryClient() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
         <h1 className="text-display-lg">{t('title')}</h1>
-        <p className="mt-1 max-w-2xl text-sm text-text-muted">
-          {t('subtitle')}{' '}
-          {data && (
-            <a
-              href={`${SOLSCAN}/account/${data.referral_account}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-accent underline underline-offset-2"
-            >
-              {t('referral_link')}
-            </a>
-          )}
-        </p>
+        {data && (
+          <a
+            href={`${SOLSCAN}/account/${data.referral_account}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-text-primary"
+          >
+            {t('referral_link')}
+            <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+          </a>
+        )}
       </div>
 
       {error ? (
@@ -132,11 +130,6 @@ export function TreasuryClient() {
                       </li>
                     ))}
                   </ul>
-                )}
-                {data?.balances && (
-                  <p className="mt-2 text-xs leading-relaxed text-text-dim">
-                    {t('balances_note', { empty: JUP_FEE_ACCOUNTS.length - funded.length })}
-                  </p>
                 )}
               </div>
               <div className="grid gap-5 sm:grid-cols-3">

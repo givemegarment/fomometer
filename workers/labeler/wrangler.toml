@@ -25,7 +25,7 @@ LABELER_BATCH_SIZE = "500"
 CHAIN_RECORD_ENABLED = "true"
 # X account (src/social.ts): "off", "dry" (build and log posts, no X calls) or "live". Keys are the secrets
 # X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_SECRET. Monthly cap: new signals stop first.
-X_POST_MODE = "dry"
+X_POST_MODE = "live"
 X_MONTHLY_CAP = "1300"
 SITE_URL = "https://fomometer.xyz"
 # Swaps that paid the referral fee (src/swaps.ts). Public values; the referral account

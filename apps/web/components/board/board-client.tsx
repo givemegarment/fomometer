@@ -80,17 +80,7 @@ export function BoardClient() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
-        <div>
-          <h1 className="text-display-lg">{t('title')}</h1>
-          <p className="mt-1 max-w-2xl text-sm text-text-muted">
-            {t('lede')}{' '}
-            <Link href="/how-it-works" className="text-text-primary underline decoration-border-strong underline-offset-4 hover:decoration-accent">
-              {t('method_link')}
-            </Link>
-          </p>
-        </div>
-      </div>
+      <h1 className="text-display-lg">{t('title')}</h1>
 
       <ul className="grid grid-cols-2 border-y border-border sm:grid-cols-4">
         <Fact label={t('fact_tracked')} value={data ? String(data.rows.length) : null} />
@@ -109,12 +99,7 @@ export function BoardClient() {
         />
       </ul>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <FilterChips items={filters} value={filter} onChange={setFilter} label={t('filter_label')} />
-        {minLiq != null && (
-          <p className="text-xs text-text-dim">{t('low_liq_note', { liq: fmtUSD(minLiq, { compact: true }) })}</p>
-        )}
-      </div>
+      <FilterChips items={filters} value={filter} onChange={setFilter} label={t('filter_label')} />
 
       <div className="relative overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm">
@@ -198,7 +183,10 @@ export function BoardClient() {
                       </td>
                       {TRADING_ENABLED && (
                         <td className="hidden px-2 py-2 text-right sm:table-cell">
-                          {freshBuy.has(row.address) && minLiq != null && !lowLiq && <TradeButton address={row.address} label={t('buy')} size="sm" quiet />}
+                          {/* Every token above the liquidity filter; green when it had a BUY in the last hour. */}
+                          {minLiq != null && !lowLiq && (
+                            <TradeButton address={row.address} label={t('buy')} size="sm" quiet={!freshBuy.has(row.address)} />
+                          )}
                         </td>
                       )}
                       <td className="px-2 py-2 text-center">
@@ -222,7 +210,6 @@ export function BoardClient() {
         </table>
         {data?.rows.length === 0 && <p className="px-6 py-12 text-center text-sm text-text-muted">{t('empty')}</p>}
       </div>
-      <p className="text-xs text-text-dim">{t('footnote')}</p>
     </div>
   );
 }

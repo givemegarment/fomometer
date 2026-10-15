@@ -15,8 +15,7 @@
     "disclaimer": "Not financial advice. FOMOMETER publishes statistics about market data. It does not recommend buying or selling any token.",
     "disclaimer_trade": "Buy buttons open a Jupiter swap that runs in your own wallet and includes a {fee}% FOMOMETER fee.",
     "whitepaper": "Whitepaper",
-    "roadmap": "Roadmap",
-    "disclaimer_short": "Statistics about market data. Not financial advice."
+    "roadmap": "Roadmap"
   },
   "status": {
     "connecting": "Connecting"
@@ -267,12 +266,8 @@
     "no_events": "No signals for this token yet.",
     "prev_score": "Previous score",
     "score_title": "Score",
-    "buy_level": "White mark: BUY threshold, {th}",
-    "score_note": "Ranks this token against the other tracked tokens at the last run. Not a price forecast.",
     "factors_title": "Factors against the other tokens",
-    "factors_note": "0 is the average tracked token right now. Right is above it, left below; bars stop at ±{cap}.",
     "in_score": "used in the score",
-    "in_score_note": "White names are used in the score; grey ones are context.",
     "copy": "Copy the token address",
     "col_signal": "Signal",
     "col_when": "When",
@@ -285,7 +280,6 @@
   },
   "signals": {
     "title": "Signals",
-    "subtitle": "Score crossings and volume bursts, newest first. Each one is priced 15 minutes, 1 hour and 4 hours later on the Strategy page.",
     "empty": "No signals of this type yet.",
     "type_buy": "BUY",
     "type_sell": "SELL",
@@ -309,15 +303,12 @@
     "sell": "Sell",
     "buy_off": "Buy is off: liquidity is under {liq}, too thin to trade safely. Sell still works if you hold this token.",
     "load_error": "Could not open the swap. Try again.",
-    "note": "Swaps run in your own wallet through Jupiter and include a {fee}% FOMOMETER fee. Not financial advice.",
+    "note": "Jupiter swap in your wallet · {fee}% fee",
     "faq_q": "Can I buy here?",
-    "faq_a": "Yes, from a token page or a BUY signal. The swap opens in Jupiter and runs in your own wallet; FOMOMETER never holds funds. Each swap includes a {fee}% FOMOMETER fee. Signals are not advice: check the track record first.",
-    "track_record": "Track record"
+    "faq_a": "Yes, from a token page or a BUY signal. The swap opens in Jupiter and runs in your own wallet; FOMOMETER never holds funds. Each swap includes a {fee}% FOMOMETER fee. Signals are not advice: check the track record first."
   },
   "strategy": {
     "title": "Strategy",
-    "subtitle": "Current engine settings and how past signals played out.",
-    "method_link": "How the score works",
     "load_error": "Could not load data.",
     "settings_title": "Current settings",
     "settings_empty": "The engine has not reported its settings yet.",
@@ -328,8 +319,6 @@
     "weights": "Weights",
     "thresholds": "Thresholds",
     "weights_title": "Score weights",
-    "weights_subtitle": "Weight of each factor in the score formula. Factors are normalized across tokens first, so the weights are comparable. Factors not listed are shown for context only.",
-    "weights_regime": "Base weights. In a bull, bear or panic regime the engine shifts them.",
     "weights_empty": "The engine has not reported its weights yet.",
     "trained": "Fitted",
     "adaptive": "Adaptive",
@@ -341,7 +330,6 @@
       "panic": "Panic"
     },
     "record_title": "Track record, last {days} days",
-    "record_subtitle": "Share of signals where the price then moved in the signal's direction.",
     "col_type": "Signal",
     "col_n": "Signals",
     "col_favorable": "After {h}",
@@ -352,30 +340,24 @@
       "fomo": "Volume burst"
     },
     "favorable": {
-      "buy": "counted when price is higher",
-      "sell": "counted when price is lower",
-      "fomo": "counted when price is higher",
-      "baseline": "counted when price is higher, sampled every 30 min"
+      "sell": "counted when price is lower"
     },
-    "caveats": "No fees or slippage. Entry is the snapshot price at the signal. Since 15 October 2026 a token is followed for 4 hours after it leaves the list; older outcomes without a later price are left out, which flatters them. Past results do not predict future ones.",
     "col_median": "Median {h}",
     "col_lost": "No price at 4h",
     "record_empty": "The track record is recalculated every hour and is not ready yet.",
     "baseline_label": "Any tracked token",
-    "baseline_note": "The last row is the comparison: every token the engine scored, sampled every 30 minutes since {date} and priced the same way. A signal is only useful if it beats that row.",
-    "flagged_note": "Left out: {n, plural, one {# outcome} other {# outcomes}} where the price rose more than 11 times within 4 hours. On DexScreener that is almost always a switch to another pool, not a trade anyone could make.",
     "horizon": {
       "15m": "15m",
       "1h": "1h",
       "4h": "4h"
     },
-    "none_in_window": "None in this window."
+    "none_in_window": "None in this window.",
+    "record_footer": "No fees or slippage. {n, plural, =0 {} one {# pool switch left out. } other {# pool switches left out. }}Compared with every tracked token, priced the same way."
   },
   "watchlist": {
     "title": "Watchlist",
     "empty_title": "Your watchlist is empty",
     "empty_body": "Star tokens on the board to follow them here. The list is stored in this browser.",
-    "subtitle": "Tokens you starred. Stored in this browser only.",
     "open_board": "Open the board",
     "col_token": "Token",
     "col_score": "Score",
@@ -864,8 +846,6 @@
   },
   "board": {
     "title": "Board",
-    "lede": "Promoted Solana memecoins, scored every minute against each other. A score is not a price forecast.",
-    "method_link": "How the score works",
     "fact_tracked": "Tracked now",
     "fact_buys": "BUY signals, 1h",
     "fact_buy_4h": "BUY, higher after 4h",
@@ -876,7 +856,6 @@
     "filter_score": "Score 70+",
     "filter_liq": "Liquidity $50k+",
     "filter_burst": "Pace spike",
-    "low_liq_note": "Dimmed: liquidity under {liq}, too thin for signals.",
     "low_liq_tag": "Low liquidity",
     "col_token": "Token",
     "col_score": "Score",
@@ -891,13 +870,11 @@
     "col_30m": "30m",
     "watch_add": "Add to watchlist",
     "watch_remove": "Remove from watchlist",
-    "empty": "No tracked tokens right now. Data refreshes every minute.",
-    "footnote": "Prices and 24h change from DexScreener. Score 0 to 100, recomputed every minute."
+    "empty": "No tracked tokens right now. Data refreshes every minute."
   },
   "treasury": {
     "meta_description": "Every fee FOMOMETER earns, read from the Solana chain: swaps, volume, unclaimed balances and how the pool will be split.",
     "title": "Treasury",
-    "subtitle": "Every fee FOMOMETER earns, read from the chain. Swaps are recorded within about two minutes.",
     "referral_link": "Referral account on Solscan",
     "stat_fees": "Fees earned",
     "stat_fees_note": "all time, in SOL",
@@ -909,11 +886,10 @@
     "stat_signal_note": "bought within an hour of a BUY",
     "other_mints": "Also earned: {list}.",
     "balances_title": "Unclaimed fees",
-    "balances_note": "Live balances of the fee accounts. Fees are claimed by hand on Jupiter's referral dashboard; {empty} other fee accounts are empty.",
     "balances_empty": "No unclaimed fees right now.",
     "balances_error": "Could not read the chain just now.",
     "split_title": "Where it goes",
-    "split_note": "Not active yet: $FMTR has not launched, so fees stay in the referral account. From launch the pool is split like this, every transaction published here.",
+    "split_note": "Starts when $FMTR launches. Until then fees stay in the referral account.",
     "split_buyback": "Buyback and burn, hourly",
     "split_rewards": "Holder rewards in SOL, weekly",
     "split_ops": "Operations and research",
