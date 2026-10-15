@@ -5,12 +5,13 @@
 - Страницы: лендинг (hero + живой топ-5), `/how-it-works` (методология), дашборд: обзор, сканер, сигналы,
   стратегия, избранное (localStorage). Settings удалена (308 → /dashboard).
 - Хостинг: Cloudflare Pages `fomometer-web`, домены `fomometer.xyz` и `www` привязаны 2026-10-14.
-- Прод: деплой `43a8cc2e` (2026-10-14, веса скора на Strategy). Предыдущий `9539d530` (проходы 1 и 2).
+- Прод: деплой `56d44711` (2026-10-15, /whitepaper и /roadmap, проверены 200 на fomometer.xyz, EN и RU). Предыдущий `43a8cc2e`
+  (веса скора на Strategy).
 - Открыто по сайту: логотипы с CDN DexScreener ставят сторонний cookie (Best Practices 77), прокси по решению владельца.
 
 ---
 
-## 2026-10-14 [BUILD] Страницы /whitepaper и /roadmap (не задеплоено)
+## 2026-10-14 [BUILD] Страницы /whitepaper и /roadmap (задеплоено 2026-10-15, `56d44711`)
 - Новые: `app/whitepaper/page.tsx` (10 разделов, таблицы статистики и базы, бизнес-модель и токен с меткой «В планах»),
   `app/roadmap/page.tsx` (5 этапов со статусами Готово / Следующий / В планах, чек-листы, условия завершения),
   `components/doc-section.tsx` (`DocSection` с бейджем, `DocTable`). Тексты: `whitepaper.*`, `roadmap.*`,

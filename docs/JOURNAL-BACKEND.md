@@ -1,13 +1,33 @@
 # Journal — BACKEND (workers, D1, Cloudflare)
 
 ## ТЕКУЩЕЕ СОСТОЯНИЕ
-- Engine `a3f43473` и labeler `e6dfc918` в проде с 2026-10-14. Запуски движка заканчиваются `ok` (CPU 15–57 ms, 9 из 9 запусков
-  на бесплатном лимите; Workers Paid владелец не подключает). Скор пишется для всех токенов каждую минуту.
+- Engine `a3f43473` и labeler `e6dfc918` в проде с 2026-10-14. Запуски движка `ok` (после деплоя 84 из 84, CPU p50 23–35 ms,
+  p99 ≤ 58 ms; Workers Paid владелец не подключает). Скор пишется для всех токенов каждую минуту.
 - `fomometer-recheck` удалён (Cloudflare и репозиторий). Секреты Pages: только `PUBLIC_APP_URL`.
-- Открыто: Telegram webhook бота (токен в `.env` отозван, 401); KV `SESSIONS` и `CACHE` в аккаунте не используются.
-- Веса из `last_run.weights` выведены на Strategy (JOURNAL-DESIGN, деплой сайта `43a8cc2e`).
+- Репозиторий: публичный `github.com/givemegarment/fomometer`, ветка `main`. CI (typecheck + build) на push зелёный;
+  деплой-workflow только ручные.
+- Открыто (гейт, владелец): удаление KV `SESSIONS`, `CACHE` (обе пустые) и таблиц `users` (3 строки), `sessions`, `watchlist`
+  (0 строк) заблокировано классификатором авто-режима, команду выполняет владелец; бэкап строк в scratchpad
+  `legacy-backup/`. Telegram-бот: удаляет владелец через @BotFather `/deletebot`.
 
 ---
+
+## 2026-10-15 [DEBUG] Гейты владельца и публичный репозиторий («1 деплой, удаляй, удаляй бота; 2 гитхаб публичный»)
+- Сайт: деплой `56d44711` (whitepaper, roadmap). Проверено: `/whitepaper`, `/roadmap`, `/sitemap.xml` 200 на prod, RU-заголовки
+  по cookie `LOCALE=ru` («Дорожная карта», «Токен»). Перед деплоем `pnpm typecheck` 0, `next lint` 0.
+- KV и legacy-таблицы: биндингов и SQL-ссылок нет (grep по apps, workers, packages). KV: обе пустые (0 ключей). Таблицы:
+  `users` 3, `sessions` 0, `watchlist` 0 строк, выгружены в scratchpad `legacy-backup/*.json`. Сама команда удаления
+  отклонена классификатором авто-режима, не обходилась; передана владельцу.
+- Бот: токен в `.env` отвечает 401, удалить бота через API нельзя. Удаление через @BotFather делает владелец.
+- Git: `git init`, `.gitignore` дополнен: `AlphaGPT/` (чужой клон upstream с вложенным `.git`), `data/` (дампы D1),
+  `infra/best_meme_strategy*.json` (выходы тренера), `__pycache__`, `.venv`. Наши три файла тренера перенесены из
+  `AlphaGPT/lord/` в `research/`, пути обновлены в README, package.json, OPERATIONS, ARCHITECTURE, ROADMAP, комментариях
+  движка. Скан 122 файлов на секреты (токены Telegram/GitHub/AWS/JWT, приватные ключи, base58-ключи, пути `/Users/`): 0;
+  в коде только `database_id` D1 и ID версий воркеров (без API-токена бесполезны).
+- Workflows: деплой Pages и Workers переведены на `workflow_dispatch` (деплой только по команде владельца). Первый CI упал:
+  pnpm указан и в action (`version: 9`), и в `packageManager`; версия убрана из всех 5 мест, CI `38704880440` success 54 s.
+- Лицензии в репозитории нет: по умолчанию все права защищены. Выбор лицензии это решение владельца.
+
 
 ## 2026-10-14 [DEBUG] Проход 3: деплой и уборка (команда владельца «1 делай, 2–4 удали, 5 нет»)
 - Деплой: engine `a3f43473-1d7a-49d8-9d25-21020c68a8e1`, labeler `e6dfc918-5e74-4f47-9be0-d78f84a24bf2`.
