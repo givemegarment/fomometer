@@ -10,6 +10,7 @@ export async function SiteFooter() {
   const t = await getTranslations('landing');
   const tNav = await getTranslations('nav');
   const tSite = await getTranslations('site');
+  const tLegal = await getTranslations('legal');
   const col = 'space-y-2.5 text-sm';
   const link = 'text-text-muted transition-colors hover:text-text-primary';
   return (
@@ -49,7 +50,13 @@ export async function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-border">
-        <p className="mx-auto max-w-[1440px] px-5 py-5 text-xs text-text-dim sm:px-10">© {new Date().getFullYear()} {t('footer_rights')}</p>
+        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-x-6 gap-y-2 px-5 py-5 text-xs text-text-dim sm:px-10">
+          <p>© {new Date().getFullYear()} {t('footer_rights')}</p>
+          <p className="flex gap-5">
+            <Link className="hover:text-text-primary" href="/terms">{tLegal('footer_terms')}</Link>
+            <Link className="hover:text-text-primary" href="/privacy">{tLegal('footer_privacy')}</Link>
+          </p>
+        </div>
       </div>
     </footer>
   );

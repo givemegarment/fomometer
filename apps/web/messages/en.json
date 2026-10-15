@@ -937,5 +937,139 @@
     "split_burned": "Nothing burned yet.",
     "split_paid": "Nothing paid yet.",
     "stat_signal_value": "{n} of {total}"
+  },
+  "legal": {
+    "updated": "Updated {date}",
+    "date": "16 October 2026",
+    "toc": "On this page",
+    "footer_terms": "Terms",
+    "footer_privacy": "Privacy",
+    "terms": {
+      "title": "Terms of use",
+      "meta_description": "The terms for using FOMOMETER: statistics, not advice; swaps run in your own wallet through Jupiter.",
+      "intro": "These terms apply when you use fomometer.xyz, its API and its X account. By using them you accept these terms. If you do not, please do not use the service.",
+      "sections": [
+        {
+          "id": "service",
+          "title": "What FOMOMETER is",
+          "body": [
+            "FOMOMETER publishes statistics about Solana memecoins promoted on DexScreener: scores, signals and how those signals played out afterwards. It is free to read and has no accounts.",
+            "The method, the code and the full track record are public. The track record so far shows the signals have not beaten picking a tracked token at random."
+          ]
+        },
+        {
+          "id": "advice",
+          "title": "Not financial advice",
+          "body": [
+            "Nothing on the site, in the API or on the X account is investment, financial, legal or tax advice, or a recommendation to buy, sell or hold any token. A BUY signal is a statistical event in market data, not an instruction.",
+            "Memecoins are highly speculative. Most lose most of their value, and you can lose everything you put in. You alone decide what to trade and carry the result."
+          ]
+        },
+        {
+          "id": "swaps",
+          "title": "Swaps through Jupiter",
+          "body": [
+            "The Buy and Sell buttons open Jupiter's swap window. The swap is quoted and routed by Jupiter and signed in your own wallet. FOMOMETER never holds your funds or keys, cannot see your wallet before you connect it to Jupiter, and cannot cancel, change or reverse a transaction.",
+            "Each swap started from the site includes a 1% FOMOMETER fee, shown in Jupiter's quote before you sign. Network fees, price impact and slippage also apply. Check the token, the amount and the quote yourself before you sign.",
+            "Jupiter and your wallet provider are independent services with their own terms. FOMOMETER is not responsible for them."
+          ]
+        },
+        {
+          "id": "eligibility",
+          "title": "Who may use it",
+          "body": [
+            "You must be an adult under the law where you live and allowed by that law to use crypto-asset services. Do not use the swap feature where it is prohibited, or if you are subject to sanctions."
+          ]
+        },
+        {
+          "id": "token",
+          "title": "The $FMTR token",
+          "body": [
+            "$FMTR has not launched. Nothing on this site is an offer to sell or a solicitation to buy it. The rules it is planned to launch with are in the whitepaper and may change before launch. Its revenue-sharing features may not be available in some countries, including the United States."
+          ]
+        },
+        {
+          "id": "data",
+          "title": "Data and availability",
+          "body": [
+            "Market data comes from DexScreener and the Solana blockchain. It can be wrong, late or missing, and scoring runs can fail. Signals are recorded on Solana within minutes, but a signal can be missed; the signal numbers show any gap. The service is provided as it is and as available, and may change or stop at any time."
+          ]
+        },
+        {
+          "id": "use",
+          "title": "Fair use",
+          "body": [
+            "Use the site and API at a reasonable rate and do not try to disrupt them. The code is open source under the license in the repository (github.com/givemegarment/fomometer)."
+          ]
+        },
+        {
+          "id": "liability",
+          "title": "Liability",
+          "body": [
+            "To the fullest extent the law allows, FOMOMETER and the people behind it are not liable for any loss arising from trading, from relying on the data or signals, from errors or outages, or from third-party services, including Jupiter, wallets, DexScreener and the Solana network. Where liability cannot be excluded, it is limited to the fees FOMOMETER received from your swaps in the previous 12 months."
+          ]
+        },
+        {
+          "id": "changes",
+          "title": "Changes and contact",
+          "body": [
+            "These terms may be updated; the date at the top shows the current version, and continued use after a change means you accept it.",
+            "Questions: open an issue at github.com/givemegarment/fomometer."
+          ]
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Privacy",
+      "meta_description": "What FOMOMETER collects: no accounts, no cookies, no trackers. Swaps are public on Solana.",
+      "intro": "FOMOMETER collects as little as it can. This page lists everything it does handle.",
+      "sections": [
+        {
+          "id": "none",
+          "title": "No accounts, cookies or trackers",
+          "body": [
+            "There is no sign-up. FOMOMETER sets no cookies and runs no analytics, advertising or tracking scripts."
+          ]
+        },
+        {
+          "id": "browser",
+          "title": "Stored in your browser",
+          "body": [
+            "Your watchlist is kept in your browser's local storage and never sent to FOMOMETER. Clearing site data removes it."
+          ]
+        },
+        {
+          "id": "hosting",
+          "title": "Hosting",
+          "body": [
+            "The site runs on Cloudflare, which processes your IP address and request details to deliver and protect it, under Cloudflare's privacy policy. FOMOMETER keeps no visitor access logs of its own.",
+            "Token logos are fetched by FOMOMETER's server, so your browser does not contact DexScreener."
+          ]
+        },
+        {
+          "id": "swaps",
+          "title": "Swaps and wallets",
+          "body": [
+            "Jupiter's swap window loads from Jupiter only after you press Buy or Sell. Connecting your wallet and signing a swap happen in Jupiter and your wallet, under their privacy policies.",
+            "Swaps on Solana are public. To publish its revenue, FOMOMETER reads the transactions that paid its fee from the blockchain and stores, for each: the transaction signature, time, wallet address, token, side, size and fee. Wallet addresses are not shown on the site. Data on the blockchain itself cannot be deleted by anyone."
+          ]
+        },
+        {
+          "id": "x",
+          "title": "X account",
+          "body": [
+            "Posts on FOMOMETER's X account are public. Your interactions with them are handled by X under its privacy policy."
+          ]
+        },
+        {
+          "id": "contact",
+          "title": "Changes and contact",
+          "body": [
+            "This page is updated when what FOMOMETER handles changes; the date at the top shows the current version.",
+            "Questions or requests: open an issue at github.com/givemegarment/fomometer."
+          ]
+        }
+      ]
+    }
   }
 }
