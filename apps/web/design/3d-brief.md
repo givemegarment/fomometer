@@ -22,4 +22,5 @@ The product mark is a three-step meter: three bars of rising height, the tallest
 | 11 | Track record panel (`landing/record-panel.tsx`) | 1:1 | A white ceramic donut ring, about one third of it navy blue, on white, soft shadow |
 
 Process: generate #1 only, show the owner, generate the rest after the style is approved.
+Done 2026-10-15: #1–#10 generated with FLUX.2 Max 2K (66 credits in total); #11 dropped (a drawn share would read as data).
 Budget: about 55 generations, about 150 credits (Starter plan).

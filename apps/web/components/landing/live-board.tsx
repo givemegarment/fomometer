@@ -17,7 +17,7 @@ export function LiveBoard() {
   const rows = data?.rows.slice(0, 5) ?? [];
 
   return (
-    <div className="ring-hair overflow-hidden rounded-2xl bg-black/35 text-left backdrop-blur-xl">
+    <div className="ring-hair overflow-hidden rounded-2xl bg-[#141415]/80 text-left backdrop-blur-xl">
       <div className="flex items-center justify-between px-5 py-4">
         <p className="text-[15px] font-semibold">{t('board_title')}</p>
         <span className="text-xs text-white/70">

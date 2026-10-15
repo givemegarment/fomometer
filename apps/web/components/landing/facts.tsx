@@ -25,10 +25,10 @@ export function LandingFacts() {
       </Reveal>
 
       <div className="mt-12 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <Stat delay={0} tone="slate" value={live ? <CountUp value={live.rows.length} /> : null} label={t('fact_tracked')} />
-        <Stat delay={80} tone="indigo" value={signals != null ? <CountUp value={signals} /> : null} label={t('fact_signals', { days })} />
-        <Stat delay={160} tone="gold" value={<CountUp value={1440} />} label={t('fact_runs')} />
-        <Stat delay={240} tone="green" value={<CountUp value={12} />} label={t('fact_factors')} />
+        <Stat delay={0} tone="slate" image="/fact-1.webp" value={live ? <CountUp value={live.rows.length} /> : null} label={t('fact_tracked')} />
+        <Stat delay={80} tone="indigo" image="/fact-2.webp" value={signals != null ? <CountUp value={signals} /> : null} label={t('fact_signals', { days })} />
+        <Stat delay={160} tone="gold" image="/fact-3.webp" value={<CountUp value={1440} />} label={t('fact_runs')} />
+        <Stat delay={240} tone="green" image="/fact-4.webp" value={<CountUp value={12} />} label={t('fact_factors')} />
 
         <Reveal delay={120} className="col-span-2 rounded-xl bg-[linear-gradient(180deg,#FFFFFF,#E7ECF3)] p-6 text-bg-base sm:p-8 lg:col-span-4">
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -52,13 +52,17 @@ const TONES = {
   green: 'bg-[linear-gradient(160deg,#1E5A47_0%,#2B7A62_55%,#5FA592_100%)]'
 } as const;
 
-function Stat({ value, label, tone, delay }: { value: React.ReactNode | null; label: string; tone: keyof typeof TONES; delay: number }) {
+function Stat({ value, label, tone, image, delay }: { value: React.ReactNode | null; label: string; tone: keyof typeof TONES; image: string; delay: number }) {
   return (
-    <Reveal delay={delay} className={cn('flex min-h-[150px] flex-col justify-between rounded-xl p-5 sm:min-h-[180px] sm:p-6', TONES[tone])}>
-      <p className="text-[clamp(2rem,4vw,2.75rem)] font-semibold leading-none tracking-[-0.03em]">
+    <Reveal delay={delay} className={cn('relative flex min-h-[150px] flex-col justify-between overflow-hidden rounded-xl p-5 sm:min-h-[180px] sm:p-6', TONES[tone])}>
+      {/* Decorative 3D render (Higgsfield); the number and label carry the content. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={image} alt="" width={640} height={480} loading="lazy" decoding="async" className="absolute inset-y-0 right-0 h-full w-[78%] object-cover object-[85%_60%] [mask-image:linear-gradient(to_right,transparent,black_40%)]" />
+      <div aria-hidden className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.35)_0%,rgba(0,0,0,0.1)_55%,transparent_75%)]" />
+      <p className="relative text-[clamp(2rem,4vw,2.75rem)] font-semibold leading-none tracking-[-0.03em]">
         {value ?? <span className="inline-block h-9 w-16 animate-pulse rounded bg-white/20" />}
       </p>
-      <p className="text-[15px] leading-snug text-white/90">{label}</p>
+      <p className="relative max-w-[60%] text-[15px] leading-snug text-white/90">{label}</p>
     </Reveal>
   );
 }
