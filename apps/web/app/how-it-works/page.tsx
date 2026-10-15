@@ -91,7 +91,8 @@ export default async function HowItWorksPage() {
       {CHAIN_RECORD_ON && (
         <DocSection id="onchain" title={t('onchain.title')}>
           <p>{t('onchain.body')}</p>
-          <p className="font-mono text-sm">{t('onchain.format')}</p>
+          {/* Raw: the angle brackets would otherwise be read as rich-text tags. */}
+          <p className="font-mono text-sm">{t.raw('onchain.format') as string}</p>
           <p>
             <a href={solscanAccount(CHAIN_RECORD_ADDRESS)} target="_blank" rel="noopener noreferrer" className="text-accent underline underline-offset-2">
               {t('onchain.wallet')}

@@ -181,7 +181,7 @@
     },
     "onchain": {
       "title": "On-chain record",
-      "body": "Every signal is written to Solana as a memo from a FOMOMETER wallet within about two minutes of firing, before the first price check at 15 minutes. The memo holds the signal type, the token, the score, the time and the signal number. Block times show each signal existed before the price moved, and the numbers run without gaps, so nothing can be added, changed or dropped afterwards. Anyone can rebuild the track record from the wallet's transactions without trusting this site.",
+      "body": "Every signal is written to Solana as a memo from a FOMOMETER wallet within about two minutes of firing, before the first price check at 15 minutes. The memo holds the signal type, the token, the score, the time and the signal number. Block times show each signal existed before the price moved, so none can be added or changed afterwards, and signal numbers are sequential, so a signal left out shows as a gap. Anyone can rebuild the track record from the wallet's transactions without trusting this site.",
       "format": "Memo format: FMTR1 <BUY|SELL|BURST> <token> s=<score> t=<unix time> id=<signal number>.",
       "wallet": "Record wallet on Solscan"
     },
