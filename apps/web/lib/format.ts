@@ -50,3 +50,27 @@ export function pctTone(n: number | null | undefined): 'up' | 'down' | 'flat' {
   if (n == null || !Number.isFinite(n) || Math.abs(n) < 0.01) return 'flat';
   return n > 0 ? 'up' : 'down';
 }
+
+/**
+ * Parts of a tiny USD price in DexScreener notation: $0.00008128 → { zeros: 4, digits: '8128' },
+ * rendered as $0.0₄8128. Null when the price is not tiny (0.001 and above) or not a positive number.
+ */
+export function priceParts(value: number | null | undefined): { zeros: number; digits: string } | null {
+  if (value == null || !Number.isFinite(value) || value <= 0 || value >= 0.001) return null;
+  // Round to 4 significant digits from the exponent (toFixed would expose binary error:
+  // 0.00008128 prints as 0.0000812799...). Rounding up can carry into the next power.
+  let exp = Math.floor(Math.log10(value));
+  let sig = Math.round(value * 10 ** (3 - exp));
+  if (sig >= 10000) {
+    sig = Math.round(sig / 10);
+    exp += 1;
+  }
+  if (exp >= -3) return null;
+  return { zeros: -exp - 1, digits: String(sig).replace(/0+$/, '') || '0' };
+}
+
+/** 5-minute volume pace relative to the hour: raw burst factor + 1. The engine clamps the factor at 5. */
+export function fmtPace(raw: number | null | undefined): string {
+  if (raw == null || !Number.isFinite(raw)) return '·';
+  return raw >= 5 ? '6×+' : `${Math.max(0, raw + 1).toFixed(1)}×`;
+}

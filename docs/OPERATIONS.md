@@ -18,7 +18,7 @@ set -a; . ./.env; set +a
 | Schema | `pnpm d1:apply:remote` | Idempotent (`IF NOT EXISTS`). Creates missing tables only; it does not add columns to existing ones. |
 | Migration | `npx wrangler d1 execute fomometer --remote --file=./infra/migrations/<file>.sql` | Column changes for an existing database. Run each file once, before deploying the workers that use it. |
 
-Before a deploy: `pnpm typecheck`, `pnpm -F @fomometer/web lint`, `pnpm -F @fomometer/web build`.
+Before a deploy: `pnpm typecheck`, `pnpm test` (vitest: scoring math, track record statistics, price and logo formatting), `pnpm -F @fomometer/web lint`, `pnpm -F @fomometer/web build`.
 
 ## Health checks
 

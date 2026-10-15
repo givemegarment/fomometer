@@ -16,6 +16,8 @@
  * always a switch to a different pool, not a trade anyone could have made.
  */
 
+import { summarize, num, type GroupStats } from './summary';
+
 export interface Env {
   DB: D1Database;
   LABELER_LOOKBACK_HOURS: string;
@@ -231,17 +233,6 @@ async function fillBaseline(env: Env, now: number): Promise<number> {
   return done;
 }
 
-type HorizonStats = { n: number; favorable: number | null; median_pct: number | null };
-type GroupStats = {
-  /** Outcomes in the window, including flagged ones. */
-  n: number;
-  /** Left out of every statistic: best price above 11x entry (suspect pool switch). */
-  flagged: number;
-  /** Not flagged, but no price within the tolerance after 4 h. */
-  lost_4h: number;
-  horizons: Record<'15m' | '1h' | '4h', HorizonStats>;
-};
-
 /**
  * Summary of the last RECORD_DAYS for the Strategy page, stored in
  * engine_state.track_record so the site reads one row instead of thousands per
@@ -310,33 +301,4 @@ async function updateTrackRecord(env: Env, now: number): Promise<boolean> {
     .bind(JSON.stringify(value), now)
     .run();
   return true;
-}
-
-type Priced = { flagged: boolean; '15m': number | null; '1h': number | null; '4h': number | null };
-
-function summarize(rows: Priced[], down: boolean): GroupStats {
-  const clean = rows.filter((r) => !r.flagged);
-  const horizons = {} as GroupStats['horizons'];
-  for (const h of ['15m', '1h', '4h'] as const) {
-    const xs = clean.map((r) => r[h]).filter((x): x is number => x != null && Number.isFinite(x));
-    const fav = xs.filter((x) => (down ? x < 0 : x > 0)).length;
-    horizons[h] = { n: xs.length, favorable: xs.length ? fav / xs.length : null, median_pct: median(xs) };
-  }
-  return {
-    n: rows.length,
-    flagged: rows.length - clean.length,
-    lost_4h: clean.filter((r) => r['4h'] == null).length,
-    horizons
-  };
-}
-
-function num(v: unknown): number | null {
-  return typeof v === 'number' && Number.isFinite(v) ? v : null;
-}
-
-function median(xs: number[]): number | null {
-  if (!xs.length) return null;
-  const s = [...xs].sort((a, b) => a - b);
-  const mid = Math.floor(s.length / 2);
-  return s.length % 2 ? s[mid]! : (s[mid - 1]! + s[mid]!) / 2;
 }

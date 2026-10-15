@@ -11,7 +11,7 @@ import { Price } from '@/components/ui/price';
 import { TokenAvatar } from '@/components/dashboard/token-avatar';
 import { fetcher } from '@/lib/fetcher';
 import { SWR_KEYS, SWR_INTERVALS } from '@/lib/swr-keys';
-import { fmtPct, fmtUSD, pctTone, shortenAddress } from '@/lib/format';
+import { fmtPace, fmtPct, fmtUSD, pctTone, shortenAddress } from '@/lib/format';
 import { useWatchlist } from '@/lib/watchlist';
 import { cn } from '@/lib/cn';
 
@@ -209,12 +209,6 @@ export function BoardClient() {
       <p className="text-xs text-text-dim">{t('footnote')}</p>
     </div>
   );
-}
-
-/** 5-minute volume pace relative to the hour: raw factor + 1. The engine clamps the factor at 5. */
-function fmtPace(raw: number | null): string {
-  if (raw == null || !Number.isFinite(raw)) return '·';
-  return raw >= 5 ? '6×+' : `${Math.max(0, raw + 1).toFixed(1)}×`;
 }
 
 function share(h: Horizon | undefined): string | null {
