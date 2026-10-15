@@ -31,7 +31,7 @@
 | Стиль | **70/30 Phantom/Robinhood** |
 | Лого | пользователь добавит позже (placeholder wordmark до этого) |
 | Дисклеймер | sticky-баннер «Not financial advice» (без отдельных /terms /privacy на v1) |
-| Cloudflare setup | **полностью на стороне Claude** через `wrangler` + API token |
+| Cloudflare setup | **полностью на стороне разработчика** через `wrangler` + API token |
 | GitHub репо | `github.com/givemegarment/fomometer` — clean rewrite в самом конце (старый код **не смотрим**) |
 
 ---
@@ -460,7 +460,7 @@ fomometer-xyz/                        # GitHub приватный репо
 
 ---
 
-## 7. Что Claude делает сам, что от пользователя
+## 7. Что разработчик делает сам, что от пользователя
 
 ### 7.1 Делаю сам (через wrangler + CF API token)
 - Создаю D1 базу, KV namespaces, Pages-проект, Cron Triggers.
