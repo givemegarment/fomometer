@@ -37,7 +37,7 @@ D1 queries: `npx wrangler d1 execute fomometer --remote --command "…"` (run in
 
 **STALE badge, `scored_at` behind `snapshot_at`.** The engine stores prices but dies before scoring. Run `wrangler tail`. `exceededCpu` means the run went over the 50 ms CPU limit of the free plan: look for a new per-minute query that pulls many rows or parses JSON in the worker. This is what happened before October 2026 (the burst percentile parsed ~9,000 rows a minute).
 
-**STALE badge, both times behind.** The engine is not running or DexScreener returns nothing. Tail logs: `boosts unavailable (… HTTP 429 …), using the list from Ns ago` is a short DexScreener outage covered by the last good list; `no universe (…), skipping` means it has lasted over 10 minutes; no logs at all means the cron is off (Workers & Pages → fomometer-engine → Triggers).
+**STALE badge, both times behind.** The engine is not running or DexScreener returns nothing. Tail logs: `boosts unavailable (… HTTP 429 …), using the list from Ns ago` is a short DexScreener outage covered by the last good list; `no universe (…), skipping` means no good list for 60 minutes (or none since a fresh deploy); no logs at all means the cron is off (Workers & Pages → fomometer-engine → Triggers).
 
 **Scanner shows few rows.** Tokens drop out after 10 minutes without a snapshot. Check the universe size in the last `engine cycle` log line.
 
