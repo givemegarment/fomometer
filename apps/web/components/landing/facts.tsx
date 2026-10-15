@@ -31,10 +31,7 @@ export function LandingFacts() {
         <Stat delay={240} tone="green" image="/fact-4.webp" value={<CountUp value={12} />} label={t('fact_factors')} />
 
         <Reveal delay={120} className="col-span-2 rounded-xl bg-[linear-gradient(180deg,#FFFFFF,#E7ECF3)] p-6 text-bg-base sm:p-8 lg:col-span-4">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <p className="text-display-md">{t('fact_compare_title')}</p>
-            <p className="max-w-sm text-sm text-black/60">{t('fact_compare_note', { days })}</p>
-          </div>
+          <p className="text-display-md">{t('fact_compare_title')}</p>
           <div className="mt-6 space-y-4">
             <CompareBar label={t('fact_compare_buy')} share={buy} color="bg-[#1E2A62]" />
             <CompareBar label={t('fact_compare_any')} share={any} color="bg-[#8A99B4]" />

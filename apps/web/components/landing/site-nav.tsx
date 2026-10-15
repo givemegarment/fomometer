@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
-import { ArrowRight } from 'lucide-react';
 import { Wordmark } from '@/components/wordmark';
 import { buttonVariants } from '@/components/ui/button-variants';
 
@@ -24,7 +23,6 @@ export async function SiteNav({ overlay = false }: { overlay?: boolean }) {
         </nav>
         <Link href="/dashboard" className={buttonVariants({ size: 'md', className: 'ml-auto md:ml-0' })}>
           {t('nav_board')}
-          <ArrowRight aria-hidden />
         </Link>
       </div>
     </header>

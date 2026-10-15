@@ -3,7 +3,7 @@
 import useSWR from 'swr';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { Star, ArrowRight } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { EmptyState } from '@/components/dashboard/empty-state';
 import { TokenAvatar } from '@/components/dashboard/token-avatar';
 import { Price } from '@/components/ui/price';
@@ -53,7 +53,6 @@ export function WatchlistClient() {
           cta={
             <Link href="/dashboard" className={buttonVariants({ size: 'md' })}>
               {t('open_board')}
-              <ArrowRight aria-hidden />
             </Link>
           }
         />

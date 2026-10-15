@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { ArrowRight } from 'lucide-react';
 import { TokenAvatar } from '@/components/dashboard/token-avatar';
 import { Sparkline } from '@/components/ui/sparkline';
 import { Price } from '@/components/ui/price';
@@ -68,7 +67,6 @@ export function LiveBoard() {
       )}
       <Link href="/dashboard" className="flex items-center justify-center gap-1.5 border-t border-white/[0.06] px-5 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/[0.04]">
         {t('board_more')}
-        <ArrowRight className="h-4 w-4" aria-hidden />
       </Link>
     </div>
   );

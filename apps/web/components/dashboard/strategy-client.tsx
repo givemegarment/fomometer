@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { fetcher } from '@/lib/fetcher';
 import { SWR_KEYS } from '@/lib/swr-keys';
-import { fmtTimeAgo } from '@/lib/format';
 import { cn } from '@/lib/cn';
 
 /** Below this many priced outcomes a percentage is noise; show "not enough data". */
@@ -63,14 +62,7 @@ export function StrategyClient() {
 
       <Card>
         <CardHeader>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <CardTitle>{t('settings_title')}</CardTitle>
-            {s?.at != null && (
-              <span className="text-xs text-text-muted">
-                {t('settings_updated', { ago: fmtTimeAgo(s.at * 1000, Date.now()) })}
-              </span>
-            )}
-          </div>
+          <CardTitle>{t('settings_title')}</CardTitle>
         </CardHeader>
         <CardContent>
           {error ? (
@@ -123,7 +115,7 @@ function WeightsCard({ settings, loaded, failed }: { settings: Settings | null |
           <p className="text-sm text-text-muted">{t('weights_empty')}</p>
         ) : (
           <>
-            <ul className="max-w-3xl space-y-3">
+            <ul className="space-y-3">
               {rows.map(([key, w]) => (
                 <li key={key} className="grid grid-cols-[minmax(0,10rem)_1fr_3.5rem] items-center gap-3 text-sm sm:grid-cols-[minmax(0,14rem)_1fr_4rem]">
                   <span className="leading-snug" title={tf.has(`${key}.hint`) ? tf(`${key}.hint`) : undefined}>
@@ -166,14 +158,7 @@ function RecordCard({ record, loaded, failed }: { record: TrackRecord | null | u
   return (
     <Card>
       <CardHeader>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <CardTitle>{t('record_title', { days: record?.days ?? 7 })}</CardTitle>
-          {record && (
-            <span className="text-xs text-text-muted">
-              {t('record_updated', { ago: fmtTimeAgo(record.at * 1000, Date.now()) })}
-            </span>
-          )}
-        </div>
+        <CardTitle>{t('record_title', { days: record?.days ?? 7 })}</CardTitle>
         <p className="mt-1 text-sm text-text-muted">{t('record_subtitle')}</p>
       </CardHeader>
       <CardContent className="p-0">

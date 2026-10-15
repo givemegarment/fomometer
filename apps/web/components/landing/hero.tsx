@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { ArrowDown, ArrowRight } from 'lucide-react';
+import { ArrowDown } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button-variants';
 import { useNextRun } from '@/components/motion/next-run';
 import { cn } from '@/lib/cn';
@@ -53,7 +53,6 @@ export function LandingHero() {
           <p className="text-[15px] text-text-muted">{t('hero_card')}</p>
           <Link href="/dashboard" className={buttonVariants({ size: 'lg', className: 'mt-3 w-full' })}>
             {t('nav_board')}
-            <ArrowRight aria-hidden />
           </Link>
         </div>
       </div>
