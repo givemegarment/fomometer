@@ -57,7 +57,7 @@ function Stat({ value, label, tone, image, delay }: { value: React.ReactNode | n
     <Reveal delay={delay} className={cn('relative flex min-h-[150px] flex-col justify-between overflow-hidden rounded-xl p-5 sm:min-h-[180px] sm:p-6', TONES[tone])}>
       {/* Decorative 3D render (Higgsfield); the number and label carry the content. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={image} alt="" width={640} height={480} loading="lazy" decoding="async" className="absolute inset-y-0 right-0 h-full w-[78%] object-cover object-[85%_60%] [mask-image:linear-gradient(to_right,transparent,black_40%)]" />
+      <img src={image} alt="" width={640} height={480} loading="lazy" decoding="async" className="absolute bottom-0 right-0 h-[58%] w-[58%] object-cover sm:h-full sm:w-[78%] object-[85%_60%] [mask-image:radial-gradient(ellipse_at_68%_58%,black_30%,transparent_70%)] sm:[mask-image:linear-gradient(to_right,transparent,black_40%)]" />
       <div aria-hidden className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.35)_0%,rgba(0,0,0,0.1)_55%,transparent_75%)]" />
       <p className="relative text-[clamp(2rem,4vw,2.75rem)] font-semibold leading-none tracking-[-0.03em]">
         {value ?? <span className="inline-block h-9 w-16 animate-pulse rounded bg-white/20" />}
