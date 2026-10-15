@@ -29,6 +29,9 @@
   нужен под проект Ultra, и при неверном счёте котировка не приходит вообще.
 - tsc 0, lint 0, vitest 20/20.
 - [DEBUG] в `.env` остались `NEXT_PUBLIC_TELEGRAM_*` (не используются).
+- Владелец создал реферальный счёт `Fyhr9NJU2JbwdTL4ZZRRaCpnJH1eLydDnBZsc9khJBTA` (проект Ultra) и токен-счета SOL, USDC, USDT.
+  Котировки без подписи: SOL → 6 токенов из свежих BUY, SOL → USDC и USDC → CBUCKS дают `feeBps 100`;
+  `feeMint` SOL, у USDC → CBUCKS USDC. Единичные «Something unexpected occurred» у Jupiter при повторе проходят.
 
 ## 2026-10-15 [DEBUG] Правки владельца по скриншотам (задеплоено `1bb1002c`)
 - Убраны стрелки у всех кнопок «Open the board» / «Open the full board» (hero, шапка лендинга, live-board, пустое избранное).

@@ -4,7 +4,7 @@
  */
 
 /** Jupiter referral account that receives the fee. Empty hides every Buy button. */
-export const JUP_REFERRAL_ACCOUNT = '';
+export const JUP_REFERRAL_ACCOUNT = 'Fyhr9NJU2JbwdTL4ZZRRaCpnJH1eLydDnBZsc9khJBTA';
 
 /** Fee added to swaps started here, in basis points (Jupiter allows 50 to 255 and keeps 20% of it). */
 export const JUP_REFERRAL_FEE_BPS = 100;
