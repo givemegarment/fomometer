@@ -45,12 +45,12 @@ Exit: treasury page live and every swap recorded with its signal.
 
 Goal: a community token that shares revenue with its holders. Design in [TOKENOMICS.md](TOKENOMICS.md).
 
-- [ ] Legal review of holder rewards; decide excluded countries.
+- [ ] Check the rules for holder rewards; list excluded countries (the United States among them).
 - [ ] Owner decisions: pool split, reward minimum, launch buy, multisig signers.
 - [ ] Treasury multisig, addresses published.
 - [ ] Fair launch on pump.fun; `$FMTR` excluded from its own board and signals.
 - [ ] Weekly holder rewards in SOL.
-- [ ] Daily buyback and burn.
+- [ ] Hourly buyback and burn.
 - [ ] Monthly report: pool by source, rewards, burns, transactions.
 
 Exit: three consecutive monthly reports published.

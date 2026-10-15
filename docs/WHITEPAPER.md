@@ -83,8 +83,8 @@ A community token, launched fairly on pump.fun. Revenue goes into one pool; part
 
 ```
   swaps through the site ──► 1% fee ──┐
-  trading $FMTR ──► creator fees ─────┼──► pool ──┬──► 40% holder rewards, SOL, weekly
-  other project revenue ──────────────┘           ├──► 40% buy $FMTR and burn, daily
+  trading $FMTR ──► creator fees ─────┼──► pool ──┬──► 50% buy $FMTR and burn, hourly
+  other project revenue ──────────────┘           ├──► 30% holder rewards, SOL, weekly
                                                   └──► 20% operations and research
         ▲                                                            │
         └──── holders use the site, research improves the signals ◄──┘
@@ -97,9 +97,10 @@ A community token, launched fairly on pump.fun. Revenue goes into one pool; part
 | Supply | 1,000,000,000, fixed; minting disabled at creation |
 | Launch | fair launch on pump.fun; no presale, no private round |
 | Team | one disclosed launch buy of at most 2%, locked for 6 months |
-| Pool split | 40% holder rewards, 40% buyback and burn, 20% operations and research |
+| Pool split | 50% buyback and burn, 30% holder rewards in SOL, 20% operations and research |
 | Holder rewards | weekly, in SOL, pro rata to each wallet's average balance over the week; minimum tokens worth $20; pools, treasury, team and burn addresses excluded |
-| Buyback | daily, small swaps through Jupiter, from a 2-of-3 multisig; bought tokens burned on chain |
+| Buyback | hourly, small swaps through Jupiter at random minutes, from a 2-of-3 multisig; bought tokens burned on chain |
+| Pro in `$FMTR` | the whole payment is burned |
 | Own token | excluded from FOMOMETER's board and signals |
 
 Full design and safeguards: [TOKENOMICS.md](TOKENOMICS.md).
@@ -116,7 +117,7 @@ Full design and safeguards: [TOKENOMICS.md](TOKENOMICS.md).
 - Swap fees exist; version 0.1 had no revenue.
 - Holders receive part of the revenue in SOL. Version 0.1 had buyback and burn only and said the token gives no claim on revenue.
 - Creator fees from trading `$FMTR` go into the pool; version 0.1 kept them out of buybacks.
-- Buybacks run daily instead of weekly.
+- Buybacks run every hour instead of weekly and take the largest share of the pool.
 - The token no longer waits for Pro and for the signal research to finish.
 
 ## 8. Roadmap
@@ -126,7 +127,7 @@ Summary; details in [ROADMAP.md](ROADMAP.md).
 1. **Public launch** (done, October 2026): open site, honest method page, stable engine.
 2. **Data integrity** (in progress): factors stored for every event, lost outcomes counted, baseline next to the track record; done once 30 days of factors are stored.
 3. **Swaps and treasury** (in progress): Buy button with a 1% fee (live), swaps recorded per signal, public treasury page.
-4. **`$FMTR` launch**: legal review, multisig, fair launch, weekly rewards, daily buyback and burn, monthly reports.
+4. **`$FMTR` launch**: rules check for rewards, multisig, fair launch, hourly buyback and burn, weekly rewards, monthly reports.
 5. **Signal research**: refit on 30+ days of data; ship a new score only if it beats the baseline out of sample after costs.
 6. **Pro and API**: alerts, history, API keys, payments.
 
@@ -137,7 +138,7 @@ Summary; details in [ROADMAP.md](ROADMAP.md).
 - **Data source.** One upstream (DexScreener). Outages or API changes stop the product.
 - **Survivorship.** Tokens that disappear are often the worst performers, and they are missing from the record.
 - **Token risk.** A memecoin-style token can lose most or all of its value regardless of the product. Rewards and buybacks do not set a floor.
-- **Regulation.** Paying holders a share of revenue is a common test for a security, in the United States and elsewhere. Legal advice comes before rewards start, and some countries may be excluded.
+- **Regulation.** FOMOMETER is not based in the United States. Paying holders a share of revenue is regulated in many countries; rewards may exclude some of them, the United States included, and the rules of the project's own jurisdiction are checked before rewards start.
 
 ## 10. Disclaimer
 

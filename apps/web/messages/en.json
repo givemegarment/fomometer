@@ -112,7 +112,7 @@
       },
       {
         "q": "Is there a token?",
-        "a": "Not yet. $FMTR will launch on pump.fun. The plan: part of FOMOMETER's revenue is paid to holders in SOL every week, and part buys the token back and burns it. The whitepaper has the rules and the risks."
+        "a": "Not yet. $FMTR will launch on pump.fun. The plan: half of FOMOMETER's revenue buys the token on the market every hour and burns it, and 30% is paid to holders in SOL every week. The whitepaper has the rules and the risks."
       }
     ],
     "footer_product": "Product",
@@ -541,8 +541,8 @@
         "People trade through the site; each swap pays a 1% fee into the pool.",
         "Trading $FMTR itself pays pump.fun creator fees into the same pool.",
         "Other project revenue, as it appears, joins the pool on its own line of the report.",
-        "40% of the pool is paid to holders in SOL, every week.",
-        "40% buys $FMTR on the market every day and burns it.",
+        "50% of the pool buys $FMTR on the market every hour and burns it.",
+        "30% is paid to holders in SOL, every week.",
         "20% pays for infrastructure, data and signal research."
       ],
       "params_title": "Proposed parameters",
@@ -561,7 +561,7 @@
         },
         {
           "k": "Pool split",
-          "v": "40% holder rewards, 40% buyback and burn, 20% operations and research."
+          "v": "50% buyback and burn, 30% holder rewards in SOL, 20% operations and research."
         },
         {
           "k": "Holder rewards",
@@ -569,7 +569,11 @@
         },
         {
           "k": "Buyback",
-          "v": "Every day, in small swaps through Jupiter, from a 2-of-3 multisig treasury. Bought tokens are burned on chain."
+          "v": "Every hour, in small swaps through Jupiter at random minutes, from a 2-of-3 multisig treasury. Bought tokens are burned on chain."
+        },
+        {
+          "k": "Pro in $FMTR",
+          "v": "Paying for Pro in $FMTR burns the whole payment."
         },
         {
           "k": "Own token",
@@ -588,7 +592,7 @@
         "Swap fees exist: version 0.1 had no revenue at all.",
         "Holders now receive part of the revenue in SOL. Version 0.1 had buyback and burn only and said the token gives no claim on revenue.",
         "Creator fees from trading $FMTR now go into the pool. Version 0.1 kept them out of buybacks.",
-        "Buybacks run daily instead of weekly.",
+        "Buybacks run every hour instead of weekly and take the largest share of the pool.",
         "The token no longer waits for Pro and for the signal research to finish."
       ]
     },
@@ -622,7 +626,7 @@
         },
         {
           "name": "Regulation",
-          "body": "Paying holders a share of revenue is a common test for a security, in the United States and elsewhere. Legal advice comes before rewards start, and some countries may be excluded."
+          "body": "FOMOMETER is not based in the United States. Paying holders a share of revenue is regulated in many countries; rewards may exclude some of them, the United States included, and the rules of the project's own jurisdiction are checked before rewards start."
         }
       ]
     },
@@ -753,7 +757,7 @@
         "items": [
           {
             "done": false,
-            "text": "Legal review of holder rewards"
+            "text": "Check the rules for holder rewards; list excluded countries"
           },
           {
             "done": false,
@@ -769,7 +773,7 @@
           },
           {
             "done": false,
-            "text": "Daily buyback and burn"
+            "text": "Hourly buyback and burn"
           },
           {
             "done": false,

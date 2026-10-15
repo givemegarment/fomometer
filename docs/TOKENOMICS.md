@@ -1,12 +1,12 @@
 # Tokenomics
 
-Version 0.2, 15 October 2026. **Proposal.** The token is not launched. Swap fees are live; everything else here is the design the token will launch with. Every number marked *proposed* needs the owner's decision, and holder rewards need legal review before they start.
+Version 0.2, 15 October 2026. **Proposal.** The token is not launched. Swap fees are live; everything else here is the design the token will launch with. Numbers marked *proposed* are the starting design and can still change before launch; holder rewards start only after the rules check in section 12.
 
 What changed since version 0.1 (14 October 2026) is listed in [section 11](#11-changes-since-version-01).
 
 ## 1. Idea in one paragraph
 
-FOMOMETER earns a 1% fee on swaps started from the site. That revenue, the creator fees from trading `$FMTR` itself and any other project revenue go into one pool. Every week part of the pool is paid to `$FMTR` holders in SOL; every day another part buys `$FMTR` on the market and burns it; the rest runs the project. More trading through the site means a bigger pool, a bigger pool means larger rewards and steadier buybacks, and holders have a reason to use the site. The loop only turns while there is revenue; with none, nothing is paid and the report says so.
+FOMOMETER earns a 1% fee on swaps started from the site. That revenue, the creator fees from trading `$FMTR` itself and any other project revenue go into one pool. Half of the pool buys `$FMTR` on the market every hour and burns it, 30% is paid to holders in SOL every week, and the rest runs the project. More trading through the site means a bigger pool, a bigger pool means more steady buying and larger rewards, and holders have a reason to use the site. The loop only turns while there is revenue; with none, nothing is paid and the report says so.
 
 ## 2. The token
 
@@ -38,16 +38,24 @@ FOMOMETER earns a 1% fee on swaps started from the site. That revenue, the creat
 
 | Share (*proposed*) | Use | When |
 |---|---|---|
-| 40% | holder rewards, paid in SOL | weekly |
-| 40% | buy back `$FMTR` and burn it | daily |
+| 50% | buy back `$FMTR` on the market and burn it | every hour |
+| 30% | holder rewards, paid in SOL | weekly |
 | 20% | operations and research: infrastructure, data, signal research, audits, legal | as needed |
+
+Why this split:
+
+- **Buyback gets the largest share** because it is the only part that buys the token on the market. Every buy is demand, and every burn makes the supply permanently smaller.
+- **Hourly, in small slices**, because steady buying is harder to front-run and moves the price less than one large buy a day.
+- **Rewards are paid in SOL, not in `$FMTR`.** Paying in the token would hand holders tokens many of them sell straight back into the market, cancelling the buyback. SOL rewards make holding worth it without adding sell pressure on `$FMTR`.
+- **20% keeps the product running.** Without infrastructure, data and research the site stops earning and the whole loop stops.
+- **Pro paid in `$FMTR` is burned in full**, outside this split: extra demand and extra burn.
 
 ## 5. Holder rewards
 
 | Rule | Value (*proposed*) |
 |---|---|
 | Epoch | one week, Monday 00:00 UTC |
-| Budget | 40% of the previous epoch's pool |
+| Budget | 30% of the previous epoch's pool |
 | Paid in | SOL, sent to each eligible wallet |
 | Weight | the wallet's average `$FMTR` balance over the epoch, sampled at random times, so buying just before a snapshot earns almost nothing |
 | Minimum | an average balance worth $20 or more, converted with the epoch's average price |
@@ -61,8 +69,9 @@ Every payout transaction is published. Rewards are a share of what the project e
 
 | Rule | Value (*proposed*) |
 |---|---|
-| Cadence | every day, in small swaps through Jupiter, at times that are not announced in advance |
-| Budget | 40% of the previous epoch's pool, spread evenly over the epoch's days |
+| Cadence | every hour, one small swap through Jupiter at a random minute |
+| Budget | 50% of the previous epoch's pool, spread evenly over the epoch's 168 hours |
+| Skip rule | an hour whose slice is below the cost of the swap rolls into the next hour |
 | Slippage cap | 1% |
 | Destination | every bought token is burned with the SPL burn instruction in the same or the next transaction |
 | Treasury | Squads multisig, 2 of 3 signers, addresses published |
@@ -94,7 +103,7 @@ A monthly public report, and a `/treasury` page on the site with live on-chain b
 
 - pool by source: swap fees, creator fees, other revenue, each on its own line;
 - holder rewards per epoch: total SOL, number of wallets, transactions;
-- buybacks per day: SOL spent, tokens bought and burned, transactions;
+- buybacks per day: SOL spent, tokens bought and burned, transactions (hourly swaps summed by day);
 - treasury balances and multisig addresses;
 - team wallets and their balances;
 - circulating supply after burns.
@@ -112,7 +121,7 @@ An illustration of the mechanics, **not a forecast**. Swap volume today is tiny.
 
 - Swap fees: 50,000 × 1% × 80% = **$400 a week**.
 - Creator fees: 200,000 × 0.05% = **$100 a week**.
-- Pool $500: **$200** to holders in SOL, **$200** of buybacks and burns, $100 to operations and research.
+- Pool $500: **$250** of buybacks and burns (about $1.50 an hour), **$150** to holders in SOL, $100 to operations and research.
 
 Whether these amounts matter depends on the token's market cap and trading volume, which nobody controls. Rewards and buybacks do not set a floor price.
 
@@ -121,24 +130,24 @@ Whether these amounts matter depends on the token's market cap and trading volum
 | Version 0.1 (14 October 2026) | Version 0.2 (15 October 2026) | Why |
 |---|---|---|
 | No revenue | Swap fees live | A Buy button with a Jupiter referral fee shipped on 15 October |
-| Buyback and burn only; "no distribution to holders"; "the token gives no claim on revenue" | 40% of the pool paid to holders in SOL, 40% buyback and burn | Owner decision |
+| Buyback and burn only; "no distribution to holders"; "the token gives no claim on revenue" | 50% buyback and burn, 30% of the pool paid to holders in SOL | Owner decision |
 | Creator fees reported separately, kept out of buybacks | Creator fees go into the pool | Owner decision |
-| Weekly buyback | Daily buyback | Smaller, steadier market buys |
+| Weekly buyback | Hourly buyback | Steady buying, harder to front-run |
 | Launch after signal research, Pro and paying users | Launch soon, while research continues | Swap fees give revenue before Pro |
 
 Version 0.1 is in the git history of this file.
 
 ## 12. Order of launch
 
-1. Legal review of holder rewards in the team's jurisdiction; decide which countries, if any, are excluded.
+1. Check the rules for holder rewards in the project's jurisdiction; list the countries excluded from rewards (the United States among them).
 2. Treasury multisig created, addresses published; `/treasury` page live with swap fees.
 3. Token launch on pump.fun.
-4. First daily buyback the day after launch; first holder rewards at the end of the first full epoch.
+4. Hourly buybacks from the first full epoch after launch; first holder rewards at the end of that epoch.
 5. First monthly report at the end of the first full month.
 
 ## 13. Decisions for the owner
 
-- Pool split (40 / 40 / 20 proposed).
+- Pool split (50 / 30 / 20 proposed).
 - Reward minimum, epoch, sampling method; exchange wallet list.
 - Launch buy size and lock period.
 - Pro thresholds and token-payment terms.
@@ -147,7 +156,7 @@ Version 0.1 is in the git history of this file.
 ## 14. Risks
 
 - The token can lose most or all of its value whatever the product does.
-- **Regulation.** Paying holders a share of revenue is a common test for a security, in the United States and elsewhere. Do not start rewards without legal advice; some countries may have to be excluded.
+- **Regulation.** The project is not based in the United States. Paying holders a share of revenue is regulated in many countries; rewards may exclude some of them, the United States included. The rules of the project's own jurisdiction are checked before rewards start.
 - Revenue can be zero. Swap fees depend on people trading through the site, which depends on traffic and on whether the signals are any good; the public track record shows no edge so far.
 - Rewards attract wallets that hold only for the payout and sell after; average-balance weighting reduces this but does not remove it.
 - pump.fun and Jupiter rules, fees and programs can change.
