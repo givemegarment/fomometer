@@ -34,7 +34,9 @@
   `feeMint` SOL, у USDC → CBUCKS USDC. Единичные «Something unexpected occurred» у Jupiter при повторе проходят.
 - Прод: 11 кнопок Buy в Signals (свежие BUY, старейшая 43 мин); на странице DIKSHIT modal открылся, запрос
   плагина `ultra-api.jup.ag/order ... referralAccount=Fyhr9N...&referralFee=100` → 200, `feeBps 100`, `feeMint` SOL.
-  Первая реальная покупка за владельцем; приход комиссии на счёт ещё не проверен.
+- Первая реальная покупка (владелец, Phantom): 0.001 SOL → 522.5 DIKSHIT, Platform Fee 1%. On-chain: SOL-счёт
+  комиссии `82oUvYq9ATTPZcpiM6Jxvxca8PNLvbpSGWBY8x4qTLNa` = 0.00001 SOL (getTokenAccountsByOwner, mainnet RPC).
+  Phantom показал «This domain is new» для fomometer.xyz: предупреждение кошелька, не наш код.
 
 ## 2026-10-15 [DEBUG] Правки владельца по скриншотам (задеплоено `1bb1002c`)
 - Убраны стрелки у всех кнопок «Open the board» / «Open the full board» (hero, шапка лендинга, live-board, пустое избранное).
