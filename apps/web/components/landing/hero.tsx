@@ -38,7 +38,7 @@ export function LandingHero() {
           <>
             <span className="ring-hair inline-flex rounded-pill px-3 py-1 text-[13px] text-white/90">{t('next_run')}</span>
             <p className="num-display mt-2 text-5xl font-semibold tracking-[-0.03em]" aria-live="off">
-              00:{secondsLeft == null ? '··' : String(secondsLeft % 60).padStart(2, '0')}
+              00:{secondsLeft == null ? '··' : String(secondsLeft).padStart(2, '0')}
             </p>
             <div className="mt-4 h-1.5 overflow-hidden rounded-pill bg-white/10">
               <div

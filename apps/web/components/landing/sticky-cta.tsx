@@ -32,7 +32,7 @@ export function StickyCta() {
         <p className="text-sm font-semibold">
           <span aria-hidden className="mr-2 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-accent align-middle" />
           {t('sticky_live')}
-          <span className="num-display ml-2 font-normal text-text-muted">{secondsLeft != null && t('sticky_next', { s: secondsLeft % 60 })}</span>
+          <span className="num-display ml-2 font-normal text-text-muted">{secondsLeft != null && t('sticky_next', { s: secondsLeft })}</span>
         </p>
         <Link href="/dashboard" tabIndex={shown ? 0 : -1} className={buttonVariants({ size: 'md' })}>
           {t('nav_board')}

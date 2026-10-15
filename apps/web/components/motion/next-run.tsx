@@ -11,7 +11,7 @@ type Status = { snapshot_at: number | null; scored_at: number | null };
 const RUN_EVERY_SEC = 60;
 
 /**
- * Seconds until the next scoring run, from the last run time in /api/status, plus how far
+ * Whole seconds until the next scoring run (59 down to 0), from the last run time in /api/status, plus how far
  * the current minute has progressed (0..1). Returns nulls until status has loaded.
  */
 export function useNextRun(): { secondsLeft: number | null; progress: number | null; lastRun: number | null } {
@@ -27,5 +27,5 @@ export function useNextRun(): { secondsLeft: number | null; progress: number | n
   if (last == null) return { secondsLeft: null, progress: null, lastRun: null };
   const elapsed = Math.max(0, now / 1000 - last);
   const intoMinute = elapsed % RUN_EVERY_SEC;
-  return { secondsLeft: Math.ceil(RUN_EVERY_SEC - intoMinute), progress: intoMinute / RUN_EVERY_SEC, lastRun: last };
+  return { secondsLeft: RUN_EVERY_SEC - 1 - Math.floor(intoMinute), progress: intoMinute / RUN_EVERY_SEC, lastRun: last };
 }
