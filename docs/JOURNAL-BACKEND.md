@@ -6,9 +6,9 @@
 - `fomometer-recheck` удалён (Cloudflare и репозиторий). Секреты Pages: только `PUBLIC_APP_URL`.
 - Репозиторий: публичный `github.com/givemegarment/fomometer`, ветка `main`. CI (typecheck + build) на push зелёный;
   деплой-workflow только ручные.
-- Открыто (гейт, владелец): удаление KV `SESSIONS`, `CACHE` (обе пустые) и таблиц `users` (3 строки), `sessions`, `watchlist`
-  (0 строк) заблокировано классификатором авто-режима, команду выполняет владелец; бэкап строк в scratchpad
-  `legacy-backup/`. Telegram-бот: удаляет владелец через @BotFather `/deletebot`.
+- Legacy удалено владельцем 2026-10-15: таблицы `users`, `sessions`, `watchlist` (drop-миграция, 3 запроса) и KV `SESSIONS`,
+  `CACHE`. Проверено: в D1 6 рабочих таблиц, `kv namespace list` пуст, `/api/status` свежий.
+  Открыто: Telegram-бот, удаляет владелец через @BotFather `/deletebot`.
 
 ---
 

@@ -22,7 +22,8 @@ Goal: a track record nobody can call flattering.
 - [ ] Show the baseline (all tracked tokens, same window) next to the track record.
 - [ ] Fix the volume-burst threshold scale (raw value compared with a percentile of normalized values).
 - [ ] Mark or exclude outcomes with impossible prices (moves of thousands of percent).
-- [ ] Delete legacy tables `users`, `sessions`, `watchlist` (3 stored Telegram identities); remove the Telegram bot webhook; delete unused KV namespaces `SESSIONS` and `CACHE`.
+- [x] Delete legacy tables `users`, `sessions`, `watchlist` and unused KV namespaces `SESSIONS` and `CACHE` (15 October 2026).
+- [ ] Delete the old Telegram bot (owner, @BotFather).
 - [ ] Serve token logos through the site to drop DexScreener's third-party cookie.
 - [ ] Update `research/README_walk_forward.md` (mentions removed routes and old warm-up).
 
