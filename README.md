@@ -82,7 +82,7 @@ pnpm deploy:engine
 pnpm deploy:labeler
 ```
 
-GitHub Actions: `ci.yml` runs typecheck and build on every push and pull request. `deploy-pages.yml` and `deploy-workers.yml` do the same deploys, started by hand from the Actions tab, once the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets are set.
+GitHub Actions: `ci.yml` runs typecheck, unit tests (`pnpm test`) and build on every push and pull request. `deploy-pages.yml` and `deploy-workers.yml` do the same deploys, started by hand from the Actions tab, once the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets are set.
 
 ## Retraining the score
 
