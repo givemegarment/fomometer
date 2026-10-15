@@ -1,12 +1,12 @@
 # FOMOMETER Whitepaper
 
-Version 0.1, 14 October 2026. Draft for review. Sections 6 and 7 describe plans, not things that exist today.
+Version 0.2, 15 October 2026. Swap fees are live; the `$FMTR` token is not launched yet, so section 7 describes the rules it will launch with. What changed since version 0.1 is in section 7.4.
 
 ## 1. Summary
 
 FOMOMETER scores Solana memecoins every minute from public market data and publishes how its past signals actually played out, including when they did badly. It is live at [fomometer.xyz](https://fomometer.xyz), free, with no accounts.
 
-The plan is to keep the core open and free, sell faster and deeper access to people who want it, and tie a community token to that revenue through public, rule-based buybacks. The order matters: measured signal quality first, revenue second, buybacks only from revenue that exists.
+Since 15 October 2026 it also earns. A Buy button opens a Jupiter swap in the visitor's own wallet, and each swap includes a 1% FOMOMETER fee. The `$FMTR` token will route that revenue back to holders: part paid out in SOL every week, part spent buying the token back and burning it. Revenue does not make the signals better than they are; the track record below stays the measure of that.
 
 ## 2. The problem
 
@@ -51,69 +51,94 @@ To tell whether this is better than picking at random, compare with all tracked 
 
 **Caveats.** No fees or slippage. Tokens that leave the list have no later price and are left out, which flatters every row above. Outcomes before 14 October 2026 could use a price taken later than the horizon when a token had gaps. The current weights were fitted on 7 May 2026 and the engine has changed several times since, so the all-time table mixes versions.
 
-These numbers are the reason the roadmap starts with signal research, not features.
+These numbers are why signal research stays on the roadmap and why the site claims no edge.
 
 ## 5. Principles
 
 1. **Every call is recorded and scored.** No deleting, no cherry-picking. The track record on the site is computed from all events.
 2. **The method is public.** Factors, formula, weights and thresholds are published. The edge, if one is found, has to come from doing the work well, not from secrecy.
 3. **No paid placement.** Projects cannot pay to be scored higher, listed, or featured. Revenue comes from users.
-4. **No custody.** FOMOMETER never holds user funds or keys and does not trade on users' behalf.
-5. **Plain language.** No "AI" claims, no guaranteed returns, no countdowns.
+4. **No custody.** FOMOMETER never holds user funds or keys and does not trade on users' behalf. Swaps run in the user's own wallet.
+5. **No trading ahead of signals.** The project never trades a token before its signal is public on the site.
+6. **Plain language.** No "AI" claims, no guaranteed returns, no countdowns.
 
-## 6. Business model (planned)
+## 6. Business model
 
-The free site stays free: scanner, signals, token pages, method and track record.
+The free site stays free: board, signals, token pages, method and track record.
 
-Paid access, priced in USDC or SOL:
+| Product | Status | For whom | What it adds |
+|---|---|---|---|
+| Swaps | live since 15 October 2026 | anyone buying a token | a Buy button that opens a Jupiter swap in the user's own wallet; 1% FOMOMETER fee, of which Jupiter keeps 20% |
+| Pro | planned | active traders | instant alerts (web push and email) on chosen events and tokens, 30-day history, custom filters, CSV export |
+| API | planned | bots and dashboards | versioned, rate-limited API with keys, websocket stream of events |
+| Data | planned | researchers | daily dumps of factors and outcomes |
 
-| Product | For whom | What it adds |
-|---|---|---|
-| Pro | active traders | instant alerts (web push and email) on chosen events and tokens, 30-day history, custom filters, CSV export |
-| API | bots and dashboards | versioned, rate-limited API with keys, websocket stream of events |
-| Data | researchers | daily dumps of factors and outcomes |
+Every source of revenue is published monthly on its own line, with the on-chain account it arrives in.
 
-Revenue is published monthly. There is no revenue today.
+## 7. Token: `$FMTR` (not launched)
 
-## 7. Token (planned)
+A community token, launched fairly on pump.fun. Revenue goes into one pool; part is paid to holders, part buys the token back and burns it, and the rest runs the project.
 
-A community token, launched fairly on pump.fun, whose demand is linked to the product in two ways: holding it unlocks Pro features, and a fixed share of product revenue buys it back from the market and burns it.
+### 7.1 The flywheel
 
 ```
-  better signals ──► more users ──► Pro and API revenue
-        ▲                                   │
-        │                     ┌─────────────┴─────────────┐
-        │                     ▼                           ▼
-        └──────── 50% operations and research    50% buyback and burn
-                                                          │
-                                                          ▼
-  more users ◄── holders unlock Pro ◄────────── fewer tokens in supply
+  swaps through the site ──► 1% fee ──┐
+  trading $FMTR ──► creator fees ─────┼──► pool ──┬──► 40% holder rewards, SOL, weekly
+  other project revenue ──────────────┘           ├──► 40% buy $FMTR and burn, daily
+                                                  └──► 20% operations and research
+        ▲                                                            │
+        └──── holders use the site, research improves the signals ◄──┘
 ```
 
-The details, rules and safeguards are in [TOKENOMICS.md](TOKENOMICS.md). Key points:
+### 7.2 Proposed parameters
 
-- No presale, no private allocation, no team tokens beyond a disclosed launch buy.
-- Buybacks are paid only from realized product revenue, never from token sales or treasury tokens.
-- The token gives no ownership, no claim on revenue, no voting rights over the company. Buybacks are a policy, not a promise, and stop if there is no revenue.
+| | |
+|---|---|
+| Supply | 1,000,000,000, fixed; minting disabled at creation |
+| Launch | fair launch on pump.fun; no presale, no private round |
+| Team | one disclosed launch buy of at most 2%, locked for 6 months |
+| Pool split | 40% holder rewards, 40% buyback and burn, 20% operations and research |
+| Holder rewards | weekly, in SOL, pro rata to each wallet's average balance over the week; minimum tokens worth $20; pools, treasury, team and burn addresses excluded |
+| Buyback | daily, small swaps through Jupiter, from a 2-of-3 multisig; bought tokens burned on chain |
+| Own token | excluded from FOMOMETER's board and signals |
+
+Full design and safeguards: [TOKENOMICS.md](TOKENOMICS.md).
+
+### 7.3 Rules
+
+- Rewards and buybacks are paid only from revenue already received, never from token sales, treasury tokens or borrowed money.
+- No revenue means no rewards and no buyback, and the report says so.
+- Every payment in, every reward and every burn is published with its transaction.
+- A change to these rules is announced 14 days ahead in a new version of this paper.
+
+### 7.4 Changed since version 0.1
+
+- Swap fees exist; version 0.1 had no revenue.
+- Holders receive part of the revenue in SOL. Version 0.1 had buyback and burn only and said the token gives no claim on revenue.
+- Creator fees from trading `$FMTR` go into the pool; version 0.1 kept them out of buybacks.
+- Buybacks run daily instead of weekly.
+- The token no longer waits for Pro and for the signal research to finish.
 
 ## 8. Roadmap
 
 Summary; details in [ROADMAP.md](ROADMAP.md).
 
 1. **Public launch** (done, October 2026): open site, honest method page, stable engine.
-2. **Data integrity**: keep factors for every event, count tokens that leave the list, show the baseline next to the track record.
-3. **Signal research**: refit on months of data, ship a new score only if it beats the baseline out of sample after costs.
-4. **Pro and API**: alerts, history, API keys, payments.
-5. **Token**: launch after Pro has paying users, then monthly buyback and burn reports.
+2. **Data integrity** (in progress): factors stored for every event, lost outcomes counted, baseline next to the track record; done once 30 days of factors are stored.
+3. **Swaps and treasury** (in progress): Buy button with a 1% fee (live), swaps recorded per signal, public treasury page.
+4. **`$FMTR` launch**: legal review, multisig, fair launch, weekly rewards, daily buyback and burn, monthly reports.
+5. **Signal research**: refit on 30+ days of data; ship a new score only if it beats the baseline out of sample after costs.
+6. **Pro and API**: alerts, history, API keys, payments.
 
 ## 9. Risks
 
-- **The signal may never work.** Memecoins are close to a lottery with a negative drift. Research can end with "no edge"; the site will say so.
+- **The signal may never work.** Memecoins are close to a lottery with a negative drift. Research can end with "no edge"; the site will say so. Swap revenue does not depend on the signals being good.
+- **Revenue can be zero.** Rewards and buybacks are a share of what the project earns; a quiet week means small or no payouts.
 - **Data source.** One upstream (DexScreener). Outages or API changes stop the product.
 - **Survivorship.** Tokens that disappear are often the worst performers, and they are missing from the record.
-- **Token risk.** A memecoin-style token can lose most or all of its value regardless of the product. Buybacks do not set a floor.
-- **Regulation.** A token whose buybacks are funded by a company's revenue may be treated as a security or regulated product in some jurisdictions. Legal review is required before launch.
+- **Token risk.** A memecoin-style token can lose most or all of its value regardless of the product. Rewards and buybacks do not set a floor.
+- **Regulation.** Paying holders a share of revenue is a common test for a security, in the United States and elsewhere. Legal advice comes before rewards start, and some countries may be excluded.
 
 ## 10. Disclaimer
 
-Nothing in this document or on the site is financial advice or an offer to sell anything. Scores and signals are statistics about public market data. Past results do not predict future ones.
+Nothing in this document or on the site is financial advice, an offer to sell anything or a promise of returns. Scores and signals are statistics about public market data. Past results do not predict future ones.

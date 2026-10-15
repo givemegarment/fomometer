@@ -11,6 +11,26 @@
 
 ---
 
+## 2026-10-15 [BUILD] Проход D: документация и тексты сайта под модель «комиссия со свопов + $FMTR» (не задеплоено)
+- Решения владельца (AskUserQuestion): $FMTR не запущен, скоро на pump.fun; холдерам доля комиссии со свопов,
+  creator fees $FMTR и доход ботов, плюс постоянный байбек (flywheel); боты в документах пока не упоминаются;
+  боты входят только после публикации сигнала.
+- Как отражено: доход ботов как «other project revenue, on its own report line» без слова «боты»; принцип
+  «No trading ahead of signals»; доли 40/40/20, еженедельные награды в SOL по среднему балансу, ежедневный байбек,
+  всё помечено *proposed*; раздел «Changed since version 0.1» вместо тихой правки «Rules that do not change».
+- Сайт (`messages/en.json`, `app/whitepaper/page.tsx`): whitepaper v0.2 (summary, принципы, модель «Live» со строкой
+  Swaps, токен-флайвил, правила, изменения, риски с Regulation и «Revenue can be zero»), roadmap (фазы: 03 Swaps and
+  treasury, 04 $FMTR launch, 05 research, 06 Pro/API; вступление «phases can overlap»), FAQ («How does FOMOMETER make
+  money?», новый ответ про токен), фраза evidence про порядок roadmap.
+- Репо: TOKENOMICS.md v0.2 (переписан), WHITEPAPER.md v0.2, ROADMAP.md, README, ARCHITECTURE (раздел Swaps),
+  OPERATIONS (раздел Swap fees: счета, проверка котировкой, claim, Phantom).
+- Пред-оценка → пост-оценка: утверждений, противоречащих модели («no revenue today», «no claim on revenue»,
+  «no distribution to holders», «creator fees not for buybacks», «research first», «Is there a token? Not now»,
+  «Goal: first revenue»): 7 → 0 (проверено grep и на страницах). Документы без раздела о свопах: 3 → 0.
+- Проверка: tsc 0, lint 0, vitest 20/20; превью: whitepaper Version 0.2, токен-раздел, изменения, принцип, модель
+  Live; roadmap 6 фаз со счётчиками 6/6, 8/8, 2/5, 0/6, 0/4, 0/5; FAQ 8 вопросов. «—» и «…» в новой копии: 0.
+- Открыто: юр. проверка наград до их старта (в roadmap фазы 04); /treasury и запись свопов (фаза 03).
+
 ## 2026-10-15 [DEBUG] Проход A после аудита всех страниц (задеплоено `10a2286f`)
 - Телефон, страница шире экрана (Board 416 px, Signals 527 px при 390). Причина: `sr-only` (absolute) в `<th>`
   внутри `overflow-x-auto` без `position`, поэтому не обрезался контейнером. Фикс: `relative` у всех пяти

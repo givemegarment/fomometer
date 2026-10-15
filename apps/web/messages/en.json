@@ -107,8 +107,12 @@
         "a": "No account. Everything is open and the watchlist is stored in your browser."
       },
       {
+        "q": "How does FOMOMETER make money?",
+        "a": "A 1% fee on swaps started from the site through Jupiter. The swap runs in your own wallet; FOMOMETER never holds funds. Revenue is published monthly, source by source."
+      },
+      {
         "q": "Is there a token?",
-        "a": "Not now. A token is only planned after the product earns revenue and the signal beats a random pick. The whitepaper describes the conditions."
+        "a": "Not yet. $FMTR will launch on pump.fun. The plan: part of FOMOMETER's revenue is paid to holders in SOL every week, and part buys the token back and burns it. The whitepaper has the rules and the risks."
       }
     ],
     "footer_product": "Product",
@@ -370,13 +374,13 @@
   },
   "whitepaper": {
     "title": "Whitepaper",
-    "meta_description": "What FOMOMETER does, how well its signals have done so far, how it plans to earn revenue and how a community token would share it.",
+    "meta_description": "What FOMOMETER does, how well its signals have done so far, how it earns, and how the $FMTR token shares that revenue with holders.",
     "toc": "Contents",
     "summary": {
       "title": "Summary",
       "body": [
         "FOMOMETER scores Solana memecoins every minute from public market data and publishes how its past signals actually played out, including when they did badly. It is free and has no accounts.",
-        "The plan is to keep the core open and free, sell faster and deeper access to people who want it, and tie a community token to that revenue through public, rule-based buybacks. The order matters: measured signal quality first, revenue second, buybacks only from revenue that exists."
+        "Since 15 October 2026 it also earns: a Buy button opens a Jupiter swap in the visitor's own wallet, and each swap includes a 1% FOMOMETER fee. The $FMTR token will route that revenue back to holders: part paid out in SOL, part spent buying the token back and burning it. The track record stays as it is; revenue does not make the signals better than they are."
       ]
     },
     "problem": {
@@ -465,7 +469,7 @@
       ],
       "reading_title": "What this says",
       "reading": "The promoted-token list loses value on average. BUY events pick tokens that are more often up an hour later than a random tracked token, but their median move is worse, and after 4 hours they do clearly worse than the baseline. The current score finds momentum that tends to reverse. It has no demonstrated trading edge, and the site does not claim one.",
-      "caveats": "No fees or slippage. Tokens that leave the list have no later price and are left out, which flatters every row. Outcomes before 14 October 2026 could use a price taken after the horizon when a token had gaps. The method changed several times, so the all-time table mixes versions. These numbers are why the roadmap starts with signal research, not features.",
+      "caveats": "No fees or slippage. Tokens that leave the list have no later price and are left out, which flatters every row. Outcomes before 14 October 2026 could use a price taken after the horizon when a token had gaps. The method changed several times, so the all-time table mixes versions. These numbers are why signal research stays on the roadmap and why the site claims no edge.",
       "live_link": "Live track record"
     },
     "principles": {
@@ -485,7 +489,11 @@
         },
         {
           "name": "No custody",
-          "body": "FOMOMETER never holds user funds or keys and does not trade for anyone."
+          "body": "FOMOMETER never holds user funds or keys and does not trade for anyone. Swaps run in the user's own wallet."
+        },
+        {
+          "name": "No trading ahead of signals",
+          "body": "The project never trades a token before its signal is public on the site."
         },
         {
           "name": "Plain language",
@@ -495,42 +503,47 @@
     },
     "model": {
       "title": "Business model",
-      "badge": "Planned",
-      "intro": "The free site stays free: scanner, signals, token pages, method and track record. Paid access is priced in USDC or SOL.",
+      "badge": "Live",
+      "intro": "The free site stays free: board, signals, token pages, method and track record. Revenue comes from people who trade through the site now, and from paid access later.",
       "col_product": "Product",
       "col_for": "For",
       "col_adds": "Adds",
       "items": [
         {
-          "name": "Pro",
+          "name": "Swaps (live)",
+          "for": "anyone buying a token",
+          "adds": "a Buy button that opens a Jupiter swap in your own wallet; 1% FOMOMETER fee, of which Jupiter keeps a fifth"
+        },
+        {
+          "name": "Pro (planned)",
           "for": "active traders",
           "adds": "instant alerts by web push and email, 30-day history, custom filters, CSV export"
         },
         {
-          "name": "API",
+          "name": "API (planned)",
           "for": "bots and dashboards",
           "adds": "versioned API with keys and rate limits, a live stream of events"
         },
         {
-          "name": "Data",
+          "name": "Data (planned)",
           "for": "researchers",
           "adds": "daily dumps of factors and outcomes"
         }
       ],
-      "note": "Revenue will be published monthly. There is no revenue today."
+      "note": "Swap fees started on 15 October 2026. Every source of revenue is published monthly, each on its own line, with the on-chain accounts it arrives in."
     },
     "token": {
       "title": "Token",
-      "badge": "Planned",
-      "intro": "A community token launched fairly on pump.fun. Holding it unlocks Pro, and a fixed share of product revenue buys it back from the market and burns it.",
-      "loop_title": "The loop",
+      "badge": "Not launched",
+      "intro": "$FMTR is the FOMOMETER community token, to be launched fairly on pump.fun. Revenue goes into one pool. Part of the pool is paid to holders in SOL, part buys $FMTR on the market and burns it, and the rest runs the project.",
+      "loop_title": "The flywheel",
       "loop": [
-        "Better signals bring more users.",
-        "Users pay for Pro and the API.",
-        "Half of net revenue buys the token on the market and burns it, every week, on chain.",
-        "The other half pays for operations and signal research.",
-        "Holding the token unlocks Pro; paying for Pro in the token burns all of it.",
-        "Holders become users, and research makes the signals better."
+        "People trade through the site; each swap pays a 1% fee into the pool.",
+        "Trading $FMTR itself pays pump.fun creator fees into the same pool.",
+        "Other project revenue, as it appears, joins the pool on its own line of the report.",
+        "40% of the pool is paid to holders in SOL, every week.",
+        "40% buys $FMTR on the market every day and burns it.",
+        "20% pays for infrastructure, data and signal research."
       ],
       "params_title": "Proposed parameters",
       "params": [
@@ -547,34 +560,41 @@
           "v": "One disclosed launch buy of at most 2%, locked for 6 months. No other team buys."
         },
         {
-          "k": "Net revenue split",
-          "v": "50% buyback and burn, 30% operations, 20% research."
+          "k": "Pool split",
+          "v": "40% holder rewards, 40% buyback and burn, 20% operations and research."
         },
         {
-          "k": "Buybacks",
-          "v": "Weekly, spread over 24 hours, from a 2-of-3 multisig treasury. Every transaction published."
+          "k": "Holder rewards",
+          "v": "Weekly, in SOL, pro rata to each wallet's average balance over the week. Minimum: tokens worth $20. Pools, the treasury, team and burn addresses are excluded."
         },
         {
-          "k": "Holder access",
-          "v": "Tokens worth $50 or more unlock Pro, checked by a wallet signature. No transaction, no custody."
+          "k": "Buyback",
+          "v": "Every day, in small swaps through Jupiter, from a 2-of-3 multisig treasury. Bought tokens are burned on chain."
         },
         {
           "k": "Own token",
-          "v": "Excluded from FOMOMETER's own scanner and signals."
+          "v": "Excluded from FOMOMETER's own board and signals."
         }
       ],
-      "rules_title": "Rules that do not change",
+      "rules_title": "Rules",
       "rules": [
-        "Buybacks are paid only from realized product revenue, never from token sales or treasury tokens.",
-        "Trading fees earned from the token itself are reported separately and never counted as revenue.",
-        "No revenue means no buyback, and the monthly report says so.",
-        "The token gives no ownership, no claim on revenue and no vote over the company."
+        "Rewards and buybacks are paid only from revenue already received, never from token sales, treasury tokens or borrowed money.",
+        "No revenue means no rewards and no buyback, and the report says so.",
+        "Every payment in, every reward and every burn is published with its transaction.",
+        "A change to these rules is announced 14 days ahead in a new version of this paper."
       ],
-      "order": "Launch order: signal research first, then Pro with paying users, then legal review, then the token. Launching earlier would mean months with no revenue to fund buybacks."
+      "changes_title": "Changed since version 0.1",
+      "changes": [
+        "Swap fees exist: version 0.1 had no revenue at all.",
+        "Holders now receive part of the revenue in SOL. Version 0.1 had buyback and burn only and said the token gives no claim on revenue.",
+        "Creator fees from trading $FMTR now go into the pool. Version 0.1 kept them out of buybacks.",
+        "Buybacks run daily instead of weekly.",
+        "The token no longer waits for Pro and for the signal research to finish."
+      ]
     },
     "roadmap": {
       "title": "Roadmap",
-      "body": "Public launch is done. Next come data integrity, signal research, Pro and the API, and then the token. Each phase starts when the previous one has met its exit criteria.",
+      "body": "Public launch and swaps are live; data integrity finishes in mid-November. Next come the $FMTR launch with a treasury page, signal research, then Pro and the API.",
       "link": "Full roadmap"
     },
     "risks": {
@@ -582,7 +602,11 @@
       "items": [
         {
           "name": "The signal may never work",
-          "body": "Memecoins are close to a lottery with a negative drift. Research can end with no edge, and the site will say so."
+          "body": "Memecoins are close to a lottery with a negative drift. Research can end with no edge, and the site will say so. Swap revenue does not depend on the signals being good."
+        },
+        {
+          "name": "Revenue can be zero",
+          "body": "Rewards and buybacks are a share of what the project earns. A quiet week means small or no payouts."
         },
         {
           "name": "One data source",
@@ -594,25 +618,25 @@
         },
         {
           "name": "Token risk",
-          "body": "A token like this can lose most or all of its value whatever the product does. Buybacks do not set a floor."
+          "body": "A token like this can lose most or all of its value whatever the product does. Rewards and buybacks do not set a floor."
         },
         {
           "name": "Regulation",
-          "body": "A token whose buybacks are funded by a company's revenue may be treated as a security in some jurisdictions. Legal review comes before launch."
+          "body": "Paying holders a share of revenue is a common test for a security, in the United States and elsewhere. Legal advice comes before rewards start, and some countries may be excluded."
         }
       ]
     },
     "disclaimer": {
       "title": "Disclaimer",
-      "body": "Nothing here is financial advice or an offer to sell anything. Scores and signals are statistics about public market data. Past results do not predict future ones."
+      "body": "Nothing here is financial advice, an offer to sell anything or a promise of returns. Scores and signals are statistics about public market data. Past results do not predict future ones."
     },
-    "kicker": "Version 0.1 · 14 October 2026",
-    "lede": "What FOMOMETER measures, what the record shows so far, how it plans to earn, and the token that may follow. Sections 6 and 7 describe plans, not things that exist today."
+    "kicker": "Version 0.2 · 15 October 2026",
+    "lede": "What FOMOMETER measures, what the record shows so far, how it earns, and how the $FMTR token will share that revenue. The token is not launched yet; section 7 describes the rules it will launch with."
   },
   "roadmap": {
     "title": "Roadmap",
     "meta_description": "FOMOMETER roadmap: public launch, data integrity, signal research, Pro and API, community token.",
-    "intro": "Phases run in order. A phase starts when the previous one has met its exit criteria, not on a date.",
+    "intro": "Phases can overlap; each one is done when it meets its exit criteria, not on a date. Signal research waits for 30 days of stored data, so swaps and the token move ahead in the meantime.",
     "updated": "Updated 15 October 2026",
     "status": {
       "done": "Done",
@@ -695,6 +719,66 @@
         "exit": "Baseline and lost outcomes on the Strategy page, 30 days of stored factors."
       },
       {
+        "status": "next",
+        "name": "Swaps and treasury",
+        "goal": "Revenue that anyone can check on chain.",
+        "items": [
+          {
+            "done": true,
+            "text": "Buy button on token pages and fresh BUY signals: a Jupiter swap in your own wallet with a 1% fee"
+          },
+          {
+            "done": true,
+            "text": "First fee received on chain, 15 October 2026"
+          },
+          {
+            "done": false,
+            "text": "Record every swap together with the signal it followed"
+          },
+          {
+            "done": false,
+            "text": "Public treasury page with live on-chain balances"
+          },
+          {
+            "done": false,
+            "text": "Sell button and preset amounts"
+          }
+        ],
+        "exit": "Treasury page live and every swap recorded with its signal."
+      },
+      {
+        "status": "planned",
+        "name": "$FMTR launch",
+        "goal": "A community token that shares revenue with its holders.",
+        "items": [
+          {
+            "done": false,
+            "text": "Legal review of holder rewards"
+          },
+          {
+            "done": false,
+            "text": "Treasury multisig, addresses published"
+          },
+          {
+            "done": false,
+            "text": "Fair launch on pump.fun; $FMTR excluded from its own board"
+          },
+          {
+            "done": false,
+            "text": "Weekly holder rewards in SOL"
+          },
+          {
+            "done": false,
+            "text": "Daily buyback and burn"
+          },
+          {
+            "done": false,
+            "text": "Monthly report: revenue by source, rewards, burns, transactions"
+          }
+        ],
+        "exit": "Three monthly reports published."
+      },
+      {
         "status": "planned",
         "name": "Signal research",
         "goal": "A score that beats picking at random, or a public statement that it does not.",
@@ -721,7 +805,7 @@
       {
         "status": "planned",
         "name": "Pro and API",
-        "goal": "First revenue.",
+        "goal": "Paid access for people who want more than the free site.",
         "items": [
           {
             "done": false,
@@ -741,38 +825,10 @@
           },
           {
             "done": false,
-            "text": "Monthly public revenue report"
+            "text": "Pay for Pro in $FMTR, or hold it for access"
           }
         ],
         "exit": "Paying users for two months in a row."
-      },
-      {
-        "status": "planned",
-        "name": "Community token",
-        "goal": "Share product revenue with holders through buyback and burn.",
-        "items": [
-          {
-            "done": false,
-            "text": "Legal review"
-          },
-          {
-            "done": false,
-            "text": "Treasury multisig and a public treasury page"
-          },
-          {
-            "done": false,
-            "text": "Fair launch on pump.fun"
-          },
-          {
-            "done": false,
-            "text": "Pro access for holders by wallet signature"
-          },
-          {
-            "done": false,
-            "text": "Weekly buyback and burn, monthly report"
-          }
-        ],
-        "exit": "Three monthly reports published."
       }
     ],
     "later_title": "Later, not committed",

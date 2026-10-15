@@ -53,6 +53,27 @@ D1 queries: `npx wrangler d1 execute fomometer --remote --command "…"` (run in
 4. `npx wrangler secret put STRATEGY_FORMULA_JSON -c workers/engine/wrangler.toml < infra/best_meme_strategy.json`
 5. Watch one run in `wrangler tail`; `/dashboard/strategy` shows the new weights within a minute.
 
+## Swap fees
+
+| Item | Value |
+|---|---|
+| Referral account | `Fyhr9NJU2JbwdTL4ZZRRaCpnJH1eLydDnBZsc9khJBTA` (Jupiter Ultra project), created and owned by the owner's wallet |
+| Fee accounts | SOL `82oUvYq9ATTPZcpiM6Jxvxca8PNLvbpSGWBY8x4qTLNa`, plus USDC, USDT and a few others created on the dashboard |
+| Fee | 100 bps in `apps/web/lib/trade.ts` (Jupiter allows 50 to 255) |
+| Dashboard | https://referral.jup.ag/ → Ultra |
+
+Check that the fee is applied (no signing, read-only quote):
+
+```bash
+curl -s "https://ultra-api.jup.ag/order?inputMint=So11111111111111111111111111111111111111112&outputMint=<token mint>&amount=10000000&swapMode=ExactIn&referralAccount=Fyhr9NJU2JbwdTL4ZZRRaCpnJH1eLydDnBZsc9khJBTA&referralFee=100" | jq '{feeBps, feeMint, error}'
+```
+
+`feeBps` must be 100. A small default value (for example 2) means the token account for that `feeMint` is missing: create it on the dashboard. An occasional `"Something unexpected occurred"` from Jupiter passes on retry.
+
+Balances on chain: `getTokenAccountsByOwner` for the referral account (any Solana RPC). Claiming is manual on the dashboard (**Claim**); it only lists verified tokens worth more than $1, smaller or unverified balances need Jupiter's referral SDK.
+
+Phantom shows "This domain is new" for fomometer.xyz until its review clears, usually within days. If it is still there after a week, use Phantom's domain review form linked from [their docs](https://docs.phantom.com/developer-powertools/domain-and-transaction-warnings).
+
 ## Limits to keep in mind
 
 - Workers free plan: 50 ms CPU per run, 100k requests a day. The engine uses 1,440 runs a day.
@@ -62,5 +83,6 @@ D1 queries: `npx wrangler d1 execute fomometer --remote --command "…"` (run in
 ## Accounts and secrets
 
 - Cloudflare account: zone `fomometer.xyz` (nameservers at Namecheap point to Cloudflare), Pages project `fomometer-web`, Workers `fomometer-engine` and `fomometer-labeler`, D1 `fomometer`.
+- Jupiter referral account and its fee accounts, owned by the owner's Solana wallet. The site holds no key for them.
 - Secrets: `CLOUDFLARE_API_TOKEN` (local `.env` and GitHub), `STRATEGY_FORMULA_JSON` (engine). Nothing else.
 - Never paste secrets into issues, chats or commits. Rotate the API token if it leaks.

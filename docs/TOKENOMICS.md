@@ -1,20 +1,22 @@
 # Tokenomics
 
-Version 0.1, 14 October 2026. **Proposal.** Nothing here exists yet. Every number marked *proposed* needs the owner's decision, and the whole design needs legal review before launch.
+Version 0.2, 15 October 2026. **Proposal.** The token is not launched. Swap fees are live; everything else here is the design the token will launch with. Every number marked *proposed* needs the owner's decision, and holder rewards need legal review before they start.
+
+What changed since version 0.1 (14 October 2026) is listed in [section 11](#11-changes-since-version-01).
 
 ## 1. Idea in one paragraph
 
-FOMOMETER sells Pro access and an API. Half of the net revenue buys the token on the open market and burns it, every week, on chain. Holding the token unlocks Pro, and paying for Pro in the token burns all of it. More useful signals bring more paying users, more revenue means more buybacks, a scarcer token makes holding it for Pro more attractive, and holders become users. The loop only turns if the product earns money; the token is a way to share that, not a substitute for it.
+FOMOMETER earns a 1% fee on swaps started from the site. That revenue, the creator fees from trading `$FMTR` itself and any other project revenue go into one pool. Every week part of the pool is paid to `$FMTR` holders in SOL; every day another part buys `$FMTR` on the market and burns it; the rest runs the project. More trading through the site means a bigger pool, a bigger pool means larger rewards and steadier buybacks, and holders have a reason to use the site. The loop only turns while there is revenue; with none, nothing is paid and the report says so.
 
 ## 2. The token
 
 | Property | Value |
 |---|---|
+| Name and ticker | FOMOMETER, `$FMTR` |
 | Chain | Solana (SPL token) |
 | Launch venue | pump.fun bonding curve |
 | Total supply | 1,000,000,000, fixed at launch (pump.fun standard) |
 | Mint and freeze authority | revoked by pump.fun at creation; no new tokens can ever be minted |
-| Name and ticker | to be decided (*proposed*: FOMOMETER, `$FMTR`) |
 | Presale, private round, VC allocation | none |
 | Team allocation | none, apart from a disclosed launch buy (below) |
 
@@ -22,116 +24,132 @@ FOMOMETER sells Pro access and an API. Half of the net revenue buys the token on
 
 **Launch buy.** The team buys at most 2% of supply (*proposed*) in the creation transaction, from one wallet published in advance, and locks it for 6 months (*proposed*) with a public on-chain lock. No other team or related wallets buy on the curve, and no bundled or sniped buys.
 
-## 3. Where revenue comes from
+## 3. Where the pool comes from
 
-| Source | Paid in | Counts as product revenue |
+| Source | Status | Paid in | Arrives in |
+|---|---|---|---|
+| Swap fees: 1% on swaps started from fomometer.xyz through Jupiter, of which Jupiter keeps 20% | live since 15 October 2026 | the swap's fee token, almost always SOL | Jupiter referral account `Fyhr9NJU2JbwdTL4ZZRRaCpnJH1eLydDnBZsc9khJBTA` |
+| pump.fun creator fees from trading `$FMTR` | after launch | SOL | creator wallet, published at launch |
+| Other project revenue (Pro, API, data, and any other income) | as it appears | USDC or SOL | treasury, each source on its own report line |
+
+**Pool** = everything received in the epoch, minus on-chain fees and the cost of moving funds. Revenue is counted when it is received, never in advance.
+
+## 4. Where the pool goes
+
+| Share (*proposed*) | Use | When |
 |---|---|---|
-| Pro subscriptions | USDC, SOL, or the token | yes |
-| API plans | USDC, SOL | yes |
-| Data dumps | USDC, SOL | yes |
-| pump.fun creator fees on token trading | SOL | **no**, reported separately |
+| 40% | holder rewards, paid in SOL | weekly |
+| 40% | buy back `$FMTR` and burn it | daily |
+| 20% | operations and research: infrastructure, data, signal research, audits, legal | as needed |
 
-Creator fees come from people trading the token, not from the product. Counting them as revenue would make the loop feed itself, so they are reported on their own line and go to operations, not to buybacks.
+## 5. Holder rewards
 
-**Net revenue** = product revenue minus payment processing and on-chain fees, minus infrastructure and data costs directly needed to serve paying users.
-
-## 4. Where revenue goes
-
-| Share of net revenue | Use |
+| Rule | Value (*proposed*) |
 |---|---|
-| 50% (*proposed*) | buy back and burn the token |
-| 30% (*proposed*) | operations: infrastructure, data, support |
-| 20% (*proposed*) | research reserve: signal research, audits, legal |
+| Epoch | one week, Monday 00:00 UTC |
+| Budget | 40% of the previous epoch's pool |
+| Paid in | SOL, sent to each eligible wallet |
+| Weight | the wallet's average `$FMTR` balance over the epoch, sampled at random times, so buying just before a snapshot earns almost nothing |
+| Minimum | an average balance worth $20 or more, converted with the epoch's average price |
+| Excluded | liquidity pools, the treasury, team wallets, the burn address, known exchange wallets |
+| Dust | a reward below the cost of sending it rolls over to the next epoch |
+| Zero pool | no rewards; the report says so |
 
-Pro payments made **in the token** are burned in full and do not pass through this split.
+Every payout transaction is published. Rewards are a share of what the project earned in the past week. They are not interest, not guaranteed, and can be zero.
 
-There is no staking, no yield, no airdrop of revenue and no distribution to holders. Value reaches holders only through supply going down and through what holding unlocks.
+## 6. Buyback and burn
 
-## 5. Buyback and burn
-
-| Rule | Value |
+| Rule | Value (*proposed*) |
 |---|---|
-| Epoch | one week, Monday 00:00 UTC (*proposed*) |
-| Budget | 50% of the previous epoch's net revenue, received in USDC or SOL |
-| Execution | spread over 24 hours in small swaps through an aggregator (Jupiter), slippage cap 1% (*proposed*), at times that are not announced in advance to avoid front-running |
+| Cadence | every day, in small swaps through Jupiter, at times that are not announced in advance |
+| Budget | 40% of the previous epoch's pool, spread evenly over the epoch's days |
+| Slippage cap | 1% |
 | Destination | every bought token is burned with the SPL burn instruction in the same or the next transaction |
 | Treasury | Squads multisig, 2 of 3 signers, addresses published |
-| Zero revenue | zero buyback; the report says so |
 
-Buybacks never use proceeds from selling the token, tokens held by the treasury, or borrowed money.
+Rewards and buybacks never use proceeds from selling `$FMTR`, tokens held by the treasury, or borrowed money.
 
-## 6. What holding unlocks
+## 7. What holding unlocks
 
 | Holding (*proposed*) | Access |
 |---|---|
-| tokens worth $50 or more | Pro, monthly |
+| tokens worth $50 or more | Pro, monthly, once Pro exists |
 | tokens worth $500 or more | Pro plus API starter plan |
 
 - Ownership is proved by signing a message with the wallet (Sign-In with Solana). No transaction, no approval, no custody.
-- The threshold is in dollars and converted to a token amount once a month from the 7-day average price, so access does not flip with every price swing.
-- Balance is re-checked daily. Selling below the threshold ends holder access at the next check.
+- Paying for Pro in `$FMTR` burns the whole payment.
 - The free site stays fully open without a wallet.
 
-## 7. Conflicts of interest
+## 8. Conflicts of interest
 
-- The FOMOMETER token is **excluded from scoring, signals and the scanner**. The product never ranks its own token.
+- `$FMTR` is **excluded from scoring, signals and the board**. The product never ranks its own token.
+- The project never trades a token before its signal is public on the site.
 - Team wallets are published. Any team sale is announced 7 days in advance with the amount.
 - No paid promotion of the token by influencers or callers.
-- The track record and the method page stay as they are; the token does not buy a better-looking record.
+- The track record and the method page stay as they are; revenue does not buy a better-looking record.
 
-## 8. Transparency
+## 9. Transparency
 
-A monthly public report, also linked from a `/treasury` page on the site:
+A monthly public report, and a `/treasury` page on the site with live on-chain balances:
 
-- product revenue by source, costs, net revenue;
-- creator fees received and how they were spent;
-- buyback amount per epoch, tokens bought, tokens burned, transaction signatures;
+- pool by source: swap fees, creator fees, other revenue, each on its own line;
+- holder rewards per epoch: total SOL, number of wallets, transactions;
+- buybacks per day: SOL spent, tokens bought and burned, transactions;
 - treasury balances and multisig addresses;
 - team wallets and their balances;
 - circulating supply after burns.
 
-## 9. How the loop could look
+## 10. How the flywheel could look
 
-An illustration of the mechanics, **not a forecast**. There are no paying users today.
+An illustration of the mechanics, **not a forecast**. Swap volume today is tiny.
 
 | Assumption | Value |
 |---|---|
-| Pro users paying in USDC | 200 at $29 a month |
-| Pro users paying in the token | 50 at $23 (20% discount) |
-| API plans | 10 at $99 a month |
-| Payment and infrastructure costs | $600 a month |
+| Swap volume through the site | $50,000 a week |
+| FOMOMETER share of the 1% fee | 80% |
+| `$FMTR` trading volume | $200,000 a week |
+| Creator fee | 0.05% of volume (check pump.fun's current rate) |
 
-- Product revenue in USDC: 200 × 29 + 10 × 99 = $6,790; net $6,190.
-- Buyback and burn: 50% = **$3,095 a month**, about $715 a week.
-- Burned from token payments: 50 × 23 = **$1,150 a month** of tokens.
-- Operations: $1,857, research: $1,238.
+- Swap fees: 50,000 × 1% × 80% = **$400 a week**.
+- Creator fees: 200,000 × 0.05% = **$100 a week**.
+- Pool $500: **$200** to holders in SOL, **$200** of buybacks and burns, $100 to operations and research.
 
-Whether these burns matter depends on the token's market cap and trading volume, which nobody controls. Buybacks do not set a floor price.
+Whether these amounts matter depends on the token's market cap and trading volume, which nobody controls. Rewards and buybacks do not set a floor price.
 
-## 10. Order of launch
+## 11. Changes since version 0.1
 
-1. Signal research shows the score beats the baseline (see [ROADMAP.md](ROADMAP.md)), or the site says plainly that it does not.
-2. Pro and API go live with USDC and SOL payments; first paying users.
-3. Legal review of the token design in the team's jurisdiction.
-4. Token launch on pump.fun, holder access switched on, `/treasury` page live.
-5. First buyback at the end of the first full epoch after launch.
+| Version 0.1 (14 October 2026) | Version 0.2 (15 October 2026) | Why |
+|---|---|---|
+| No revenue | Swap fees live | A Buy button with a Jupiter referral fee shipped on 15 October |
+| Buyback and burn only; "no distribution to holders"; "the token gives no claim on revenue" | 40% of the pool paid to holders in SOL, 40% buyback and burn | Owner decision |
+| Creator fees reported separately, kept out of buybacks | Creator fees go into the pool | Owner decision |
+| Weekly buyback | Daily buyback | Smaller, steadier market buys |
+| Launch after signal research, Pro and paying users | Launch soon, while research continues | Swap fees give revenue before Pro |
 
-Launching the token before step 2 is possible but means months of zero buybacks, and a token with no revenue behind it is just a memecoin.
+Version 0.1 is in the git history of this file.
 
-## 11. Decisions for the owner
+## 12. Order of launch
 
-- Name and ticker.
-- Launch timing relative to Pro (step order above).
+1. Legal review of holder rewards in the team's jurisdiction; decide which countries, if any, are excluded.
+2. Treasury multisig created, addresses published; `/treasury` page live with swap fees.
+3. Token launch on pump.fun.
+4. First daily buyback the day after launch; first holder rewards at the end of the first full epoch.
+5. First monthly report at the end of the first full month.
+
+## 13. Decisions for the owner
+
+- Pool split (40 / 40 / 20 proposed).
+- Reward minimum, epoch, sampling method; exchange wallet list.
 - Launch buy size and lock period.
-- Revenue split (50 / 30 / 20 proposed).
-- Pro price, holder thresholds, token-payment discount.
+- Pro thresholds and token-payment terms.
 - Multisig signers.
 
-## 12. Risks
+## 14. Risks
 
 - The token can lose most or all of its value whatever the product does.
-- Buybacks funded by company revenue may make the token a security or another regulated product in some jurisdictions, including the United States. Do not launch without legal advice.
-- Holding-for-access ties product access to a volatile asset; users may lose money just to keep Pro.
-- pump.fun rules, fees and migration targets can change.
+- **Regulation.** Paying holders a share of revenue is a common test for a security, in the United States and elsewhere. Do not start rewards without legal advice; some countries may have to be excluded.
+- Revenue can be zero. Swap fees depend on people trading through the site, which depends on traffic and on whether the signals are any good; the public track record shows no edge so far.
+- Rewards attract wallets that hold only for the payout and sell after; average-balance weighting reduces this but does not remove it.
+- pump.fun and Jupiter rules, fees and programs can change.
 
 Nothing here is an offer to sell or a promise of returns.

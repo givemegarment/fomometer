@@ -38,6 +38,19 @@ FOMOMETER is three programs sharing one database, all on Cloudflare.
 
 The site never writes to the database. The watchlist lives in the visitor's browser (`localStorage`, key `fomo_watchlist`). There are no accounts.
 
+## Swaps
+
+Buying runs entirely in the browser and on Jupiter; no FOMOMETER server is involved.
+
+| Part | Where | What it does |
+|---|---|---|
+| Settings | `apps/web/lib/trade.ts` | referral account, fee in basis points (100 = 1%), SOL mint; an empty account hides every Buy button |
+| Button | `apps/web/components/trade/buy-button.tsx` | on the first click loads `https://plugin.jup.ag/plugin-v1.js`, then opens its modal with SOL in, the token out and the referral fee |
+| Placement | token page (not below the liquidity filter), Signals (BUY events younger than 1 hour) | |
+| Fee | Jupiter Ultra `/order` with `referralAccount` and `referralFee`; Jupiter keeps 20% of it | lands in the referral account's token account for the fee mint, almost always SOL |
+
+The visitor connects and signs in their own wallet. A referral account that is not initialized under Jupiter's Ultra project makes `/order` fail with 400, so a wrong address breaks buying, not only the fee. A missing token account for the fee mint only drops the fee.
+
 ## Engine cycle
 
 One run per minute, inside the Workers free-plan CPU limit (50 ms). Measured after the October 2026 rewrite: 15 to 57 ms CPU, 1.4 to 3.7 s wall time, mostly waiting on DexScreener and D1.

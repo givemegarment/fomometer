@@ -1,6 +1,6 @@
 # Roadmap
 
-Updated 15 October 2026. Phases run in order; a phase starts when the previous one's exit criteria are met, not on a date. The previous roadmap (May 2026, Telegram-gated product) is in [archive/ROADMAP-2026-05.md](archive/ROADMAP-2026-05.md).
+Updated 15 October 2026. Phases can overlap; each one is done when it meets its exit criteria, not on a date. Signal research waits for 30 days of stored data, so swaps and the token move ahead in the meantime. The previous roadmap (May 2026, Telegram-gated product) is in [archive/ROADMAP-2026-05.md](archive/ROADMAP-2026-05.md).
 
 ## Phase 1. Public launch (done)
 
@@ -12,7 +12,7 @@ Updated 15 October 2026. Phases run in order; a phase starts when the previous o
 - [x] Current weights and thresholds on the Strategy page.
 - [x] Legacy `fomometer-recheck` worker and unused Pages secrets removed.
 
-## Phase 2. Data integrity
+## Phase 2. Data integrity (in progress)
 
 Goal: a track record nobody can call flattering.
 
@@ -29,7 +29,33 @@ Goal: a track record nobody can call flattering.
 
 Exit: Strategy page shows baseline, lost outcomes and a cleaned record; factors stored for every event for 30 days.
 
-## Phase 3. Signal research
+## Phase 3. Swaps and treasury (in progress)
+
+Goal: revenue that anyone can check on chain.
+
+- [x] Buy button on token pages and fresh BUY signals: Jupiter Plugin swap in the visitor's wallet, 1% referral fee (`apps/web/lib/trade.ts`).
+- [x] Referral account `Fyhr9NJU2JbwdTL4ZZRRaCpnJH1eLydDnBZsc9khJBTA` (Jupiter Ultra) with SOL, USDC and USDT fee accounts; first fee received on chain, 15 October 2026.
+- [ ] Record every swap with the signal it followed (`onSuccess` → API → D1, verified against the transaction on chain).
+- [ ] `/treasury` page with live on-chain balances of the fee accounts.
+- [ ] Sell button and preset amounts.
+
+Exit: treasury page live and every swap recorded with its signal.
+
+## Phase 4. `$FMTR` launch
+
+Goal: a community token that shares revenue with its holders. Design in [TOKENOMICS.md](TOKENOMICS.md).
+
+- [ ] Legal review of holder rewards; decide excluded countries.
+- [ ] Owner decisions: pool split, reward minimum, launch buy, multisig signers.
+- [ ] Treasury multisig, addresses published.
+- [ ] Fair launch on pump.fun; `$FMTR` excluded from its own board and signals.
+- [ ] Weekly holder rewards in SOL.
+- [ ] Daily buyback and burn.
+- [ ] Monthly report: pool by source, rewards, burns, transactions.
+
+Exit: three consecutive monthly reports published.
+
+## Phase 5. Signal research
 
 Goal: a score that beats picking at random, or a public statement that it does not.
 
@@ -41,31 +67,18 @@ Goal: a score that beats picking at random, or a public statement that it does n
 
 Exit: one shipped strategy with a published model card, or a published negative result and the product repositioned as analytics only.
 
-## Phase 4. Pro and API
+## Phase 6. Pro and API
 
-Goal: first revenue.
+Goal: paid access for people who want more than the free site.
 
 - [ ] Alerts by web push and email on chosen events and tokens.
 - [ ] 30-day history and CSV export.
 - [ ] Versioned public API with keys, rate limits and an event stream.
 - [ ] Payments in USDC and SOL, no custody.
 - [ ] Terms of service and privacy policy.
-- [ ] Monthly public revenue report.
+- [ ] Pay for Pro in `$FMTR`, or hold it for access.
 
 Exit: paying users for two consecutive months.
-
-## Phase 5. Token
-
-Goal: tie the product's revenue to a community token. Design in [TOKENOMICS.md](TOKENOMICS.md).
-
-- [ ] Legal review.
-- [ ] Owner decisions: name, ticker, launch buy, split, thresholds.
-- [ ] Treasury multisig, `/treasury` page, report template.
-- [ ] Fair launch on pump.fun; FOMOMETER token excluded from its own scanner.
-- [ ] Holder access via wallet signature.
-- [ ] Weekly buyback and burn, monthly report.
-
-Exit: three consecutive monthly reports published.
 
 ## Later, not committed
 

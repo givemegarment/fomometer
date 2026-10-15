@@ -169,7 +169,13 @@ export default async function WhitepaperPage() {
                   <li key={r}>{r}</li>
                 ))}
               </ul>
-              <p>{t('token.order')}</p>
+
+              <h3 className="pt-2 font-semibold text-text-primary">{t('token.changes_title')}</h3>
+              <ul className="list-disc space-y-2 pl-6 marker:text-text-dim">
+                {(t.raw('token.changes') as string[]).map((c) => (
+                  <li key={c}>{c}</li>
+                ))}
+              </ul>
             </DocSection>
 
             <DocSection id="roadmap" title={t('roadmap.title')}>
