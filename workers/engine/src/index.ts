@@ -14,6 +14,7 @@
  * trips are batched and nothing parses large JSON in the worker.
  *  7. Prune old data per retention.
  */
+import { DsRelay, RELAY_REGIONS } from './relay';
 import {
   DexScreenerClient,
   pairToSnapshot,
@@ -62,6 +63,20 @@ export interface Env {
   ENGINE_PUMP_BLOCK_HI?: string;
   /** Quality prefilter — minimum hours since the engine first saw the token. */
   ENGINE_MIN_TOKEN_AGE_H?: string;
+  /** Durable Object relays that fetch DexScreener from other regions (./relay.ts). */
+  DS_RELAY: DurableObjectNamespace;
+}
+
+export { DsRelay };
+
+/** Three relay regions per run, in random order, so a refused request leaves from elsewhere. */
+function relays(env: Env) {
+  const regions = [...RELAY_REGIONS].sort(() => Math.random() - 0.5).slice(0, 3);
+  return regions.map((region) => (url: string) =>
+    env.DS_RELAY.get(env.DS_RELAY.idFromName(region), { locationHint: region }).fetch(
+      `https://relay/?u=${encodeURIComponent(url)}`
+    ) as unknown as Promise<Response>
+  );
 }
 
 const ROLLING_WINDOW_MIN = 90;       // factors look back ≤ 90 minutes (was 60)
@@ -116,7 +131,7 @@ async function runOnce(env: Env): Promise<void> {
   const now = Math.floor(t0 / 1000);
   const topN = parseInt(env.ENGINE_TOP_N, 10) || 50;
 
-  const ds = new DexScreenerClient(env.DEXSCREENER_BASE_URL);
+  const ds = new DexScreenerClient(env.DEXSCREENER_BASE_URL, relays(env));
 
   // 1. Universe = boosted top-N (the site's watchlist lives in the browser, not in D1).
   const cached = await env.DB.prepare(`SELECT value, updated_at FROM engine_state WHERE key = 'last_universe'`).first<{
@@ -384,7 +399,7 @@ async function runOnce(env: Env): Promise<void> {
     .run();
 
   console.log(
-    `engine cycle: ${snapByAddr.size} tokens, +${buyTriggers}b/${sellTriggers}s/${fomoSpikes}f (filt ${filteredOut}), regime=${regime ?? 'off'}, th=${buyTh.toFixed(2)}/${sellTh.toFixed(2)}, universe=${universeSource}, ds retries=${ds.retries}, ${Date.now() - t0}ms`
+    `engine cycle: ${snapByAddr.size} tokens, +${buyTriggers}b/${sellTriggers}s/${fomoSpikes}f (filt ${filteredOut}), regime=${regime ?? 'off'}, th=${buyTh.toFixed(2)}/${sellTh.toFixed(2)}, universe=${universeSource}, ds retries=${ds.retries} relayed=${ds.relayed}, ${Date.now() - t0}ms`
   );
 }
 

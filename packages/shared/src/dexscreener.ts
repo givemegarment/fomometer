@@ -56,37 +56,62 @@ const USER_AGENT = 'fomometer-engine/1.0 (+https://fomometer.xyz)';
  * MAX_WAIT_MS. Waiting costs wall time, not CPU.
  */
 const RETRY_DELAYS_MS = [2000, 5000, 10000];
+/** Pause before trying the next relay: short, the point is a different exit, not waiting. */
+const RELAY_GAP_MS = 250;
 const MAX_WAIT_MS = 10000;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const retryable = (status: number) => status === 429 || status >= 500;
 
+/** Fetches a URL from somewhere else (another region); used when the direct request is refused. */
+export type Relay = (url: string) => Promise<Response>;
+
 export class DexScreenerClient {
-  constructor(private base: string = DEFAULT_BASE) {}
+  /**
+   * With relays, a refused request is retried through each relay in turn: the 429s follow the
+   * Cloudflare location a request leaves from, so waiting at the same place rarely helps.
+   * Without relays, the same request is retried after RETRY_DELAYS_MS.
+   */
+  constructor(
+    private base: string = DEFAULT_BASE,
+    private relays: Relay[] = []
+  ) {}
 
   /** Requests that failed after every attempt, for the caller's log ("/token-boosts/top/v1 HTTP 429 after 4 tries"). */
   errors: string[] = [];
   /** Attempts beyond the first, across all requests of this client. */
   retries = 0;
+  /** Requests that succeeded through a relay. */
+  relayed = 0;
 
   private async getJson<T>(url: string): Promise<T | null> {
     const path = new URL(url).pathname.replace(/^(\/tokens\/v1\/solana\/).+$/, '$1…');
+    // A Worker sends no user agent by default; sites behind Cloudflare throttle such clients harder.
+    const direct: Relay = (u) => fetch(u, { headers: { accept: 'application/json', 'user-agent': USER_AGENT } });
+    const routes = this.relays.length ? [direct, ...this.relays] : [direct, direct, direct, direct];
     let last = '';
     let tries = 0;
-    for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    for (let attempt = 0; attempt < routes.length; attempt++) {
       tries++;
+      const final = attempt === routes.length - 1;
       try {
-        // A Worker sends no user agent by default; sites behind Cloudflare throttle such clients harder.
-        const res = await fetch(url, { headers: { accept: 'application/json', 'user-agent': USER_AGENT } });
-        if (res.ok) return (await res.json()) as T;
+        const res = await routes[attempt]!(url);
+        if (res.ok) {
+          if (attempt > 0 && this.relays.length) this.relayed++;
+          return (await res.json()) as T;
+        }
         last = `HTTP ${res.status}`;
-        if (!retryable(res.status) || attempt === RETRY_DELAYS_MS.length) break;
-        const after = Number(res.headers.get('retry-after')) * 1000;
-        const base = RETRY_DELAYS_MS[attempt]!;
-        await sleep(Math.min(MAX_WAIT_MS, Number.isFinite(after) && after > 0 ? after : base * (0.75 + Math.random() / 2)));
+        if (!retryable(res.status) || final) break;
+        if (this.relays.length) {
+          await sleep(RELAY_GAP_MS);
+        } else {
+          const after = Number(res.headers.get('retry-after')) * 1000;
+          const base = RETRY_DELAYS_MS[attempt]!;
+          await sleep(Math.min(MAX_WAIT_MS, Number.isFinite(after) && after > 0 ? after : base * (0.75 + Math.random() / 2)));
+        }
       } catch (err) {
         last = (err as Error).message;
-        if (attempt === RETRY_DELAYS_MS.length) break;
-        await sleep(RETRY_DELAYS_MS[attempt]!);
+        if (final) break;
+        await sleep(this.relays.length ? RELAY_GAP_MS : RETRY_DELAYS_MS[attempt]!);
       }
       this.retries++;
     }

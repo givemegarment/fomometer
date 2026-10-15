@@ -52,3 +52,19 @@ describe('DexScreenerClient retries', () => {
     expect(ds.errors).toEqual(['/tokens/v1/solana/… HTTP 404 after 1 try']);
   });
 });
+
+describe('DexScreenerClient relays', () => {
+  it('tries relays in turn after a 429 and counts the one that worked', async () => {
+    answers(429);
+    const used: string[] = [];
+    const relay = (name: string, code: number) => async () => {
+      used.push(name);
+      return code === 200 ? new Response(JSON.stringify([{ chainId: 'solana', tokenAddress: 'A' }])) : new Response('', { status: code });
+    };
+    const ds = new DexScreenerClient('https://x', [relay('weur', 429), relay('apac', 200), relay('enam', 200)]);
+    await ds.getTokensBatch(["A"]); // the payload is not a pair list; what matters is the route taken
+    expect(used).toEqual(['weur', 'apac']);
+    expect(ds.relayed).toBe(1);
+    expect(ds.errors).toEqual([]);
+  });
+});

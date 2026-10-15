@@ -7,6 +7,15 @@ compatibility_flags = ["nodejs_compat"]
 [triggers]
 crons = ["*/1 * * * *"]
 
+# DexScreener relays in other regions (src/relay.ts): DexScreener refuses some Cloudflare locations.
+[[durable_objects.bindings]]
+name = "DS_RELAY"
+class_name = "DsRelay"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["DsRelay"]
+
 [[d1_databases]]
 binding = "DB"
 database_name = "fomometer"
