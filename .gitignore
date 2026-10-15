@@ -84,3 +84,6 @@ __pycache__/
 logs/
 tmp/
 .tmp/
+
+# Full-size Higgsfield renders (sources); the site ships compressed webp in apps/web/public.
+apps/web/design/renders/

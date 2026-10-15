@@ -74,11 +74,13 @@ const config: Config = {
       keyframes: {
         marquee: { from: { transform: 'translateX(0)' }, to: { transform: 'translateX(-50%)' } },
         'bar-fill': { from: { transform: 'scaleX(0)' }, to: { transform: 'scaleX(1)' } },
-        'nudge-down': { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(4px)' } }
+        'nudge-down': { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(4px)' } },
+        breathe: { '0%,100%': { transform: 'scale(1)' }, '50%': { transform: 'scale(1.045)' } }
       },
       animation: {
         marquee: 'marquee 40s linear infinite',
-        'nudge-down': 'nudge-down 1.6s ease-in-out infinite'
+        'nudge-down': 'nudge-down 1.6s ease-in-out infinite',
+        breathe: 'breathe 20s ease-in-out infinite'
       }
     }
   },

@@ -31,7 +31,6 @@
     "next_run": "Next scoring run in",
     "stale_note": "The engine has not reported for a few minutes. Scores on the board may be old.",
     "hero_card": "Watch scores land on the live board as each run finishes.",
-    "skyline_note": "Each bar is one tracked token, its height its current score.",
     "scroll": "Scroll down",
     "marquee_label": "Tracked right now",
     "facts_title": "Built on public market data",
