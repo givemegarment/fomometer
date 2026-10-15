@@ -78,8 +78,9 @@ All routes are `GET`, edge runtime, read-only, no authentication. Prices in USD,
 | Route | Parameters | Returns |
 |---|---|---|
 | `/api/status` | | `snapshot_at`, `scored_at`: newest price and score times. LIVE on the site when prices are under 3 minutes old. |
-| `/api/scanner` | `filter=score\|liq\|fomo`, `limit` 10..50 | `rows`: tracked tokens (snapshot within 10 minutes of the newest) with price, liquidity, score, factors, logo, `scored_at` |
+| `/api/scanner` | `filter=score\|liq\|fomo`, `limit` 10..50 | `rows`: tracked tokens (scored within 10 minutes of the newest score; price from the latest snapshot) with price, liquidity, score, factors, logo, `scored_at` |
 | `/api/overview` | | `buy_signals_1h`, `avg_score`, `leaders`, `last_buys` |
+| `/api/logo/<id>` | `s=64\|128\|256` | token logo from DexScreener's CDN as webp, without its cookie, cached for a week |
 | `/api/signals` | `type=buy\|sell\|fomo`, `limit` 20..200 | `events` with token symbol and logo |
 | `/api/tokens/{address}` | | `token`, `history` (6 h of price and score), latest factors, recent events |
 | `/api/strategy` | | `settings` from `last_run` (thresholds, regime, weights) and `record` from `track_record`: last 7 days per event type and for the all-tokens baseline, per horizon n, share favorable, median change, plus flagged and no-price-at-4h counts |

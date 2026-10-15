@@ -194,12 +194,12 @@ function RecordCard({ record, loaded, failed }: { record: TrackRecord | null | u
                   <th scope="col" className="px-4 py-3 text-right font-medium">{t('col_n')}</th>
                   {HORIZONS.map((h) => (
                     <th key={h} scope="col" className="px-4 py-3 text-right font-medium">
-                      {t('col_favorable', { h })}
+                      {t('col_favorable', { h: t(`horizon.${h}`) })}
                     </th>
                   ))}
                   {(['1h', '4h'] as const).map((h) => (
                     <th key={h} scope="col" className="px-4 py-3 text-right font-medium">
-                      {t('col_median', { h })}
+                      {t('col_median', { h: t(`horizon.${h}`) })}
                     </th>
                   ))}
                   <th scope="col" className="px-4 py-3 text-right font-medium sm:pr-6">{t('col_lost')}</th>

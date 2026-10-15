@@ -289,7 +289,12 @@
     "record_empty": "The track record is recalculated every hour and is not ready yet.",
     "baseline_label": "Any tracked token",
     "baseline_note": "The last row is the comparison: every token the engine scored, sampled every 30 minutes since {date} and priced the same way. A signal is only useful if it beats that row.",
-    "flagged_note": "Left out: {n, plural, one {# outcome} other {# outcomes}} where the price rose more than 11 times within 4 hours. On DexScreener that is almost always a switch to another pool, not a trade anyone could make."
+    "flagged_note": "Left out: {n, plural, one {# outcome} other {# outcomes}} where the price rose more than 11 times within 4 hours. On DexScreener that is almost always a switch to another pool, not a trade anyone could make.",
+    "horizon": {
+      "15m": "15m",
+      "1h": "1h",
+      "4h": "4h"
+    }
   },
   "watchlist": {
     "title": "Watchlist",
@@ -621,11 +626,11 @@
             "text": "Flag outcomes with impossible prices"
           },
           {
-            "done": false,
+            "done": true,
             "text": "Remove data and services left from the old login"
           },
           {
-            "done": false,
+            "done": true,
             "text": "Serve token logos from fomometer.xyz"
           }
         ],

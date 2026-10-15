@@ -39,7 +39,7 @@ D1 queries: `npx wrangler d1 execute fomometer --remote --command "…"` (run in
 
 **Scanner shows few rows.** Tokens drop out after 10 minutes without a snapshot. Check the universe size in the last `engine cycle` log line.
 
-**Logos missing.** DexScreener CDN accepts only sizes 64, 128 and 256; `components/dashboard/token-avatar.tsx` maps to those. Tokens without `image_url` show a letter.
+**Logos missing.** Logos go through `/api/logo/<id>?s=64|128|256` (`app/api/logo/[id]/route.ts`), which fetches DexScreener's CDN as webp, drops its cookie and caches for a week. The CDN accepts only sizes 64, 128 and 256; `components/dashboard/token-avatar.tsx` maps to those. Tokens without `image_url`, or a 404 from the route, show a letter. Each logo is a Pages Functions request (free plan: 100k a day) until the browser has it cached.
 
 **Strategy page shows "Default".** `STRATEGY_FORMULA_JSON` is missing or invalid; the engine falls back to default weights.
 

@@ -7,18 +7,17 @@ const SIZES = { sm: 'h-7 w-7 text-[11px]', md: 'h-8 w-8 text-xs', lg: 'h-12 w-12
 const PX = { sm: 28, md: 32, lg: 48 } as const;
 
 /**
- * DexScreener CDN serves 800px logos by default (~100 KB). It only accepts a fixed
- * set of sizes (64, 128, 256 verified); pick the smallest one covering 2x density.
+ * DexScreener CMS logos are served through /api/logo (no third-party cookie, 64-256 px
+ * instead of the 800 px default). The CDN only accepts 64, 128 and 256; pick the smallest
+ * covering 2x density. Any other URL is used as is.
  */
-function sized(src: string, px: number): string {
+function logoSrc(src: string, px: number): string {
   try {
     const u = new URL(src);
-    if (u.hostname.endsWith('dexscreener.com') && u.searchParams.has('width')) {
-      const side = px * 2 <= 64 ? 64 : px * 2 <= 128 ? 128 : 256;
-      u.searchParams.set('width', String(side));
-      u.searchParams.set('height', String(side));
-    }
-    return u.toString();
+    const m = u.hostname === 'cdn.dexscreener.com' ? /^\/cms\/images\/([A-Za-z0-9_-]{6,64})$/.exec(u.pathname) : null;
+    if (!m) return src;
+    const side = px * 2 <= 64 ? 64 : px * 2 <= 128 ? 128 : 256;
+    return `/api/logo/${m[1]}?s=${side}`;
   } catch {
     return src;
   }
@@ -44,7 +43,7 @@ export function TokenAvatar({
       // Plain <img>: the Next image optimizer is not available on Cloudflare Pages.
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={sized(src, PX[size])}
+        src={logoSrc(src, PX[size])}
         alt=""
         width={PX[size]}
         height={PX[size]}

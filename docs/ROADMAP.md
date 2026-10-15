@@ -23,8 +23,8 @@ Goal: a track record nobody can call flattering.
 - [x] Fix the volume-burst threshold scale (raw value compared with a percentile of normalized values).
 - [x] Mark or exclude outcomes with impossible prices (moves of thousands of percent).
 - [x] Delete legacy tables `users`, `sessions`, `watchlist` and unused KV namespaces `SESSIONS` and `CACHE` (15 October 2026).
-- [ ] Delete the old Telegram bot (owner, @BotFather).
-- [ ] Serve token logos through the site to drop DexScreener's third-party cookie.
+- [x] Delete the old Telegram bot (15 October 2026).
+- [x] Serve token logos through the site to drop DexScreener's third-party cookie (`/api/logo`).
 - [x] Update `research/README_walk_forward.md` (mentions removed routes and old warm-up).
 
 Exit: Strategy page shows baseline, lost outcomes and a cleaned record; factors stored for every event for 30 days.
