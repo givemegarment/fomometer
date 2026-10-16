@@ -107,7 +107,7 @@ describe('scanGraduates', () => {
       { limit: 1000, until: 'S0' },
       { limit: 1000, until: 'S0', before: 'S501' }
     ]);
-    expect(r).toEqual({ found: 2, seen: 1500, error: 'getTransaction: HTTP 429' });
+    expect(r).toEqual({ found: 2, seen: 1500, error: 'getTransaction: HTTP 429 rate limited' });
     expect(raw.prepare(`SELECT mint FROM pump_graduates ORDER BY migrated_at`).all()).toEqual([{ mint: 'MintS1' }, { mint: 'MintS2' }]);
     expect(raw.prepare(`SELECT value FROM engine_state WHERE key = 'pump_cursor'`).get()).toEqual({ value: JSON.stringify({ sig: 'S2', time: 2 }) });
   });
