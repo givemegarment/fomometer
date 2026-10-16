@@ -160,7 +160,8 @@ export async function scanSwaps(env: Env): Promise<{ stored: number; seen: numbe
     if (!p.failed) {
       const tx = await rpc<ParsedTx | null>(env, 'getTransaction', [
         signature,
-        { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0, commitment: 'confirmed' }
+        // Version 1 too (Oct 2026): with 0 the node refuses those transactions and the cursor would stall.
+        { encoding: 'jsonParsed', maxSupportedTransactionVersion: 1, commitment: 'confirmed' }
       ]);
       if (!tx) break; // not available yet: stop here so the cursor does not pass it
       const swap = parseSwap(tx, referral, feeBps);

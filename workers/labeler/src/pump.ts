@@ -93,7 +93,8 @@ export async function scanGraduates(
       fetched++;
       let tx: Tx;
       try {
-        tx = await solanaRpc<Tx>(rpcUrl, 'getTransaction', [s.signature, { maxSupportedTransactionVersion: 0, commitment: 'confirmed' }]);
+        // Version 1: Solana transactions of version 1 appear since Oct 2026; with 0 the node refuses them.
+        tx = await solanaRpc<Tx>(rpcUrl, 'getTransaction', [s.signature, { maxSupportedTransactionVersion: 1, commitment: 'confirmed' }]);
       } catch (err) {
         // Rate limit or a failed call: keep what this run found, retry from here next run.
         error = (err as Error).message;

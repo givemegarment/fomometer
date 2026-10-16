@@ -24,6 +24,12 @@
   сработали). Labeler: 429 остался на каждом запуске (`swaps`, `pump`), несмотря на паузы и 2 повтора (≈ 7 с): не
   частота. Первый запуск с новым ключом (04:47) прошёл, дальше отказ. Добавлен текст ответа в ошибку (160 символов,
   без URL), чтобы увидеть причину Helius; vitest зелёный, ждёт деплоя.
+- «деплой» labeler `eb4cb3b5`: текст ответа `Rate limit exceeded… request a personal token or a dedicated node` —
+  это PublicNode, не Helius: секрет `HELIUS_API_KEY` был пустым (интерактивный `secret put` через `!` не получил ввод),
+  код ушёл на запасной RPC. Владелец залил ключ через `printf | secret put`. Tail 6 мин: свопы без ошибок
+  (`swap_cursor` 05:43), запись в цепочку posted 1 → landed 1, pump.fun found 4 (13.10 16:22) и стоп:
+  `Transaction version (1) is not supported`. Фикс: `maxSupportedTransactionVersion: 1` в pump.ts и swaps.ts (публичный
+  RPC принимает 1). Ждёт деплоя.
 
 ## 2026-10-16 [BUILD] Бумажные портфели (не задеплоено)
 - «делай»: правила из подгонки in-sample зафиксированы и меряются вперёд. `paper.ts`: контроль (все оцениваемые с
