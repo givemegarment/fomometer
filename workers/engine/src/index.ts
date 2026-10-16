@@ -67,6 +67,8 @@ export interface Env {
   ENGINE_PUMP_BLOCK_HI?: string;
   /** Quality prefilter — minimum hours since the engine first saw the token. */
   ENGINE_MIN_TOKEN_AGE_H?: string;
+  /** Mints never scored or tracked, comma-separated: $FMTR, FOMOMETER's own token (whitepaper, "Own token"). */
+  ENGINE_EXCLUDE_MINTS?: string;
   /** Durable Object relays that fetch DexScreener from other regions (./relay.ts). */
   DS_RELAY: DurableObjectNamespace;
 }
@@ -146,7 +148,8 @@ async function runOnce(env: Env): Promise<void> {
   let trending: Array<{ tokenAddress: string }> = [];
   // Retries with backoff live in the client (DexScreenerClient.getJson).
   if (cacheAge >= UNIVERSE_REFRESH_SEC) trending = await ds.getTrendingSolana();
-  let universe = Array.from(new Set(trending.slice(0, topN).map((t) => t.tokenAddress)));
+  const excluded = new Set((env.ENGINE_EXCLUDE_MINTS ?? '').split(',').map((a) => a.trim()).filter(Boolean));
+  let universe = Array.from(new Set(trending.map((t) => t.tokenAddress).filter((a) => !excluded.has(a)).slice(0, topN)));
   let universeSource: 'live' | 'cache' = 'live';
   if (universe.length > 0) {
     await env.DB.prepare(
@@ -160,7 +163,7 @@ async function runOnce(env: Env): Promise<void> {
       console.log(`engine: no universe (${ds.errors.join(', ') || 'empty lists'}), skipping`);
       return;
     }
-    universe = JSON.parse(cached.value) as string[];
+    universe = (JSON.parse(cached.value) as string[]).filter((a) => !excluded.has(a));
     universeSource = 'cache';
     // Logged only when a refresh was due and failed, not on the minutes in between.
     if (cacheAge >= UNIVERSE_REFRESH_SEC) console.log(`engine: boosts unavailable (${ds.errors.join(', ')}), using the list from ${cacheAge}s ago`);
@@ -178,7 +181,7 @@ async function runOnce(env: Env): Promise<void> {
   // graduates due for their one screen go in batches of their own and are not stored.
   const shadowPlan = await loadShadow(env.DB, now, now % SCREEN_EVERY_SEC < 60);
   const live = new Set([...universe, ...trackOnly]);
-  const shadowAddrs = [...new Set([...shadowPlan.active.keys(), ...shadowPlan.postEvent])].filter((a) => !live.has(a));
+  const shadowAddrs = [...new Set([...shadowPlan.active.keys(), ...shadowPlan.postEvent])].filter((a) => !live.has(a) && !excluded.has(a));
   const dueAddrs = shadowPlan.due.filter((a) => !live.has(a) && !shadowAddrs.includes(a));
 
   // 2. Snapshot in batches of 30.

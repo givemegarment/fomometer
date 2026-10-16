@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { DocLayout } from '@/components/docs/doc-layout';
 import { DocCard, DocSection, DocTable } from '@/components/doc-section';
+import { TOKEN_LAUNCHED, TOKEN_MINT, TOKEN_URL } from '@/lib/token';
 
 export const runtime = 'edge';
 
@@ -133,8 +134,17 @@ export default async function WhitepaperPage() {
               <p>{t('model.note')}</p>
             </DocSection>
 
-            <DocSection id="token" title={t('token.title')} badge={t('token.badge')}>
-              <p>{t('token.intro')}</p>
+            <DocSection id="token" title={t('token.title')} badge={t(TOKEN_LAUNCHED ? 'token.badge_live' : 'token.badge')}>
+              <p>{t(TOKEN_LAUNCHED ? 'token.intro_live' : 'token.intro')}</p>
+              {TOKEN_LAUNCHED && (
+                <p className="break-all">
+                  <span className="font-semibold text-text-primary">{t('token.contract')}:</span>{' '}
+                  <span className="font-mono text-sm">{TOKEN_MINT}</span>{' · '}
+                  <a href={TOKEN_URL} target="_blank" rel="noopener noreferrer" className="text-accent underline underline-offset-4">
+                    {t('token.link')}
+                  </a>
+                </p>
+              )}
 
               <h3 className="pt-2 font-semibold text-text-primary">{t('token.loop_title')}</h3>
               <ol className="space-y-3">

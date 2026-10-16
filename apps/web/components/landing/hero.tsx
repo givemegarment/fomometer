@@ -6,6 +6,7 @@ import { ArrowDown } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button-variants';
 import { useNextRun } from '@/components/motion/next-run';
 import { cn } from '@/lib/cn';
+import { TOKEN_LAUNCHED, TOKEN_SYMBOL, TOKEN_URL } from '@/lib/token';
 
 /** After this long without a run the countdown would be fiction; show the stale note instead. */
 const STALE_AFTER_SEC = 180;
@@ -27,6 +28,16 @@ export function LandingHero() {
         <span aria-hidden className={cn('h-1.5 w-1.5 rounded-full', stale ? 'bg-warning' : 'animate-pulse bg-accent')} />
         {stale ? t('stale') : t('live')} · {t('chain')}
       </span>
+      {TOKEN_LAUNCHED && (
+        <a
+          href={TOKEN_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 text-[13px] font-medium text-text-muted underline-offset-4 transition-colors hover:text-text-primary hover:underline"
+        >
+          {t('token_live', { symbol: TOKEN_SYMBOL })}
+        </a>
+      )}
 
       <h1 className="mt-6 text-display-2xl">{t('title')}</h1>
       <p className="mt-4 max-w-xl text-lg text-white/80">{t('subtitle')}</p>

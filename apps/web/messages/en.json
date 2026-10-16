@@ -127,7 +127,9 @@
     "footer_github": "GitHub",
     "footer_rights": "FOMOMETER. Market data: DexScreener.",
     "sticky_live": "Live",
-    "sticky_next": "next run {s}s"
+    "sticky_next": "next run {s}s",
+    "footer_community": "Community",
+    "token_live": "${symbol} is live on pump.fun"
   },
   "method": {
     "title": "How it works",
@@ -594,7 +596,11 @@
         "Creator fees from trading $FMTR now go into the pool. Version 0.1 kept them out of buybacks.",
         "Buybacks run every hour instead of weekly and take the largest share of the pool.",
         "The token no longer waits for Pro and for the signal research to finish."
-      ]
+      ],
+      "badge_live": "Launched",
+      "intro_live": "$FMTR is the FOMOMETER community token, launched on pump.fun. Revenue goes into one pool. Part of the pool is paid to holders in SOL, part buys $FMTR on the market and burns it, and the rest runs the project.",
+      "contract": "Contract",
+      "link": "$FMTR on pump.fun"
     },
     "roadmap": {
       "title": "Roadmap",
@@ -641,7 +647,7 @@
     "title": "Roadmap",
     "meta_description": "FOMOMETER roadmap: public launch, data integrity, signal research, Pro and API, community token.",
     "intro": "Phases can overlap; each one is done when it meets its exit criteria, not on a date. Signal research waits for 30 days of stored data, so swaps and the token move ahead in the meantime.",
-    "updated": "Updated 15 October 2026",
+    "updated": "Updated 16 October 2026",
     "status": {
       "done": "Done",
       "next": "In progress",
@@ -683,7 +689,7 @@
         "exit": "Site live with a working engine."
       },
       {
-        "status": "next",
+        "status": "done",
         "name": "Data integrity",
         "goal": "A track record nobody can call flattering.",
         "items": [
@@ -720,7 +726,7 @@
             "text": "Serve token logos from fomometer.xyz"
           }
         ],
-        "exit": "Baseline and lost outcomes on the Strategy page, 30 days of stored factors."
+        "exit": "Baseline and lost outcomes on the Strategy page."
       },
       {
         "status": "done",
@@ -765,7 +771,12 @@
           },
           {
             "done": false,
-            "text": "Fair launch on pump.fun; $FMTR excluded from its own board"
+            "launch": true,
+            "text": "Fair launch on pump.fun"
+          },
+          {
+            "done": false,
+            "text": "$FMTR excluded from its own board and signals"
           },
           {
             "done": false,
@@ -842,7 +853,9 @@
       "A public research dataset"
     ],
     "whitepaper_link": "Read the whitepaper",
-    "toc": "Phases"
+    "toc": "Phases",
+    "launch_link": "Token on pump.fun",
+    "contract": "Contract"
   },
   "board": {
     "title": "Board",
@@ -1048,5 +1061,9 @@
         }
       ]
     }
+  },
+  "social": {
+    "x": "FOMOMETER on X",
+    "token": "$FMTR on pump.fun"
   }
 }

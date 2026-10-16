@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 import './globals.css';
+import { X_HANDLE } from '@/lib/token';
 import { RefBeacon } from '@/components/shell/ref-beacon';
 
 const inter = Inter({
@@ -38,6 +39,8 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
+      site: X_HANDLE,
+      creator: X_HANDLE,
       title: t('meta_title'),
       description: t('meta_description'),
       images: ['/og.png']

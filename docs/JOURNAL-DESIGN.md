@@ -12,6 +12,26 @@
 
 ---
 
+## 2026-10-16 [BUILD] Сайт к запуску $FMTR и ссылка на X (не задеплоено)
+- Владелец: «деплоим токен на pump.fun… закрой roadmap… вставить ссылку… добавь наш твиттер x.com/Fomometerxyz».
+- `lib/token.ts`: `TOKEN_MINT` (пусто до запуска), `TOKEN_URL` = pump.fun/coin/<mint>, `X_URL`. Все ссылки на токен
+  скрыты, пока mint пустой: запуск = вписать адрес и задеплоить.
+- `components/social-links.tsx`: `XLink` (знак X), `TokenLink` (пилюля $FMTR). Шапка лендинга: $FMTR в навигации, X
+  рядом с кнопкой; шапка дашборда: $FMTR (с sm), X; hero: строка «$FMTR is live on pump.fun»; подвал: колонка
+  Community (X, $FMTR); метаданные `twitter.site/creator`.
+- Roadmap: «Data integrity» закрыта (все 8 пунктов; критерий «30 дней факторов» убран: его держит Signal research),
+  дата 16.10. Пункт запуска разделён: «Fair launch on pump.fun» (`launch: true`, при mint отмечен, ссылка и контракт,
+  фаза «In progress») и «$FMTR excluded from its own board and signals» (не сделан). Whitepaper: бейдж Launched, intro,
+  контракт и ссылка при mint.
+- Engine: `ENGINE_EXCLUDE_MINTS` (пусто) убирает mint из выборки, кэша и тени.
+- Проверка: tsc, lint, vitest 65/65, next-on-pages; превью с тестовым mint: главная 1440 (пилюля, X, строка в hero),
+  roadmap (1/7, ссылка, контракт), дашборд 390 (X и статус помещаются), подвал 390 без горизонтального скролла;
+  mint возвращён в пусто.
+- При запуске: `TOKEN_MINT`, `ENGINE_EXCLUDE_MINTS`, текст `whitepaper.roadmap` («Next come the $FMTR launch…»),
+  пункт roadmap про исключение отметить после деплоя engine.
+
+---
+
 ## 2026-10-16 [DEBUG] Дашборд без пояснительного текста, Buy на доске, фокус вкладок (сайт `73e79189`)
 - Владелец: убрать пояснения везде, вернуть Buy, «отполировать». Убрано: подзаголовки Board/Signals/Strategy/Treasury/
   Watchlist, «Dimmed: liquidity…», подпись под таблицей доски, строка «Statistics about market data…» внизу дашборда

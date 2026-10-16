@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { Wordmark } from '@/components/wordmark';
 import { FEE_PCT, TRADING_ENABLED } from '@/lib/trade';
+import { TOKEN_LAUNCHED, TOKEN_SYMBOL, TOKEN_URL, X_HANDLE, X_URL } from '@/lib/token';
 
 const REPO_URL = 'https://github.com/givemegarment/fomometer';
 
@@ -15,7 +16,7 @@ export async function SiteFooter() {
   const link = 'text-text-muted transition-colors hover:text-text-primary';
   return (
     <footer className="border-t border-border">
-      <div className="mx-auto grid max-w-[1440px] gap-10 px-5 py-14 sm:px-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div className="mx-auto grid max-w-[1440px] gap-10 px-5 py-14 sm:px-10 md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
         <div className="space-y-4">
           <Wordmark />
           <p className="max-w-sm text-sm leading-relaxed text-text-muted">
@@ -41,6 +42,15 @@ export async function SiteFooter() {
             <li><Link className={link} href="/roadmap">{tNav('roadmap')}</Link></li>
           </ul>
         </nav>
+        <div>
+          <p className="mb-4 text-sm font-semibold">{t('footer_community')}</p>
+          <ul className={col}>
+            <li><a className={link} href={X_URL} target="_blank" rel="noopener noreferrer">X {X_HANDLE}</a></li>
+            {TOKEN_LAUNCHED && (
+              <li><a className={link} href={TOKEN_URL} target="_blank" rel="noopener noreferrer">${TOKEN_SYMBOL} on pump.fun</a></li>
+            )}
+          </ul>
+        </div>
         <div>
           <p className="mb-4 text-sm font-semibold">{t('footer_open')}</p>
           <ul className={col}>

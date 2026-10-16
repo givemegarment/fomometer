@@ -1,0 +1,12 @@
+/**
+ * $FMTR and the project's X account. Every token link on the site (header, dashboard, hero, footer,
+ * roadmap, whitepaper) is hidden while TOKEN_MINT is empty; filling it in at launch shows them all.
+ */
+export const TOKEN_SYMBOL = 'FMTR';
+export const TOKEN_MINT: string = '';
+/** The token's pump.fun page. */
+export const TOKEN_URL: string = TOKEN_MINT ? `https://pump.fun/coin/${TOKEN_MINT}` : '';
+export const TOKEN_LAUNCHED = TOKEN_MINT !== '' && TOKEN_URL !== '';
+
+export const X_URL = 'https://x.com/Fomometerxyz';
+export const X_HANDLE = '@Fomometerxyz';

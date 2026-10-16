@@ -6,6 +6,7 @@ import { DocLayout } from '@/components/docs/doc-layout';
 import { DocSection } from '@/components/doc-section';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/cn';
+import { TOKEN_LAUNCHED, TOKEN_MINT, TOKEN_URL } from '@/lib/token';
 
 export const runtime = 'edge';
 
@@ -19,7 +20,8 @@ type Phase = {
   status: Status;
   name: string;
   goal: string;
-  items: { done: boolean; text: string }[];
+  /** `launch`: the pump.fun launch, done (with the token's link) once lib/token.ts has the mint. */
+  items: { done: boolean; text: string; launch?: boolean }[];
   exit: string;
 };
 
@@ -33,7 +35,12 @@ const STRIP = {
 
 export default async function RoadmapPage() {
   const t = await getTranslations('roadmap');
-  const phases = t.raw('phases') as Phase[];
+  // At launch the launch item is done and its phase is in progress (the rest of it is not done yet).
+  const phases = (t.raw('phases') as Phase[]).map((p) =>
+    TOKEN_LAUNCHED && p.items.some((it) => it.launch)
+      ? { ...p, status: 'next' as const, items: p.items.map((it) => (it.launch ? { ...it, done: true } : it)) }
+      : p
+  );
 
   return (
     <DocLayout
@@ -82,6 +89,17 @@ export default async function RoadmapPage() {
                       </span>
                       <span className={it.done ? 'text-text-primary' : 'text-text-muted'}>
                         {it.text}
+                        {it.launch && TOKEN_LAUNCHED && (
+                          <>
+                            {' · '}
+                            <a href={TOKEN_URL} target="_blank" rel="noopener noreferrer" className="text-accent underline underline-offset-4">
+                              {t('launch_link')}
+                            </a>
+                            <span className="mt-1 block break-all font-mono text-xs text-text-muted">
+                              {t('contract')}: {TOKEN_MINT}
+                            </span>
+                          </>
+                        )}
                         <span className="sr-only">{it.done ? ` (${t('status.done')})` : ''}</span>
                       </span>
                     </li>
