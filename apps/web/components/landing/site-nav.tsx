@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { Wordmark } from '@/components/wordmark';
 import { buttonVariants } from '@/components/ui/button-variants';
-import { TokenLink, XLink } from '@/components/social-links';
+import { GitHubLink, TokenLink, XLink } from '@/components/social-links';
 
 /**
  * Public pages header, like the reference: mark left, quiet links, one green button right.
@@ -24,7 +24,10 @@ export async function SiteNav({ overlay = false }: { overlay?: boolean }) {
           <Link href="/roadmap" className="transition-colors hover:text-text-primary">{tNav('roadmap')}</Link>
           <TokenLink label={tSocial('token')} />
         </nav>
-        <XLink label={tSocial('x')} className="ml-auto md:ml-0" />
+        <div className="ml-auto flex items-center md:ml-0">
+          <GitHubLink label={tSocial('github')} />
+          <XLink label={tSocial('x')} />
+        </div>
         <Link href="/dashboard" className={buttonVariants({ size: 'md' })}>
           {t('nav_board')}
         </Link>

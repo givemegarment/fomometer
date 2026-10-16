@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { Wordmark } from '@/components/wordmark';
 import { StatusBadge } from '@/components/status-badge';
 import { PrimaryNav, SecondaryNav, MobileTabs } from '@/components/shell/nav-links';
-import { TokenLink, XLink } from '@/components/social-links';
+import { GitHubLink, TokenLink, XLink } from '@/components/social-links';
 
 /**
  * One frame for every dashboard page: a 48px top bar (product sections, reading links, status)
@@ -22,7 +22,10 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           <div className="ml-auto flex items-center gap-4">
             <SecondaryNav className="hidden lg:flex" />
             <TokenLink label={t('token')} className="hidden sm:inline-flex" />
-            <XLink label={t('x')} className="-mx-2" />
+            <div className="-mx-2 flex items-center">
+              <GitHubLink label={t('github')} className="hidden sm:inline-flex" />
+              <XLink label={t('x')} />
+            </div>
             <StatusBadge />
           </div>
         </div>

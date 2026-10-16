@@ -2,9 +2,7 @@ import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { Wordmark } from '@/components/wordmark';
 import { FEE_PCT, TRADING_ENABLED } from '@/lib/trade';
-import { TOKEN_LAUNCHED, TOKEN_SYMBOL, TOKEN_URL, X_HANDLE, X_URL } from '@/lib/token';
-
-const REPO_URL = 'https://github.com/givemegarment/fomometer';
+import { REPO_URL, TOKEN_LAUNCHED, TOKEN_SYMBOL, TOKEN_URL, X_HANDLE, X_URL } from '@/lib/token';
 
 /** Multi-column footer after the reference: brand and disclaimer, then link columns. */
 export async function SiteFooter() {

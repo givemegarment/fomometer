@@ -1064,6 +1064,7 @@
   },
   "social": {
     "x": "FOMOMETER on X",
-    "token": "$FMTR on pump.fun"
+    "token": "$FMTR on pump.fun",
+    "github": "FOMOMETER source code on GitHub"
   }
 }
