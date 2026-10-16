@@ -263,6 +263,19 @@ export async function runSocial(env: Env, now = Math.floor(Date.now() / 1000)): 
     .prepare(`SELECT attempts FROM x_posts WHERE kind = ? AND ref = ? AND mode = 'live'`)
     .bind(post.kind, post.ref)
     .first<{ attempts: number }>();
+  // Claim the row before posting: two runs of the same minute (Cloudflare fired the cron twice during a
+  // deploy on 16 Oct 2026) both posted signal 47115. Only the run whose claim changes a row posts; a
+  // 'sending' row counts as handled everywhere ('!= retry'), so a run that dies mid-post is not retried.
+  const claim = await db
+    .prepare(
+      `INSERT INTO x_posts (kind, ref, mode, status, text, card, reply_to, attempts, posted_at)
+       VALUES (?, ?, 'live', 'sending', ?, ?, ?, ?, ?)
+       ON CONFLICT(kind, ref, mode) DO UPDATE SET status = 'sending', attempts = excluded.attempts, posted_at = excluded.posted_at
+       WHERE x_posts.status = 'retry'`
+    )
+    .bind(post.kind, post.ref, post.text, post.card, post.replyTo ?? null, (prior?.attempts ?? 0) + 1, now)
+    .run();
+  if (!claim.meta.changes) return null;
   try {
     const card = await fetch(post.card);
     if (!card.ok) throw new Error(`card ${card.status}`);

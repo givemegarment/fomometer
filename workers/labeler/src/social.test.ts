@@ -18,7 +18,7 @@ function d1() {
     bind: (...a: unknown[]) => stmt(sql, a),
     all: async () => ({ results: db.prepare(sql).all(...(args as never[])) }),
     first: async () => db.prepare(sql).get(...(args as never[])) ?? null,
-    run: async () => db.prepare(sql).run(...(args as never[]))
+    run: async () => ({ meta: { changes: Number(db.prepare(sql).run(...(args as never[])).changes) } })
   });
   return { raw: db, DB: { prepare: (sql: string) => stmt(sql) } as unknown as D1Database };
 }
@@ -129,5 +129,22 @@ describe('runSocial', () => {
     // The daily row was posted 3 h ago, the signal just now: the next run waits.
     raw.prepare(`INSERT INTO signal_events (id, address, time, event_type, score, chain_sig, chain_ok) VALUES (47101, ?, ?, 'buy_trigger', 0.8, 'SIGdef', 1)`).run(MINT, NOW);
     expect(await runSocial(env, NOW + 120)).toBeNull();
+  });
+
+  it('live: two runs at once post a signal only once', async () => {
+    const { raw, DB } = d1();
+    seed(raw);
+    let tweets = 0;
+    vi.stubGlobal('fetch', async (url: string) => {
+      if (url.includes('/api/card/')) return new Response(new Uint8Array([137, 80, 78, 71]), { headers: { 'content-type': 'image/png' } });
+      if (url.endsWith('/2/media/upload')) return new Response(JSON.stringify({ data: { id: 'M1' } }));
+      if (url.endsWith('/2/tweets')) return new Response(JSON.stringify({ data: { id: `T${++tweets}` } }));
+      throw new Error(`unexpected ${url}`);
+    });
+    const env = { DB, X_POST_MODE: 'live', X_API_KEY: 'k', X_API_SECRET: 's', X_ACCESS_TOKEN: 't', X_ACCESS_SECRET: 'u' };
+    const results = await Promise.all([runSocial(env, NOW), runSocial(env, NOW)]);
+    expect(tweets).toBe(1);
+    expect(results.filter((r) => r?.startsWith('x posted signal 47100'))).toHaveLength(1);
+    expect(raw.prepare(`SELECT status, tweet_id FROM x_posts WHERE kind = 'signal'`).get()).toEqual({ status: 'posted', tweet_id: 'T1' });
   });
 });
