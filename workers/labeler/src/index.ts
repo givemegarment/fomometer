@@ -16,13 +16,16 @@
  * always a switch to a different pool, not a trade anyone could have made.
  *
  * The cron fires every minute: labeling runs every 15 minutes, and every minute it
- * records swaps that paid the referral fee (./swaps.ts).
+ * records swaps that paid the referral fee (./swaps.ts). Every PUMP_EVERY_MIN minutes it reads
+ * pump.fun graduates from the chain (./pump.ts); their shadow events are labeled here too, into
+ * shadow_outcomes.
  */
 
 import { summarize, num, type GroupStats } from './summary';
 import { rpcUrl, scanSwaps } from './swaps';
 import { recordSignals } from './record';
 import { runSocial } from './social';
+import { scanGraduates } from './pump';
 
 export interface Env {
   DB: D1Database;
@@ -65,6 +68,7 @@ const RECORD_DAYS = 7;
 const RECORD_REFRESH_SEC = 60 * 60;
 /** Labeling runs on the minutes divisible by this; swaps run every minute. */
 const LABEL_EVERY_MIN = 15;
+const PUMP_EVERY_MIN = 5;
 
 export default {
   // One cron every minute (a second trigger added on 2026-10-15 did not fire): swaps every
@@ -74,6 +78,7 @@ export default {
     ctx.waitUntil(runSwaps(env).catch((err) => console.error('labeler error', err)));
     ctx.waitUntil(runRecord(env).catch((err) => console.error('labeler error', err)));
     ctx.waitUntil(runX(env).catch((err) => console.error('labeler error', err)));
+    if (minute % PUMP_EVERY_MIN === 0) ctx.waitUntil(runPump(env).catch((err) => console.error('labeler error', err)));
     if (minute % LABEL_EVERY_MIN === 0) ctx.waitUntil(runOnce(env).catch((err) => console.error('labeler error', err)));
   },
   async fetch(_req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -102,38 +107,44 @@ async function runOnce(env: Env): Promise<void> {
   const cutoffNewest = now - HORIZON_4H_SEC - HORIZON_TOLERANCE_SEC;
   const cutoffOldest = now - lookbackSec - HORIZON_4H_SEC;
 
-  const rows = await env.DB.prepare(
-    `SELECT e.id, e.address, e.time, e.event_type, e.score
-       FROM signal_events e
-       LEFT JOIN signal_outcomes o ON o.event_id = e.id
-       WHERE o.event_id IS NULL
-         AND e.time <= ?
-         AND e.time >= ?
-       ORDER BY e.time ASC
-       LIMIT ?`
-  )
-    .bind(cutoffNewest, cutoffOldest, batchSize)
-    .all<EventRow>();
+  const pending = (t: EventTables) =>
+    env.DB.prepare(
+      `SELECT e.id, e.address, e.time, e.event_type, e.score
+         FROM ${t.events} e
+         LEFT JOIN ${t.outcomes} o ON o.event_id = e.id
+         WHERE o.event_id IS NULL
+           AND e.time <= ?
+           AND e.time >= ?
+         ORDER BY e.time ASC
+         LIMIT ?`
+    )
+      .bind(cutoffNewest, cutoffOldest, batchSize)
+      .all<EventRow>()
+      .then((r) => r.results ?? []);
 
   const baselineSlots = await fillBaseline(env, now);
 
-  const events = rows.results ?? [];
-  let labeled = 0;
-  let skipped = 0;
+  const count = { labeled: 0, skipped: 0, shadow: 0 };
+  const events = await pending(LIVE);
   for (const e of events) {
-    const ok = await labelOne(env, e, now);
-    if (ok) labeled++;
-    else skipped++;
+    if (await labelOne(env, e, now, LIVE)) count.labeled++;
+    else count.skipped++;
   }
+  for (const e of await pending(SHADOW)) if (await labelOne(env, e, now, SHADOW)) count.shadow++;
 
   const recordUpdated = await updateTrackRecord(env, now);
 
   console.log(
-    `labeler: scanned=${events.length} labeled=${labeled} skipped=${skipped} baseline slots=${baselineSlots} record=${recordUpdated ? 'updated' : 'kept'} in ${Date.now() - t0}ms`
+    `labeler: scanned=${events.length} labeled=${count.labeled} skipped=${count.skipped} shadow=${count.shadow} baseline slots=${baselineSlots} record=${recordUpdated ? 'updated' : 'kept'} in ${Date.now() - t0}ms`
   );
 }
 
-async function labelOne(env: Env, e: EventRow, now: number): Promise<boolean> {
+/** Live events and the engine's shadow events (pump.fun graduates) are priced the same way. */
+type EventTables = { events: 'signal_events' | 'shadow_events'; outcomes: 'signal_outcomes' | 'shadow_outcomes'; chain: boolean };
+const LIVE: EventTables = { events: 'signal_events', outcomes: 'signal_outcomes', chain: true };
+const SHADOW: EventTables = { events: 'shadow_events', outcomes: 'shadow_outcomes', chain: false };
+
+async function labelOne(env: Env, e: EventRow, now: number, t: EventTables): Promise<boolean> {
   // Entry price: snapshot at or just before the event.
   const entryRow = await env.DB.prepare(
     `SELECT price_usd, time FROM token_snapshots
@@ -168,36 +179,39 @@ async function labelOne(env: Env, e: EventRow, now: number): Promise<boolean> {
   const minPnl = pct(extr?.lo ?? null);
   const priceFlag = maxPnl != null && maxPnl > SUSPECT_RISE_PCT ? 'rise_over_1000pct' : null;
 
+  // The chain_sig column and its bind exist only for live events (shadow ones are never recorded).
+  const chainCol = t.chain ? ', chain_sig' : '';
+  const chainVal = t.chain ? `, (SELECT CASE WHEN chain_ok = 1 THEN chain_sig END FROM ${t.events} WHERE id = ?)` : '';
+  const binds: unknown[] = [
+    e.id,
+    e.address,
+    e.time,
+    e.event_type,
+    entry,
+    price15m,
+    price1h,
+    price4h,
+    pct(price15m),
+    pct(price1h),
+    pct(price4h),
+    maxPnl,
+    minPnl,
+    now,
+    priceFlag,
+    e.id
+  ];
+  if (t.chain) binds.push(e.id);
   await env.DB.prepare(
-    `INSERT OR REPLACE INTO signal_outcomes
+    `INSERT OR REPLACE INTO ${t.outcomes}
        (event_id, address, event_time, event_type, entry_price,
         price_15m, price_1h, price_4h,
         pnl_pct_15m, pnl_pct_1h, pnl_pct_4h,
         max_pnl_pct_4h, min_pnl_pct_4h, labeled_at,
-        price_flag, factors_json, chain_sig)
+        price_flag, factors_json${chainCol})
      VALUES (?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?,
-             ?, (SELECT json_extract(metadata_json, '$.factors') FROM signal_events WHERE id = ?),
-             (SELECT CASE WHEN chain_ok = 1 THEN chain_sig END FROM signal_events WHERE id = ?))`
+             ?, (SELECT json_extract(metadata_json, '$.factors') FROM ${t.events} WHERE id = ?)${chainVal})`
   )
-    .bind(
-      e.id,
-      e.address,
-      e.time,
-      e.event_type,
-      entry,
-      price15m,
-      price1h,
-      price4h,
-      pct(price15m),
-      pct(price1h),
-      pct(price4h),
-      maxPnl,
-      minPnl,
-      now,
-      priceFlag,
-      e.id,
-      e.id
-    )
+    .bind(...binds)
     .run();
 
   return true;
@@ -344,6 +358,17 @@ async function runSwaps(env: Env): Promise<void> {
   } catch (err) {
     // Third-party RPC; the next minute retries from the same cursor.
     console.error(`swaps error: ${(err as Error).message}`);
+  }
+}
+
+/** pump.fun graduates from the chain (./pump.ts). Logs only when something was found. */
+async function runPump(env: Env): Promise<void> {
+  try {
+    const r = await scanGraduates(env, rpcUrl(env));
+    if (r.found) console.log(`pump graduates found=${r.found} seen=${r.seen}`);
+  } catch (err) {
+    // Third-party RPC; the next run retries from the same cursor.
+    console.error(`pump error: ${(err as Error).message}`);
   }
 }
 

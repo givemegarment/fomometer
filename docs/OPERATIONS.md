@@ -101,6 +101,8 @@ The labeler posts to X (Architecture, Labeler). `X_POST_MODE` in `workers/labele
 - Workers free plan: 50 ms CPU per run, 100k requests a day. The engine uses 1,440 runs a day.
 - D1 has a daily rows-read allowance (check the account's plan). Before the October 2026 rewrite the engine read 17.9 million rows a day; keep per-minute queries indexed and bounded.
 - DexScreener public API: about 300 requests a minute for pair data. The engine makes a handful per run.
+- Helius free plan: 1M credits a month, 1 credit per call. Swaps use about 13k a day (9 fee accounts every minute), pump.fun graduates about 2k a day (Architecture, Labeler).
+- Shadow tracking of pump.fun graduates adds at most 30 tokens a run: about 2.6M snapshot and score rows a month written, inside the Workers Paid allowance. Comparison query: `SELECT COUNT(*), AVG(pnl_pct_4h > 0) FROM shadow_outcomes WHERE event_type = 'buy_trigger' AND price_flag IS NULL` against the same on `signal_outcomes` over the same dates.
 
 ## Accounts and secrets
 

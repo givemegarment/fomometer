@@ -9,12 +9,15 @@
  *  4. Compute the 12-factor vector per token on a rolling window (one D1 query for all tokens).
  *  5. Run StackVM (or fallback) → score, factors_json. Write to signals.
  *  6. Detect transitions (BUY/SELL/FOMO_SPIKE) → signal_events. All writes go in one D1 batch.
+ *     pump.fun graduates outside the boosted list are scored the same way in shadow (./shadow.ts):
+ *     shadow_signals and shadow_events only, never in the population, thresholds or signals.
  *
  * CPU budget: the worker runs under a tight per-invocation CPU limit, so D1 round
  * trips are batched and nothing parses large JSON in the worker.
  *  7. Prune old data per retention.
  */
 import { DsRelay, RELAY_REGIONS } from './relay';
+import { loadShadow, pruneShadow, shadowUpdates, SCREEN_EVERY_SEC } from './shadow';
 import {
   DexScreenerClient,
   pairToSnapshot,
@@ -170,10 +173,18 @@ async function runOnce(env: Env): Promise<void> {
     .slice(0, POST_SCORE_TRACK_MAX)
     .map(([a]) => a);
 
+  // 1b. Shadow: active pump.fun graduates outside the lists above, fetched in the same batches;
+  // graduates due for their one screen go in batches of their own and are not stored.
+  const shadowPlan = await loadShadow(env.DB, now, now % SCREEN_EVERY_SEC < 60);
+  const live = new Set([...universe, ...trackOnly]);
+  const shadowAddrs = [...new Set([...shadowPlan.active.keys(), ...shadowPlan.postEvent])].filter((a) => !live.has(a));
+  const dueAddrs = shadowPlan.due.filter((a) => !live.has(a) && !shadowAddrs.includes(a));
+
   // 2. Snapshot in batches of 30.
-  const pairs = await Promise.all(
-    chunk([...universe, ...trackOnly], 30).map((c) => ds.getTokensBatch(c))
-  ).then((parts) => parts.flat());
+  const [pairs, dueParts] = await Promise.all([
+    Promise.all(chunk([...universe, ...trackOnly, ...shadowAddrs], 30).map((c) => ds.getTokensBatch(c))).then((parts) => parts.flat()),
+    Promise.all(chunk(dueAddrs, 30).map((c) => ds.getTokensBatch(c).then((p) => ({ c, p }))))
+  ]);
 
   // Build snapshots map keyed by address.
   const snapByAddr = new Map<string, Snapshot>();
@@ -206,7 +217,8 @@ async function runOnce(env: Env): Promise<void> {
   };
 
   const scoredAddrs = [...snapByAddr.keys()].filter((a) => universeSet.has(a));
-  const windows = await loadRollingWindows(env, scoredAddrs, now, ROLLING_WINDOW_MIN);
+  const shadowScoredAddrs = [...shadowPlan.active.keys()].filter((a) => !live.has(a) && snapByAddr.has(a));
+  const windows = await loadRollingWindows(env, [...scoredAddrs, ...shadowScoredAddrs], now, ROLLING_WINDOW_MIN);
   const computed: Computed[] = [];
   for (const addr of scoredAddrs) {
     const snap = snapByAddr.get(addr)!;
@@ -223,9 +235,9 @@ async function runOnce(env: Env): Promise<void> {
   }
 
   // 4b. Cross-sectional z-score normalization across the universe at this tick.
-  if (useNorm && computed.length >= 5) {
-    const stats = computePopulationStats(computed.map((c) => c.factorsRaw));
-    for (const c of computed) c.factorsScored = normalizeByPopulation(c.factorsRaw, stats);
+  const popStats = useNorm && computed.length >= 5 ? computePopulationStats(computed.map((c) => c.factorsRaw)) : null;
+  if (popStats) {
+    for (const c of computed) c.factorsScored = normalizeByPopulation(c.factorsRaw, popStats);
   }
 
   // 4c. Score every token using the (possibly normalized) factor vector.
@@ -311,29 +323,68 @@ async function runOnce(env: Env): Promise<void> {
   let fomoSpikes = 0;
   const flags = new Map<string, { buy: boolean; sell: boolean }>();
   const eventStmts: D1PreparedStatement[] = [];
+  const th = { buy: buyTh, sell: sellTh, fomo: fomoTh };
   for (const c of eligible) {
     const { addr, score } = c;
     const prevScore = prevScores.get(addr) ?? null;
     const ev = { regime, scored: c.factorsScored, raw: c.factorsRaw };
-
-    if (prevScore != null && prevScore < buyTh && score >= buyTh && !buyCooldown.has(addr)) {
-      buyTriggers++;
-      flags.set(addr, { buy: true, sell: false });
-      eventStmts.push(eventStmt(env, addr, now, 'buy_trigger', score, prevScore, { ...ev, threshold: buyTh }));
-    } else if (prevScore != null && prevScore >= buyTh && score <= sellTh) {
-      sellTriggers++;
-      flags.set(addr, { buy: false, sell: true });
-      eventStmts.push(eventStmt(env, addr, now, 'sell_trigger', score, prevScore, { ...ev, threshold: sellTh }));
-    }
-
-    // FOMO spike: raw factor (not normalized, we want the magnitude), compared with a
-    // percentile of the same raw factor (signals.fomo_raw).
-    const fomoFactor = c.factorsRaw[FOMO_FACTOR_INDEX] ?? 0;
-    if (fomoFactor > fomoTh && !fomoThrottled.has(addr)) {
-      fomoSpikes++;
-      eventStmts.push(eventStmt(env, addr, now, 'fomo_spike', score, prevScore, { ...ev, threshold: fomoTh }));
+    const cool = { buy: buyCooldown.has(addr), fomo: fomoThrottled.has(addr) };
+    for (const e of detectEvents(score, prevScore, c.factorsRaw[FOMO_FACTOR_INDEX] ?? 0, th, cool)) {
+      if (e.type === 'buy_trigger') {
+        buyTriggers++;
+        flags.set(addr, { buy: true, sell: false });
+      } else if (e.type === 'sell_trigger') {
+        sellTriggers++;
+        flags.set(addr, { buy: false, sell: true });
+      } else fomoSpikes++;
+      eventStmts.push(eventStmt(env, addr, now, e.type, score, prevScore, { ...ev, threshold: e.threshold }));
     }
   }
+
+  // 5b. Shadow graduates: the live population's normalization, regime, thresholds and quality
+  // filter (age from the migration), their own previous scores and cooldowns.
+  const shadowStmts: D1PreparedStatement[] = [];
+  let shadowEvents = 0;
+  if (shadowScoredAddrs.length) {
+    const [shadowPrev, shadowRecent] = await Promise.all([
+      loadPrevScores(env, shadowScoredAddrs, now, 'shadow_signals'),
+      loadRecentEvents(env, now, 'shadow_events')
+    ]);
+    for (const addr of shadowScoredAddrs) {
+      const window = windows.get(addr) ?? [];
+      if (window.length === 0) window.push(snapByAddr.get(addr)!);
+      const raw = computeFactors(window);
+      const vec = popStats ? normalizeByPopulation(raw, popStats) : raw;
+      const first = computeScore(vec, strategy, { weights: trainedWeights });
+      const score =
+        useRegime && regime && regime !== 'neutral' && first.mode === 'fallback'
+          ? computeScore(vec, strategy, { regime, weights: trainedWeights }).score
+          : first.score;
+      const fomoRaw = raw[FOMO_FACTOR_INDEX] ?? 0;
+      shadowStmts.push(
+        env.DB.prepare(`INSERT OR REPLACE INTO shadow_signals (address, time, score, fomo_raw) VALUES (?, ?, ?, ?)`).bind(
+          addr,
+          now,
+          score,
+          raw[FOMO_FACTOR_INDEX] ?? null
+        )
+      );
+      if (window.length < warmUpMin || !passesQualityFilter(snapByAddr.get(addr), shadowPlan.active.get(addr), now, qf)) continue;
+      const prevScore = shadowPrev.get(addr) ?? null;
+      const cool = { buy: shadowRecent.buyCooldown.has(addr), fomo: shadowRecent.fomoThrottled.has(addr) };
+      for (const e of detectEvents(score, prevScore, fomoRaw, th, cool)) {
+        shadowEvents++;
+        shadowStmts.push(
+          eventStmt(env, addr, now, e.type, score, prevScore, { regime, scored: vec, raw, threshold: e.threshold }, 'shadow_events')
+        );
+      }
+    }
+  }
+  const liquidity = new Map<string, number>();
+  for (const p of [...pairs, ...dueParts.flatMap((d) => d.p)]) liquidity.set(p.baseToken.address, p.liquidity?.usd ?? 0);
+  const answered = new Set(dueParts.filter((d) => d.p.length > 0).flatMap((d) => d.c));
+  for (const a of shadowPlan.due) if (live.has(a) && pairs.length > 0) answered.add(a);
+  const screen = shadowUpdates(env.DB, now, shadowPlan, liquidity, qf.minLiquidityUsd, answered);
 
   // Signal rows for every scored token (the *scored* vector — what the engine actually used),
   // then events. Warm-up / quality gates only suppress events, never signal rows.
@@ -357,7 +408,7 @@ async function runOnce(env: Env): Promise<void> {
     `INSERT INTO engine_state (key, value, updated_at) VALUES ('last_scored', ?, ?)
      ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
   ).bind(JSON.stringify(Object.fromEntries(lastScored)), now);
-  await env.DB.batch([...signalStmts, ...eventStmts, lastScoredStmt]);
+  await env.DB.batch([...signalStmts, ...eventStmts, lastScoredStmt, ...shadowStmts, ...screen.stmts]);
 
   // 7. Prune old data.
   await pruneOldData(env, parseInt(env.ENGINE_HISTORY_RETENTION_HOURS, 10) || 72);
@@ -392,14 +443,21 @@ async function runOnce(env: Env): Promise<void> {
         normalize_cross_sectional: useNorm,
         regime_aware: useRegime,
         filtered_out: filteredOut,
-        quality_filter: qf
+        quality_filter: qf,
+        shadow: {
+          scored: shadowScoredAddrs.length,
+          fetched: shadowAddrs.length,
+          screened: shadowPlan.due.length,
+          activated: screen.activated.length,
+          events: shadowEvents
+        }
       }),
       now
     )
     .run();
 
   console.log(
-    `engine cycle: ${snapByAddr.size} tokens, +${buyTriggers}b/${sellTriggers}s/${fomoSpikes}f (filt ${filteredOut}), regime=${regime ?? 'off'}, th=${buyTh.toFixed(2)}/${sellTh.toFixed(2)}, universe=${universeSource}, ds retries=${ds.retries} relayed=${ds.relayed}, ${Date.now() - t0}ms`
+    `engine cycle: ${snapByAddr.size} tokens, +${buyTriggers}b/${sellTriggers}s/${fomoSpikes}f (filt ${filteredOut}), regime=${regime ?? 'off'}, th=${buyTh.toFixed(2)}/${sellTh.toFixed(2)}, universe=${universeSource}, shadow=${shadowScoredAddrs.length} +${shadowEvents}e (screened ${shadowPlan.due.length}, +${screen.activated.length}), ds retries=${ds.retries} relayed=${ds.relayed}, ${Date.now() - t0}ms`
   );
 }
 
@@ -600,12 +658,17 @@ async function loadFirstSeen(env: Env, addresses: string[]): Promise<Map<string,
 }
 
 /** Latest score strictly before `nowSec` per address (one indexed lookup each, one round trip). */
-async function loadPrevScores(env: Env, addresses: string[], nowSec: number): Promise<Map<string, number>> {
+async function loadPrevScores(
+  env: Env,
+  addresses: string[],
+  nowSec: number,
+  table: 'signals' | 'shadow_signals' = 'signals'
+): Promise<Map<string, number>> {
   const out = new Map<string, number>();
   if (!addresses.length) return out;
   const r = await env.DB.prepare(
     `SELECT a.value AS address,
-            (SELECT score FROM signals s WHERE s.address = a.value AND s.time < ? ORDER BY s.time DESC LIMIT 1) AS score
+            (SELECT score FROM ${table} s WHERE s.address = a.value AND s.time < ? ORDER BY s.time DESC LIMIT 1) AS score
      FROM json_each(?) a`
   )
     .bind(nowSec, JSON.stringify(addresses))
@@ -621,9 +684,10 @@ async function loadPrevScores(env: Env, addresses: string[], nowSec: number): Pr
  */
 async function loadRecentEvents(
   env: Env,
-  nowSec: number
+  nowSec: number,
+  table: 'signal_events' | 'shadow_events' = 'signal_events'
 ): Promise<{ fomoThrottled: Set<string>; buyCooldown: Set<string> }> {
-  const r = await env.DB.prepare(`SELECT address, event_type, time FROM signal_events WHERE time >= ?`)
+  const r = await env.DB.prepare(`SELECT address, event_type, time FROM ${table} WHERE time >= ?`)
     .bind(nowSec - Math.max(FOMO_COOLDOWN_SEC, BUY_COOLDOWN_SEC))
     .all<{ address: string; event_type: string; time: number }>();
   const rows = r.results ?? [];
@@ -686,10 +750,11 @@ function eventStmt(
   env: Env,
   address: string,
   time: number,
-  event_type: 'buy_trigger' | 'sell_trigger' | 'fomo_spike',
+  event_type: EventType,
   score: number,
   prev_score: number | null,
-  ev: { regime?: MarketRegime; threshold: number; scored: FactorVector; raw: FactorVector }
+  ev: { regime?: MarketRegime; threshold: number; scored: FactorVector; raw: FactorVector },
+  table: 'signal_events' | 'shadow_events' = 'signal_events'
 ): D1PreparedStatement {
   const metadata = JSON.stringify({
     regime: ev.regime ?? null,
@@ -697,17 +762,40 @@ function eventStmt(
     factors: { scored: factorsObject(ev.scored), raw: factorsObject(ev.raw) }
   });
   return env.DB.prepare(
-    `INSERT INTO signal_events (address, time, event_type, score, prev_score, metadata_json)
+    `INSERT INTO ${table} (address, time, event_type, score, prev_score, metadata_json)
      VALUES (?, ?, ?, ?, ?, ?)`
   ).bind(address, time, event_type, score, prev_score, metadata);
 }
 
+type EventType = 'buy_trigger' | 'sell_trigger' | 'fomo_spike';
+
+/**
+ * Transitions for one token this run. BUY: the score crossed the BUY threshold upwards, outside
+ * the BUY cooldown. SELL: from at or above the BUY threshold to at or under the SELL one. Volume
+ * burst: the raw factor (magnitude, not normalized) over its percentile, outside the burst cooldown.
+ */
+function detectEvents(
+  score: number,
+  prevScore: number | null,
+  fomoRaw: number,
+  th: { buy: number; sell: number; fomo: number },
+  cool: { buy: boolean; fomo: boolean }
+): Array<{ type: EventType; threshold: number }> {
+  const out: Array<{ type: EventType; threshold: number }> = [];
+  if (prevScore != null && prevScore < th.buy && score >= th.buy && !cool.buy) out.push({ type: 'buy_trigger', threshold: th.buy });
+  else if (prevScore != null && prevScore >= th.buy && score <= th.sell) out.push({ type: 'sell_trigger', threshold: th.sell });
+  if (fomoRaw > th.fomo && !cool.fomo) out.push({ type: 'fomo_spike', threshold: th.fomo });
+  return out;
+}
+
 async function pruneOldData(env: Env, retentionHours: number): Promise<void> {
-  const cutoff = Math.floor(Date.now() / 1000) - retentionHours * 3600;
+  const now = Math.floor(Date.now() / 1000);
+  const cutoff = now - retentionHours * 3600;
   await env.DB.batch([
     env.DB.prepare('DELETE FROM token_snapshots WHERE time < ?').bind(cutoff),
     env.DB.prepare('DELETE FROM signals WHERE time < ?').bind(cutoff),
-    env.DB.prepare('DELETE FROM signal_events WHERE time < ?').bind(cutoff - 14 * 86400)
+    env.DB.prepare('DELETE FROM signal_events WHERE time < ?').bind(cutoff - 14 * 86400),
+    ...pruneShadow(env.DB, now, cutoff)
   ]);
 }
 
