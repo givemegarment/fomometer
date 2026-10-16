@@ -12,7 +12,7 @@
 
 ---
 
-## 2026-10-16 [BUILD] Сайт к запуску $FMTR и ссылка на X (не задеплоено)
+## 2026-10-16 [BUILD] Сайт к запуску $FMTR и ссылка на X (задеплоено без mint)
 - Владелец: «деплоим токен на pump.fun… закрой roadmap… вставить ссылку… добавь наш твиттер x.com/Fomometerxyz».
 - `lib/token.ts`: `TOKEN_MINT` (пусто до запуска), `TOKEN_URL` = pump.fun/coin/<mint>, `X_URL`. Все ссылки на токен
   скрыты, пока mint пустой: запуск = вписать адрес и задеплоить.
@@ -29,6 +29,9 @@
   mint возвращён в пусто.
 - При запуске: `TOKEN_MINT`, `ENGINE_EXCLUDE_MINTS`, текст `whitepaper.roadmap` («Next come the $FMTR launch…»),
   пункт roadmap про исключение отметить после деплоя engine.
+- «деплой»: сайт `edbae920`, labeler `83b21620` (claim постов X), engine `4f719345` (`ENGINE_EXCLUDE_MINTS` пусто).
+  Прод: /, /dashboard, /roadmap, /whitepaper 200, ссылка X везде, pump.fun/coin нет (mint пуст), `twitter:site`
+  @Fomometerxyz, Data integrity Done. Tail 2.5 мин: engine 8/8 ok, labeler 3/3 ok, pump.fun found 39.
 
 ---
 
