@@ -365,7 +365,7 @@ async function runSwaps(env: Env): Promise<void> {
 async function runPump(env: Env): Promise<void> {
   try {
     const r = await scanGraduates(env, rpcUrl(env));
-    if (r.found) console.log(`pump graduates found=${r.found} seen=${r.seen}`);
+    if (r.found || r.error) console.log(`pump graduates found=${r.found} seen=${r.seen}${r.error ? ` error: ${r.error}` : ''}`);
   } catch (err) {
     // Third-party RPC; the next run retries from the same cursor.
     console.error(`pump error: ${(err as Error).message}`);

@@ -84,4 +84,31 @@ describe('scanGraduates', () => {
     expect(await scanGraduates({ DB }, 'https://rpc')).toEqual({ found: 0, seen: 2 });
     expect(raw.prepare(`SELECT value FROM engine_state WHERE key = 'pump_cursor'`).get()).toBeUndefined();
   });
+
+  it('walks pages back to the cursor, handles the oldest first, and keeps what it found when the RPC fails', async () => {
+    const { raw, DB } = d1();
+    raw.prepare(`INSERT INTO engine_state (key, value, updated_at) VALUES ('pump_cursor', 'S0', 0)`).run();
+    // 1,500 signatures newer than the cursor, S1500 newest: two pages of 1,000 and 500.
+    const all = Array.from({ length: 1500 }, (_, i) => ({ signature: `S${1500 - i}`, blockTime: 1500 - i, err: null }));
+    const calls: Array<Record<string, unknown>> = [];
+    vi.stubGlobal('fetch', async (_url: string, init: { body: string }) => {
+      const { method, params } = JSON.parse(init.body) as { method: string; params: [string, Record<string, unknown>] };
+      if (method === 'getSignaturesForAddress') {
+        calls.push(params[1]);
+        const from = params[1].before ? all.findIndex((x) => x.signature === params[1].before) + 1 : 0;
+        return new Response(JSON.stringify({ result: all.slice(from, from + 1000) }));
+      }
+      // The third transaction is refused.
+      if (params[0] === 'S3') return new Response('rate limited', { status: 429 });
+      return new Response(JSON.stringify({ result: tx([`Mint${params[0]}`, WSOL]) }));
+    });
+    const r = await scanGraduates({ DB }, 'https://rpc');
+    expect(calls).toEqual([
+      { until: 'S0', limit: 1000 },
+      { until: 'S0', limit: 1000, before: 'S501' }
+    ]);
+    expect(r).toEqual({ found: 2, seen: 1500, error: 'getTransaction: HTTP 429' });
+    expect(raw.prepare(`SELECT mint FROM pump_graduates ORDER BY migrated_at`).all()).toEqual([{ mint: 'MintS1' }, { mint: 'MintS2' }]);
+    expect(raw.prepare(`SELECT value FROM engine_state WHERE key = 'pump_cursor'`).get()).toEqual({ value: 'S2' });
+  });
 });
