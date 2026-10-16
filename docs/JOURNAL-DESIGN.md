@@ -20,6 +20,7 @@
   «excluded from its own board» отмечен после деплоя engine.
 - Деплой: сайт `2d709681`, engine `e0595036`. Прод: /, /dashboard, /roadmap, /whitepaper, /dashboard/treasury, /terms
   200, ссылки pump.fun/coin/<mint> на всех, бейдж Launched, контракт в roadmap, строка в hero. tsc, lint, vitest 65/65.
+  Повтор сайта `caf8c496` с отмеченным исключением: roadmap 6/6, 8/8, 5/5, $FMTR 2/7.
 
 ---
 
