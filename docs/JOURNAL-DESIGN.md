@@ -12,6 +12,17 @@
 
 ---
 
+## 2026-10-16 [BUILD] $FMTR запущен: контракт на сайте (задеплоено)
+- Владелец прислал https://pump.fun/coin/8rAhJEyM72smDNgGUcPETXoVi21x7k2R8u2AMXGQpump. Проверено: Token-2022, supply
+  1 000 000 000, decimals 6, mint authority и freeze authority нет; DexScreener: pumpfun, FMTR / fomometer.
+- `TOKEN_MINT` вписан; engine `ENGINE_EXCLUDE_MINTS` = mint. Тексты «не запущен» переписаны: whitepaper lede и roadmap,
+  treasury `split_note` (распределение с мультисига), terms (запущен 16.10, изменения за 14 дней). Пункт roadmap
+  «excluded from its own board» отмечен после деплоя engine.
+- Деплой: сайт `2d709681`, engine `e0595036`. Прод: /, /dashboard, /roadmap, /whitepaper, /dashboard/treasury, /terms
+  200, ссылки pump.fun/coin/<mint> на всех, бейдж Launched, контракт в roadmap, строка в hero. tsc, lint, vitest 65/65.
+
+---
+
 ## 2026-10-16 [BUILD] Ссылка на GitHub в шапке (задеплоено `03b8abfe`; прод: / и /dashboard 200, ссылка есть)
 - Владелец: «добавь ссылку на гитхаб на сайт» (была только в подвале). `GitHubLink` (знак GitHub) в `social-links.tsx`
   рядом с X: шапка лендинга, шапка дашборда (с sm; на телефоне только X). `REPO_URL` перенесён в `lib/token.ts`,

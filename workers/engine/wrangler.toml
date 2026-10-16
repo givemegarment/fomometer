@@ -43,4 +43,4 @@ ENGINE_PUMP_BLOCK_HI = "100"
 # No events for tokens first seen under 48 h ago (fitted 2026-10-15, see research journal).
 ENGINE_MIN_TOKEN_AGE_H = "48"
 # Never scored or tracked (comma-separated mints): $FMTR, FOMOMETER's own token, once launched.
-ENGINE_EXCLUDE_MINTS = ""
+ENGINE_EXCLUDE_MINTS = "8rAhJEyM72smDNgGUcPETXoVi21x7k2R8u2AMXGQpump"

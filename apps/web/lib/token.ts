@@ -3,7 +3,7 @@
  * roadmap, whitepaper) is hidden while TOKEN_MINT is empty; filling it in at launch shows them all.
  */
 export const TOKEN_SYMBOL = 'FMTR';
-export const TOKEN_MINT: string = '';
+export const TOKEN_MINT: string = '8rAhJEyM72smDNgGUcPETXoVi21x7k2R8u2AMXGQpump';
 /** The token's pump.fun page. */
 export const TOKEN_URL: string = TOKEN_MINT ? `https://pump.fun/coin/${TOKEN_MINT}` : '';
 export const TOKEN_LAUNCHED = TOKEN_MINT !== '' && TOKEN_URL !== '';

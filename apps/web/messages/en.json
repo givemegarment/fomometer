@@ -604,7 +604,7 @@
     },
     "roadmap": {
       "title": "Roadmap",
-      "body": "Public launch and swaps are live; data integrity finishes in mid-November. Next come the $FMTR launch with a treasury page, signal research, then Pro and the API.",
+      "body": "Public launch, data integrity and swaps are done, and $FMTR launched on pump.fun on 16 October 2026. Next: the treasury multisig, holder rewards and buybacks, signal research, then Pro and the API.",
       "link": "Full roadmap"
     },
     "risks": {
@@ -641,7 +641,7 @@
       "body": "Nothing here is financial advice, an offer to sell anything or a promise of returns. Scores and signals are statistics about public market data. Past results do not predict future ones."
     },
     "kicker": "Version 0.2 · 15 October 2026",
-    "lede": "What FOMOMETER measures, what the record shows so far, how it earns, and how the $FMTR token will share that revenue. The token is not launched yet; section 7 describes the rules it will launch with."
+    "lede": "What FOMOMETER measures, what the record shows so far, how it earns, and how the $FMTR token shares that revenue. The token launched on pump.fun on 16 October 2026; section 7 describes its rules."
   },
   "roadmap": {
     "title": "Roadmap",
@@ -775,7 +775,7 @@
             "text": "Fair launch on pump.fun"
           },
           {
-            "done": false,
+            "done": true,
             "text": "$FMTR excluded from its own board and signals"
           },
           {
@@ -902,7 +902,7 @@
     "balances_empty": "No unclaimed fees right now.",
     "balances_error": "Could not read the chain just now.",
     "split_title": "Where it goes",
-    "split_note": "Starts when $FMTR launches. Until then fees stay in the referral account.",
+    "split_note": "$FMTR launched on 16 October 2026. The split starts once the treasury multisig is set up; until then fees stay in the referral account.",
     "split_buyback": "Buyback and burn, hourly",
     "split_rewards": "Holder rewards in SOL, weekly",
     "split_ops": "Operations and research",
@@ -974,7 +974,7 @@
           "id": "token",
           "title": "The $FMTR token",
           "body": [
-            "$FMTR has not launched. Nothing on this site is an offer to sell or a solicitation to buy it. The rules it is planned to launch with are in the whitepaper and may change before launch. Its revenue-sharing features may not be available in some countries, including the United States."
+            "$FMTR launched on pump.fun on 16 October 2026. Nothing on this site is an offer to sell or a solicitation to buy it. Its rules are in the whitepaper; a change is announced 14 days ahead. Its revenue-sharing features may not be available in some countries, including the United States."
           ]
         },
         {
