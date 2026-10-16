@@ -153,7 +153,11 @@ export async function solanaRpc<T>(url: string, method: string, params: unknown[
       await sleep(HELIUS_RETRY_MS[attempt]!);
       continue;
     }
-    if (!res.ok) throw new Error(`${method}: HTTP ${res.status}`);
+    if (!res.ok) {
+      // The provider's reason (Helius: plan or limit), first 160 characters; never the URL.
+      const why = (await res.text().catch(() => '')).replace(/\s+/g, ' ').trim().slice(0, 160);
+      throw new Error(`${method}: HTTP ${res.status}${why ? ` ${why}` : ''}`);
+    }
     const body = (await res.json()) as { result?: T; error?: { message: string } };
     if (body.error) throw new Error(`${method}: ${body.error.message}`);
     return body.result as T;
