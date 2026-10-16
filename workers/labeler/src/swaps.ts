@@ -7,6 +7,7 @@
  * the signatures of those accounts, parses each transaction and stores the swap. Nothing
  * here trusts the browser: a swap counts only if the chain shows the fee.
  */
+import { solanaRpc } from './chain';
 
 export const WSOL_MINT = 'So11111111111111111111111111111111111111112';
 /** A buy counts as following a signal when the token had a BUY this long before it. */
@@ -118,19 +119,8 @@ type Env = {
 export const rpcUrl = (env: Pick<Env, 'HELIUS_API_KEY' | 'SOLANA_RPC_URL'>) =>
   env.HELIUS_API_KEY ? `https://mainnet.helius-rpc.com/?api-key=${env.HELIUS_API_KEY}` : env.SOLANA_RPC_URL;
 
-async function rpc<T>(env: Env, method: string, params: unknown[]): Promise<T> {
-  // Errors carry the method and status only, never the URL: it can contain the API key.
-  const res = await fetch(rpcUrl(env), {
-    method: 'POST',
-    // Public RPC endpoints answer 403 to requests without a user agent, which is what a Worker sends.
-    headers: { 'content-type': 'application/json', 'user-agent': 'fomometer-labeler/1.0 (+https://fomometer.xyz)' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
-  });
-  if (!res.ok) throw new Error(`${method}: HTTP ${res.status}`);
-  const body = (await res.json()) as { result?: T; error?: { message: string } };
-  if (body.error) throw new Error(`${method}: ${body.error.message}`);
-  return body.result as T;
-}
+/** Through the labeler's one RPC helper (./chain.ts), which paces Helius. */
+const rpc = <T>(env: Env, method: string, params: unknown[]): Promise<T> => solanaRpc<T>(rpcUrl(env), method, params);
 
 /**
  * Reads new transactions of the referral account's fee token accounts and stores the swaps.

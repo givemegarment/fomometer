@@ -120,17 +120,44 @@ export async function signerFromSecret(secret: string): Promise<Signer> {
 
 // --- RPC --------------------------------------------------------------------------------------
 
+/**
+ * Helius free plan: historical methods (getSignaturesForAddress, getTransaction) answer HTTP 429 above a
+ * few requests a second; the labeler's swaps alone sent 9 in a row (16 Oct 2026, every run refused).
+ * All Helius calls of one invocation go through one queue, HELIUS_GAP_MS apart, and a 429 is retried
+ * after HELIUS_RETRY_MS. Other RPC URLs (tests, the public fallback) are not paced.
+ */
+const HELIUS_GAP_MS = 600;
+const HELIUS_RETRY_MS = [2000, 5000];
+let heliusNext = 0;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+async function heliusSlot(): Promise<void> {
+  const now = Date.now();
+  const at = Math.max(now, heliusNext);
+  heliusNext = at + HELIUS_GAP_MS;
+  if (at > now) await sleep(at - now);
+}
+
 export async function solanaRpc<T>(url: string, method: string, params: unknown[]): Promise<T> {
-  // Errors carry the method and status only, never the URL: it can contain an API key.
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', 'user-agent': 'fomometer-labeler/1.0 (+https://fomometer.xyz)' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
-  });
-  if (!res.ok) throw new Error(`${method}: HTTP ${res.status}`);
-  const body = (await res.json()) as { result?: T; error?: { message: string } };
-  if (body.error) throw new Error(`${method}: ${body.error.message}`);
-  return body.result as T;
+  const paced = url.includes('helius-rpc.com');
+  for (let attempt = 0; ; attempt++) {
+    if (paced) await heliusSlot();
+    // Errors carry the method and status only, never the URL: it can contain an API key. Public RPC
+    // endpoints answer 403 to requests without a user agent, which is what a Worker sends.
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'user-agent': 'fomometer-labeler/1.0 (+https://fomometer.xyz)' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+    });
+    if (res.status === 429 && paced && attempt < HELIUS_RETRY_MS.length) {
+      await sleep(HELIUS_RETRY_MS[attempt]!);
+      continue;
+    }
+    if (!res.ok) throw new Error(`${method}: HTTP ${res.status}`);
+    const body = (await res.json()) as { result?: T; error?: { message: string } };
+    if (body.error) throw new Error(`${method}: ${body.error.message}`);
+    return body.result as T;
+  }
 }
 
 /**

@@ -42,3 +42,28 @@ describe('chain record', () => {
     expect(serializeTx(new Uint8Array(64), message).length).toBeLessThan(1232);
   });
 });
+
+describe('Helius pacing', () => {
+  it('spaces Helius calls and retries a 429; other URLs go straight through', async () => {
+    const { solanaRpc } = await import('./chain');
+    const times: number[] = [];
+    let refuse = 1;
+    const real = globalThis.fetch;
+    globalThis.fetch = (async () => {
+      times.push(Date.now());
+      if (refuse-- > 0) return new Response('', { status: 429 });
+      return new Response(JSON.stringify({ result: 7 }));
+    }) as typeof fetch;
+    try {
+      const url = 'https://mainnet.helius-rpc.com/?api-key=test';
+      expect(await solanaRpc<number>(url, 'getSlot', [])).toBe(7); // 429, wait, then 7
+      expect(await solanaRpc<number>(url, 'getSlot', [])).toBe(7);
+      expect(times[1]! - times[0]!).toBeGreaterThanOrEqual(1900);
+      expect(times[2]! - times[1]!).toBeGreaterThanOrEqual(550);
+      refuse = 1;
+      await expect(solanaRpc('https://rpc', 'getSlot', [])).rejects.toThrow('getSlot: HTTP 429');
+    } finally {
+      globalThis.fetch = real;
+    }
+  }, 10_000);
+});

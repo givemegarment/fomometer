@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { graduateMint, MIGRATION_ACCOUNT, scanGraduates } from './pump';
+import { graduateMint, MIGRATION_ACCOUNT, parseCursor, scanGraduates } from './pump';
 
 // Loaded at runtime: vitest 2.1 does not resolve the node:sqlite builtin itself.
 const { DatabaseSync } = createRequire(import.meta.url)('node:sqlite') as typeof import('node:sqlite');
@@ -69,7 +69,7 @@ describe('scanGraduates', () => {
 
     const next = stubRpc([], {});
     await scanGraduates({ DB }, 'https://rpc');
-    expect(next[0]!.params[1]).toEqual({ until: 'S3', limit: 1000 });
+    expect(next[0]!.params[1]).toEqual({ limit: 1000, until: 'S3' });
   });
 
   it('stops at a transaction the node does not return yet and retries it next run', async () => {
@@ -104,11 +104,42 @@ describe('scanGraduates', () => {
     });
     const r = await scanGraduates({ DB }, 'https://rpc');
     expect(calls).toEqual([
-      { until: 'S0', limit: 1000 },
-      { until: 'S0', limit: 1000, before: 'S501' }
+      { limit: 1000, until: 'S0' },
+      { limit: 1000, until: 'S0', before: 'S501' }
     ]);
     expect(r).toEqual({ found: 2, seen: 1500, error: 'getTransaction: HTTP 429' });
     expect(raw.prepare(`SELECT mint FROM pump_graduates ORDER BY migrated_at`).all()).toEqual([{ mint: 'MintS1' }, { mint: 'MintS2' }]);
-    expect(raw.prepare(`SELECT value FROM engine_state WHERE key = 'pump_cursor'`).get()).toEqual({ value: 'S2' });
+    expect(raw.prepare(`SELECT value FROM engine_state WHERE key = 'pump_cursor'`).get()).toEqual({ value: JSON.stringify({ sig: 'S2', time: 2 }) });
+  });
+
+  it('walks back by time when the node does not know the cursor signature', async () => {
+    const { raw, DB } = d1();
+    raw.prepare(`INSERT INTO engine_state (key, value, updated_at) VALUES ('pump_cursor', ?, 0)`).run(JSON.stringify({ sig: 'OLD', time: 1000 }));
+    // Newest first: two after the cursor time, one at it, one before.
+    const all = [
+      { signature: 'N2', blockTime: 1200, err: null },
+      { signature: 'N1', blockTime: 1100, err: null },
+      { signature: 'OLD', blockTime: 1000, err: null },
+      { signature: 'P', blockTime: 900, err: null }
+    ];
+    const calls: Array<Record<string, unknown>> = [];
+    vi.stubGlobal('fetch', async (_url: string, init: { body: string }) => {
+      const { method, params } = JSON.parse(init.body) as { method: string; params: [string, Record<string, unknown>] };
+      if (method === 'getSignaturesForAddress') {
+        calls.push(params[1]);
+        if (params[1].until) return new Response(JSON.stringify({ error: { message: 'Transaction OLD not found' } }));
+        return new Response(JSON.stringify({ result: all }));
+      }
+      return new Response(JSON.stringify({ result: tx([`Mint${params[0]}`, WSOL]) }));
+    });
+    expect(await scanGraduates({ DB }, 'https://rpc')).toEqual({ found: 2, seen: 2 });
+    expect(calls).toEqual([{ limit: 1000, until: 'OLD' }, { limit: 1000 }]);
+    expect(raw.prepare(`SELECT value FROM engine_state WHERE key = 'pump_cursor'`).get()).toEqual({ value: JSON.stringify({ sig: 'N2', time: 1200 }) });
+  });
+
+  it('reads a bare-signature cursor', () => {
+    expect(parseCursor('abc')).toEqual({ sig: 'abc', time: null });
+    expect(parseCursor(JSON.stringify({ sig: 'abc', time: 5 }))).toEqual({ sig: 'abc', time: 5 });
+    expect(parseCursor(undefined)).toBeNull();
   });
 });
