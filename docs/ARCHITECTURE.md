@@ -64,6 +64,7 @@ One run per minute, inside the Workers free-plan CPU limit (50 ms). Measured aft
 7. **Writes.** All `signals` and `signal_events` rows go in one `DB.batch`. Each event's `metadata_json` holds the regime, the threshold and both factor vectors (`factors.scored`, `factors.raw`). The run summary goes to `engine_state.last_run`; the burst threshold is cached in `engine_state.fomo_th_raw` for 30 minutes.
 8. **Retention.** Snapshots and signals older than 72 hours are deleted, events older than 72 hours plus 14 days.
 9. **Shadow: pump.fun graduates** (`workers/engine/src/shadow.ts`). The labeler stores every token that leaves the pump.fun bonding curve (`pump_graduates`). Each one is screened once, 46 hours after its migration, every 15 minutes in batches of up to 60 that are not stored: liquidity at or above the filter makes it active. Up to 30 active graduates under 7 days old that are not boosted are fetched with the universe (one extra DexScreener call) and scored with this minute's normalization statistics, regime and thresholds, the same quality filter with the age counted from the migration, their own previous scores and cooldowns. They write only `shadow_signals` and `shadow_events`: they are not part of the population statistics, the thresholds, `signals`, the site, the on-chain record or X. An active graduate leaves the set on a snapshot under the filter or at 7 days; a token with a shadow event is fetched for 4 h 10 m after it for its outcome. `last_run.shadow` counts scored, fetched, screened, activated and events. The purpose is a comparison: shadow BUY outcomes against live ones before graduates are allowed on the board.
+10. **Paper portfolios** (`workers/engine/src/paper.ts`). Entry rules fixed on 16 Oct 2026 from an in-sample search, plus a control (every scored token with liquidity ≥ $25k), measured forward; nothing is traded or shown. A match opens a paper trade at that minute's price unless the rule already holds the token. Each minute every open trade is checked against fixed exits (take-profit and stop pairs, trailing stops off the peak; take-profit fills at its level, stops at the minute's price) in `paper_exits`; at 4 h the trade closes (`paper_trades.ret_pct`, the hold exit) and unfired exits take the same price as `timeout`. 3 % round trip on every exit. `stale` when no price came within 15 minutes after the horizon, `pool_switch` above a 1000 % rise. Rules and exits are frozen; a change gets a new id.
 
 ## Labeler
 
@@ -97,6 +98,8 @@ Schema: `infra/d1-schema.sql`. Times are Unix seconds.
 | `shadow_signals` | | 72 h | score and raw burst factor per shadow token per minute |
 | `shadow_events` | | 72 h + 14 d | events the engine would have emitted for shadow tokens |
 | `shadow_outcomes` | | forever | their prices after 15m / 1h / 4h, same columns as `signal_outcomes` without `chain_sig` |
+| `paper_trades` | | forever | paper portfolios: rule, token, entry, peak, 4 h hold exit and return |
+| `paper_exits` | | forever | the same trades under each price-driven exit: time, return, reason |
 | `engine_state` | 7 | | `last_run`, `fomo_th_raw`, `last_scored`, `baseline_cursor`, `track_record` (7-day summary for the Strategy page, refreshed hourly by the labeler), `swap_cursor`, `pump_cursor` |
 
 ## JSON API

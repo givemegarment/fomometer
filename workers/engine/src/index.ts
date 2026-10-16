@@ -18,6 +18,7 @@
  */
 import { DsRelay, RELAY_REGIONS } from './relay';
 import { loadShadow, pruneShadow, shadowUpdates, SCREEN_EVERY_SEC } from './shadow';
+import { paperStatements } from './paper';
 import {
   DexScreenerClient,
   pairToSnapshot,
@@ -410,6 +411,11 @@ async function runOnce(env: Env): Promise<void> {
   ).bind(JSON.stringify(Object.fromEntries(lastScored)), now);
   await env.DB.batch([...signalStmts, ...eventStmts, lastScoredStmt, ...shadowStmts, ...screen.stmts]);
 
+  // 6b. Paper portfolios (./paper.ts): scored tokens only, after this run's snapshots are stored.
+  const prices = new Map([...snapByAddr].map(([a, sn]) => [a, sn.price_usd]));
+  const paper = await paperStatements(env.DB, now, scored.map((c) => snapByAddr.get(c.addr)!), prices);
+  if (paper.stmts.length) await env.DB.batch(paper.stmts);
+
   // 7. Prune old data.
   await pruneOldData(env, parseInt(env.ENGINE_HISTORY_RETENTION_HOURS, 10) || 72);
 
@@ -450,14 +456,15 @@ async function runOnce(env: Env): Promise<void> {
           screened: shadowPlan.due.length,
           activated: screen.activated.length,
           events: shadowEvents
-        }
+        },
+        paper: { opened: paper.opened, closed: paper.closed, exits: paper.exits }
       }),
       now
     )
     .run();
 
   console.log(
-    `engine cycle: ${snapByAddr.size} tokens, +${buyTriggers}b/${sellTriggers}s/${fomoSpikes}f (filt ${filteredOut}), regime=${regime ?? 'off'}, th=${buyTh.toFixed(2)}/${sellTh.toFixed(2)}, universe=${universeSource}, shadow=${shadowScoredAddrs.length} +${shadowEvents}e (screened ${shadowPlan.due.length}, +${screen.activated.length}), ds retries=${ds.retries} relayed=${ds.relayed}, ${Date.now() - t0}ms`
+    `engine cycle: ${snapByAddr.size} tokens, +${buyTriggers}b/${sellTriggers}s/${fomoSpikes}f (filt ${filteredOut}), regime=${regime ?? 'off'}, th=${buyTh.toFixed(2)}/${sellTh.toFixed(2)}, universe=${universeSource}, shadow=${shadowScoredAddrs.length} +${shadowEvents}e (screened ${shadowPlan.due.length}, +${screen.activated.length}), paper +${paper.opened}/-${paper.closed} (${paper.exits} exits), ds retries=${ds.retries} relayed=${ds.relayed}, ${Date.now() - t0}ms`
   );
 }
 
